@@ -131,6 +131,8 @@ def main():
         pit_recent = _int_keys(snap.get("pitcher_stats_recent", {}))
         bat_vs_l   = _int_keys(snap.get("bat_vs_l", {}))
         bat_vs_r   = _int_keys(snap.get("bat_vs_r", {}))
+        pit_vs_l   = _int_keys(snap.get("pit_vs_l", {}))
+        pit_vs_r   = _int_keys(snap.get("pit_vs_r", {}))
         bat_sides  = {int(k): v for k, v in snap.get("bat_sides", {}).items()} if "bat_sides" in snap else {}
         pit_throws = {int(k): v for k, v in snap.get("pit_throws", {}).items()} if "pit_throws" in snap else {}
         team_off   = _int_keys(snap.get("team_off", {}))
@@ -186,6 +188,8 @@ def main():
                 )
                 feat_row = prop_models.batter_feature_row(bproj, bs, rs, opp_sp_q, park, wadj, team_pred,
                                                           sc_stats=sc_bat.get(pid))
+                # batter_feature_row already includes sc fields (xwoba/xba/exit_velo
+                # added May 6 2026); the sc_stats kwarg is the single feed.
                 feat_row.update({
                     "game_pk": gpk, "date": gdate, "side": side,
                     "player_id": pid, "name": row["name"],
@@ -206,10 +210,21 @@ def main():
                 pid = int(prow["player_id"])
                 ps  = pit_stats.get(pid, {"player_id": pid, "name": prow["name"], "team_id": tid})
                 rs  = pit_recent.get(pid)
+                # Lineup-mix-weighted platoon split for this pitcher vs the
+                # specific 9 batters they actually faced. Mirrors live predict.
+                from src import lineup_features as _lf
+                _pthrows = (pit_throws.get(pid) or "R").upper()
+                _split_stats = _lf.pitcher_split_vs_lineup(
+                    pid, opp_lineup_ids, bat_sides, _pthrows,
+                    pit_vs_l, pit_vs_r,
+                ) if opp_lineup_ids else None
                 pproj = proj.project_pitcher(ps, tid, opp_off_idx, opp_pred, park, wadj,
                                              recent_stats=rs, ml_blend=0,
-                                             sc_stats=sc_pit.get(pid))
-                feat_row = prop_models.pitcher_feature_row(pproj, ps, rs, opp_off_idx, park, wadj, opp_pred)
+                                             sc_stats=sc_pit.get(pid),
+                                             split_stats=_split_stats)
+                feat_row = prop_models.pitcher_feature_row(pproj, ps, rs, opp_off_idx, park, wadj, opp_pred,
+                                                            sc_stats=sc_pit.get(pid),
+                                                            split_stats=_split_stats)
                 feat_row.update({
                     "game_pk": gpk, "date": gdate, "side": side,
                     "player_id": pid, "name": prow["name"],

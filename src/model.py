@@ -39,6 +39,12 @@ FEATURES = [
     # Lineup-weighted offense — replaces team-aggregate OPS/BB%/wOBA. PA-weighted
     # over the 9 confirmed starters, so role-player drift doesn't dilute the signal.
     "lineup_ops", "lineup_bb_pct", "lineup_woba",
+    # NOTE: lineup_woba_recent is computed and persisted on every game row
+    # (see GameFeatures.home_lineup_woba_recent), but NOT included in FEATURES.
+    # 2025 training rows filled it with the league default (0.315) while 2026
+    # rows have real variation, so the GLM learns a spurious era contrast (the
+    # same bug that bit off_rpg_recent). Re-include after rebuilding 2025 with
+    # per-batter 14d snapshots — currently a 10+ min rebuild.
     # Platoon: lineup wOBA vs the OPPOSING starter's throwing hand (EB-shrunk).
     "lineup_xwoba_vs_hand",
     # Statcast offense — park/defense-neutral contact quality (team-level, kept
@@ -130,6 +136,10 @@ def _half(g: dict, batting: str) -> dict:
         "lineup_bb_pct":   _pick(g, f"{h}_lineup_bb_pct",    0.085),
         "lineup_k_pct":    _pick(g, f"{h}_lineup_k_pct",     0.225),
         "lineup_xwoba_vs_hand": _pick(g, f"{h}_lineup_xwoba_vs_hand", 0.315),
+        # Lineup-weighted recent form — distinguishes 5 hot starters from
+        # team's hot bench. Falls back to lineup season aggregate when missing.
+        "lineup_woba_recent":  _pick(g, f"{h}_lineup_woba_recent",  0.315),
+        "lineup_ops_recent":   _pick(g, f"{h}_lineup_ops_recent",   0.720),
         # Engineered interactions
         # off_x_park and off_minus_oppsp are per-side computed in features.py
         # under the batting team's prefix, so use own().

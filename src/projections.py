@@ -204,6 +204,7 @@ def _apply_ml_adjustment_batter(
     weather_adj: dict,
     team_pred_runs: float,
     blend: float | None = None,
+    sc_stats: dict | None = None,
 ) -> "BatterProjection":
     """Blend ML predictions with analytical projection.
 
@@ -216,7 +217,7 @@ def _apply_ml_adjustment_batter(
         return proj
     from . import prop_models as pm
     feat = pm.batter_feature_row(proj, bat_stats, rec_stats, opp_sp_q, park,
-                                 weather_adj, team_pred_runs)
+                                 weather_adj, team_pred_runs, sc_stats=sc_stats)
     df = pd.DataFrame([feat])
     new = BatterProjection(**asdict(proj))
     for stat, attr in [("h", "proj_h"), ("hr", "proj_hr"), ("tb", "proj_tb"),
@@ -241,13 +242,16 @@ def _apply_ml_adjustment_pitcher(
     weather_adj: dict,
     opp_pred_runs: float,
     blend: float | None = None,
+    sc_stats: dict | None = None,
+    split_stats: dict | None = None,
 ) -> "PitcherProjection":
     models = _get_prop_models().get("pitcher", {})
     if not models:
         return proj
     from . import prop_models as pm
     feat = pm.pitcher_feature_row(proj, pit_stats, rec_stats, opp_off_idx, park,
-                                  weather_adj, opp_pred_runs)
+                                  weather_adj, opp_pred_runs, sc_stats=sc_stats,
+                                  split_stats=split_stats)
     df = pd.DataFrame([feat])
     new = PitcherProjection(**asdict(proj))
     for stat, attr in [("k", "proj_k"), ("bb", "proj_bb"), ("h", "proj_h"),
@@ -535,7 +539,8 @@ def project_batter(
     if ml_blend is None or ml_blend > 0:
         out = _apply_ml_adjustment_batter(out, bat_stats, recent_stats,
                                           opp_sp_q, park, weather_adj,
-                                          team_pred_runs, blend=ml_blend)
+                                          team_pred_runs, blend=ml_blend,
+                                          sc_stats=sc_stats)
     # Per-stat isotonic calibration: bend the projection curve to match
     # observed top/bottom-decile actuals. No-op when calibrators missing.
     from . import projection_cal as _cal
@@ -598,6 +603,7 @@ def project_pitcher(
     recent_stats: dict | None = None,
     ml_blend: float | None = None,
     sc_stats: dict | None = None,
+    split_stats: dict | None = None,
 ) -> PitcherProjection:
     pid = int(pit_stats.get("player_id") or pit_stats.get("id") or 0)
     name = pit_stats.get("name") or pit_stats.get("fullName", "")
@@ -661,7 +667,9 @@ def project_pitcher(
     if ml_blend is None or ml_blend > 0:
         out = _apply_ml_adjustment_pitcher(out, pit_stats, recent_stats,
                                            opp_off_idx, park, weather_adj,
-                                           opp_pred_runs, blend=ml_blend)
+                                           opp_pred_runs, blend=ml_blend,
+                                           sc_stats=sc_stats,
+                                           split_stats=split_stats)
     # Per-stat isotonic calibration. No-op when calibrators missing.
     from . import projection_cal as _cal
     out.proj_k         = _cal.apply("pitcher_k",    out.proj_k)

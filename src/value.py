@@ -461,15 +461,18 @@ def get_dispersion(market: str, mean_proj: float) -> float:
 def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
                   over_odds: int | None, under_odds: int | None,
                   edge_threshold: float = 0.03,
-                  one_sided_juice: float = 0.06,
+                  one_sided_juice: float = 0.08,
                   one_sided_max_odds: int = 400) -> list[ValueBet]:
     """Compare a player prop to its model projection.
 
     Two-sided (over_odds AND under_odds): we de-vig and report both sides.
     One-sided (only over_odds, common for Yes/No props on Bovada): we estimate
     the no-vig prob by stripping a typical book overround. Default
-    one_sided_juice = 0.06 = ~3% per side, conservative for Bovada (their juice
-    on individual binary props is typically 6-12%).
+    one_sided_juice = 0.08 (raised from 0.06 May 6 2026). Empirical Bovada
+    overround on binary batter props (HR / Hits / TB Yes-only) is 8-12%, not
+    6%. Using 6% systematically inflated edge by ~1-2 pct points and crowded
+    the leaderboard with phantom +EV one-sided plays. 0.08 is the conservative
+    midpoint of the observed band.
 
     one_sided_max_odds: skip one-sided props with American odds above this
     threshold (default +400 ≈ 20% implied). Bovada's overround on +500 / +800

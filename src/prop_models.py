@@ -132,9 +132,16 @@ def batter_feature_row(
         "wind_to_cf":  float(weather_adj.get("wind_to_cf_mph", 0.0)),
         "temp_f":      float(weather_adj.get("temp_f", 70.0)),
 
-        # Statcast — contact quality (league-avg defaults if not available)
+        # Statcast — contact quality (league-avg defaults if not available).
+        # xwoba and xba strip BABIP/sequencing luck from raw rate stats and
+        # stabilise faster, so the GBT can see the "true talent" signal even
+        # when raw season AVG/SLG is still noisy in April-May. exit_velo
+        # correlates with HR/TB independently of barrel rate.
         "sc_barrel_pct": float((sc_stats or {}).get("barrel_pct") or 8.0),
         "sc_hard_hit":   float((sc_stats or {}).get("hard_hit")   or 37.0),
+        "sc_xwoba":      float((sc_stats or {}).get("xwoba")      or 0.315),
+        "sc_xba":        float((sc_stats or {}).get("xba")        or 0.245),
+        "sc_exit_velo":  float((sc_stats or {}).get("exit_velo")  or 88.5),
     }
 
 
@@ -146,6 +153,8 @@ def pitcher_feature_row(
     park,
     weather_adj: dict,
     opp_pred_runs: float,
+    sc_stats: dict | None = None,  # player-level Statcast (xera, xwoba, whiff%, k%, csp, ...)
+    split_stats: dict | None = None,  # lineup-mix-weighted L/R splits (k_pct, bb_pct, ops, lhb_pct)
 ) -> dict:
     bf = float(pit_stats.get("battersFaced") or 0)
     ip_str = pit_stats.get("inningsPitched", 0)
@@ -160,6 +169,31 @@ def pitcher_feature_row(
     rec_ip   = rec_outs / 3.0 if rec_outs else 0.0
     rec_k    = float((rec_stats or {}).get("strikeOuts") or 0)
     rec_er   = float((rec_stats or {}).get("earnedRuns") or 0)
+
+    # Pull saber metrics directly from MLB Stats API when present (parsed by
+    # `mlb_api`). FIP/xFIP are far more predictive than ERA in-season, so
+    # exposing them as direct features lets the GBT pick them up rather than
+    # relying solely on the more contaminated `season_era`.
+    season_fip = pit_stats.get("fip")
+    season_fip = float(season_fip) if season_fip not in (None, "", "-.--", ".---") else 4.10
+    season_xfip = pit_stats.get("xfip")
+    season_xfip = float(season_xfip) if season_xfip not in (None, "", "-.--", ".---") else season_fip
+
+    # GB tendency. Stabilises ~70 BIP. Computed from groundOuts/airOuts which
+    # the MLB API returns for every pitcher. FB pitchers in HR parks get
+    # systematically under-projected on HR; GB pitchers benefit in HR-suppressing
+    # environments. Falls back to league-avg 0.43 GB%, 1.10 GO/AO.
+    gb_outs = float(pit_stats.get("groundOuts") or 0)
+    fb_outs = float(pit_stats.get("airOuts") or 0)
+    season_gb_pct = (gb_outs / (gb_outs + fb_outs)) if (gb_outs + fb_outs) > 0 else 0.43
+    _gtfo = pit_stats.get("groundOutsToAirouts")
+    try:
+        season_gb_to_fb = float(_gtfo) if _gtfo not in (None, "", "-.--", ".---") else 1.10
+    except (TypeError, ValueError):
+        season_gb_to_fb = 1.10
+
+    sc = sc_stats or {}
+    sp = split_stats or {}
 
     return {
         "proj_k":      float(pproj.proj_k),
@@ -177,6 +211,10 @@ def pitcher_feature_row(
         "season_bb9": (float(pit_stats.get("baseOnBalls") or 0) * 9 / season_ip) if season_ip else 3.2,
         "season_hr9": (float(pit_stats.get("homeRuns") or 0)    * 9 / season_ip) if season_ip else 1.20,
         "season_era": (float(pit_stats.get("earnedRuns") or 0)  * 9 / season_ip) if season_ip else 4.5,
+        "season_fip": season_fip,
+        "season_xfip": season_xfip,
+        "season_gb_pct":   season_gb_pct,
+        "season_gb_to_fb": season_gb_to_fb,
 
         "recent_bf": rec_bf,
         "recent_k9": (rec_k * 9 / rec_ip) if rec_ip else 8.7,
@@ -197,6 +235,31 @@ def pitcher_feature_row(
         "hr_mult":     float(weather_adj.get("hr_mult", 1.0)),
         "wind_to_cf":  float(weather_adj.get("wind_to_cf_mph", 0.0)),
         "temp_f":      float(weather_adj.get("temp_f", 70.0)),
+
+        # Statcast — contact quality + swing-and-miss profile. Pitcher prop
+        # models had ZERO Statcast features previously; this is the single
+        # biggest gap in the feature set. xera+xwoba capture true contact
+        # quality allowed (vs. ERA/AVG which are BABIP/sequencing-contaminated).
+        # whiff_pct + k_pct + csp directly anchor K projections; barrel% +
+        # hard_hit drive HR/ER variance.
+        "sc_xera":       float(sc.get("xera")       or 4.20),
+        "sc_xwoba":      float(sc.get("xwoba")      or 0.315),
+        "sc_whiff_pct":  float(sc.get("whiff_pct")  or 25.0),
+        "sc_k_pct":      float(sc.get("k_pct")      or 22.5),
+        "sc_csp":        float(sc.get("csp")        or 17.0),
+        "sc_barrel_pct": float(sc.get("barrel_pct") or 7.8),
+        "sc_hard_hit":   float(sc.get("hard_hit")   or 37.0),
+
+        # Lineup-mix-weighted platoon splits. lhb_pct = % of opposing lineup
+        # batting LH against this pitcher's hand (switch hitters bat opposite
+        # the pitcher). Splits captured for K%, BB%, HR%, OPS-allowed —
+        # captures reverse-platoon pitchers and lineup-composition-driven
+        # matchup edges that the season aggregates miss.
+        "split_lhb_pct":  float(sp.get("lhb_pct") or 0.40),
+        "split_k_pct":    float(sp.get("k_pct")   or 0.225),
+        "split_bb_pct":   float(sp.get("bb_pct")  or 0.085),
+        "split_hr_pct":   float(sp.get("hr_pct")  or 0.030),
+        "split_ops":      float(sp.get("ops")     or 0.720),
     }
 
 

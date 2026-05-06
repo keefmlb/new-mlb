@@ -16,6 +16,7 @@ import pandas as pd
 
 from . import mlb_api, parks, weather, features as feats, statcast as sc
 from . import model as mdl, projections as proj, odds, value, name_match, bet_tracker, umpire as ump
+from . import lineup_features as lf
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -182,6 +183,8 @@ def predict_slate(target_date: date | str | None = None,
     pit_recent = _stats_lookup(snap.get("pitcher_stats_recent", {}))
     bat_vs_l = _stats_lookup(snap.get("bat_vs_l", {}))
     bat_vs_r = _stats_lookup(snap.get("bat_vs_r", {}))
+    pit_vs_l = _stats_lookup(snap.get("pit_vs_l", {}))   # pitcher splits vs LHB
+    pit_vs_r = _stats_lookup(snap.get("pit_vs_r", {}))   # pitcher splits vs RHB
     bat_sides = {int(k): v for k, v in snap.get("bat_sides", {}).items()}
     pit_throws = {int(k): v for k, v in snap.get("pit_throws", {}).items()}
 
@@ -242,7 +245,8 @@ def predict_slate(target_date: date | str | None = None,
                                       away_lineup_ids=away_lineup_ids,
                                       batter_stats=batter_stats,
                                       bat_vs_l=bat_vs_l, bat_vs_r=bat_vs_r,
-                                      bat_sides=bat_sides, pit_throws=pit_throws)
+                                      bat_sides=bat_sides, pit_throws=pit_throws,
+                                      batter_recent=bat_recent)
         if f is None:
             continue
 
@@ -478,10 +482,18 @@ def predict_slate(target_date: date | str | None = None,
                         opp_off["k_pct"] = proj.lineup_k_pct(_opp_lineup, batter_stats)
                     opp_pred = away_pred if is_home_pitcher else home_pred
                     _pid = int(pdata.get("player_id") or 0)
+                    # Lineup-mix-weighted pitcher platoon split. Captures
+                    # reverse-platoon arms and lineup-composition matchup edges.
+                    _pthrows = (pit_throws.get(_pid) or "R").upper()
+                    _split_stats = lf.pitcher_split_vs_lineup(
+                        _pid, _opp_lineup or [], bat_sides, _pthrows,
+                        pit_vs_l, pit_vs_r,
+                    ) if _opp_lineup else None
                     pproj = proj.project_pitcher(pdata, team_id, opp_off, opp_pred, park,
                                                  {"runs_mult": f.runs_mult, "hr_mult": f.hr_mult},
                                                  recent_stats=pit_recent.get(_pid),
-                                                 sc_stats=sc_pit_data.get(_pid))
+                                                 sc_stats=sc_pit_data.get(_pid),
+                                                 split_stats=_split_stats)
                     means = {
                         "pitcher_k": pproj.proj_k, "pitcher_outs": pproj.expected_outs,
                         "pitcher_er": pproj.proj_er, "pitcher_h": pproj.proj_h,

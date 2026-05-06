@@ -207,6 +207,143 @@ def lineup_xwoba_vs_hand(
     return sum(w * v for w, v in contribs) / total
 
 
+def lineup_recent_form(
+    lineup_ids: Iterable[int],
+    batter_stats: dict[int, dict],
+    batter_recent: dict[int, dict],
+) -> dict:
+    """PA-weighted recent-form aggregate over the 9 starters.
+
+    Mirrors `lineup_offense` but uses each batter's last-14-day stats. When a
+    starter has no recent stats (rookie call-up, returning from IL), falls
+    back to that player's season line. When they have neither, falls back to
+    league averages.
+
+    The team-runs model historically used team-level recent form (`off_rpg_recent`)
+    which averaged the entire active roster. A lineup of 5 hot hitters
+    projects identically to a lineup of 5 cold hitters under that approach.
+    This function fixes that by aggregating the actual nine starters.
+    """
+    indices = []
+    for i, pid in enumerate(lineup_ids):
+        rs = batter_recent.get(int(pid))
+        ss = batter_stats.get(int(pid))
+        # Prefer recent stats if the batter has a meaningful 14d sample;
+        # otherwise fall back to season; otherwise league.
+        if rs and _safe_float(rs.get("plateAppearances")) >= 10:
+            stat = rs
+        elif ss:
+            stat = ss
+        else:
+            indices.append((LINEUP_PA_WEIGHTS[i] if i < 9 else 0.1,
+                            {"ops": LG_OPS, "woba": LG_WOBA, "k_pct": LG_K_PCT,
+                             "bb_pct": LG_BB_PCT, "iso": LG_ISO}))
+            continue
+        idx = _batter_index(stat)
+        # PA weight: combination of season PA (playing time) and recent PA
+        # (recency relevance). Use season PA as the primary weight so a hot
+        # 30-PA cameo doesn't dominate over a regular's full-season sample.
+        season_pa = _safe_float((ss or {}).get("plateAppearances"), 100.0) or 100.0
+        indices.append((season_pa, idx))
+
+    total_w = sum(w for w, _ in indices) or 1.0
+    out = {"ops": 0.0, "woba": 0.0, "k_pct": 0.0, "bb_pct": 0.0, "iso": 0.0}
+    for w, idx in indices:
+        for k in out:
+            out[k] += (w / total_w) * idx[k]
+    return out
+
+
+def lineup_lhb_pct(
+    lineup_ids: Iterable[int],
+    bat_sides: dict,
+    pit_throws: str = "R",
+) -> float:
+    """Fraction of the lineup batting LEFT against this pitcher's throwing hand.
+    Switch hitters bat opposite the pitcher hand (S vs RHP -> L; S vs LHP -> R).
+    Returns 0.40 (league average LHB exposure) when the lineup is empty.
+    """
+    ids = list(lineup_ids or [])
+    if not ids:
+        return 0.40
+    lhb = 0
+    pit_throws = (pit_throws or "R").upper()
+    for bid in ids:
+        side = ((bat_sides.get(int(bid)) or bat_sides.get(str(bid)) or "R")).upper()
+        if side == "L":
+            lhb += 1
+        elif side == "S":
+            # Switch hitter — bats lefty vs RHP, righty vs LHP
+            lhb += 1 if pit_throws == "R" else 0
+    return lhb / len(ids)
+
+
+def pitcher_split_vs_lineup(
+    pitcher_id: int | None,
+    lineup_ids: Iterable[int],
+    bat_sides: dict,
+    pit_throws: str,
+    pit_vs_l: dict[int, dict],
+    pit_vs_r: dict[int, dict],
+) -> dict | None:
+    """Lineup-mix-weighted pitcher platoon stats.
+
+    Returns a synthetic stats dict representing the pitcher's K%, BB%, OPS-allowed
+    blended by THIS specific lineup's hand composition. Returns None when no
+    split data exists for the pitcher.
+
+    Why this matters: a pitcher with a huge reverse-platoon (OPS .800 vs L,
+    .600 vs R) facing a lineup of 7 RHB performs very differently than the
+    season aggregate would suggest.  Until now we exposed batter-vs-pitcher
+    splits but used pitcher-side aggregates.
+    """
+    if pitcher_id is None:
+        return None
+    vl = pit_vs_l.get(int(pitcher_id)) or pit_vs_l.get(str(pitcher_id))
+    vr = pit_vs_r.get(int(pitcher_id)) or pit_vs_r.get(str(pitcher_id))
+    if not vl and not vr:
+        return None
+
+    lhb_pct = lineup_lhb_pct(lineup_ids, bat_sides, pit_throws)
+
+    def _rate(s: dict | None, num_key: str) -> float | None:
+        if not s:
+            return None
+        denom = (_safe_float(s.get("battersFaced"))
+                 or _safe_float(s.get("plateAppearances")))
+        if denom <= 0:
+            return None
+        return _safe_float(s.get(num_key)) / denom
+
+    def _ops(s: dict | None) -> float | None:
+        if not s:
+            return None
+        v = s.get("ops")
+        if v in (None, "", ".---"):
+            return None
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+
+    def _blend(ml, mr, default):
+        if ml is not None and mr is not None:
+            return lhb_pct * ml + (1 - lhb_pct) * mr
+        if ml is not None:
+            return ml
+        if mr is not None:
+            return mr
+        return default
+
+    return {
+        "k_pct":   _blend(_rate(vl, "strikeOuts"),   _rate(vr, "strikeOuts"),   0.225),
+        "bb_pct":  _blend(_rate(vl, "baseOnBalls"),  _rate(vr, "baseOnBalls"),  0.085),
+        "hr_pct":  _blend(_rate(vl, "homeRuns"),     _rate(vr, "homeRuns"),     0.030),
+        "ops":     _blend(_ops(vl),                  _ops(vr),                  0.720),
+        "lhb_pct": lhb_pct,
+    }
+
+
 def parse_lineup_ids(s: str | None) -> list[int]:
     """Parse a CSV-stored lineup_ids field back to a list of ints."""
     if not s or (isinstance(s, float)):

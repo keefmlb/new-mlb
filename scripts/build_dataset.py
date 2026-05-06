@@ -187,6 +187,7 @@ def main():
             g_team_off_recent = _int_keys(snap.get("team_off_recent", {}))
             g_team_pit_recent = _int_keys(snap.get("team_pit_recent", {}))
             g_bat_stats = _int_keys(snap.get("batter_stats", {}))
+            g_bat_recent = _int_keys(snap.get("batter_stats_recent", {}))
             n_snap_used += 1
         else:
             g_team_off = team_off
@@ -195,6 +196,7 @@ def main():
             g_team_off_recent = team_off_recent
             g_team_pit_recent = team_pit_recent
             g_bat_stats = bat_stats
+            g_bat_recent = bat_recent
 
         # For finished games, fetch boxscore now to recover the actual starting
         # lineup so lineup-weighted features reflect who really played.
@@ -222,7 +224,8 @@ def main():
                                           bat_vs_l=bat_vs_l,
                                           bat_vs_r=bat_vs_r,
                                           bat_sides=bat_sides,
-                                          pit_throws=pit_throws)
+                                          pit_throws=pit_throws,
+                                          batter_recent=g_bat_recent)
         except Exception as e:
             print(f"  feature build failed for game {g.get('gamePk')}: {e}")
             continue

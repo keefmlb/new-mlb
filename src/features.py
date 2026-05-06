@@ -142,6 +142,21 @@ def pitcher_quality_index(stats: dict, sc_stats: dict | None = None) -> dict:
     api_fip_minus = _safe_float(stats.get("fipMinus"), 100.0) or 100.0
     strike_pct = _safe_float(stats.get("strikePercentage"), 0.62) or 0.62
 
+    # GB/FB tendency. groundOuts and airOuts together cover all balls in play
+    # that produced an out (GB+FB+LD ~= GO+AO ignoring LD which API folds in).
+    # gb_pct ranges ~0.30 (extreme FB pitcher) to ~0.62 (extreme GB pitcher);
+    # league avg is ~0.43.
+    # Why this matters: HR/9 lags badly for FB pitchers in HR parks (they give
+    # up clusters of HR that the season HR rate hasn't caught up to), and GB
+    # pitchers benefit disproportionately in HR-suppressing environments.
+    gb_outs = _safe_float(stats.get("groundOuts"))
+    fb_outs = _safe_float(stats.get("airOuts"))
+    raw_gb_pct = (gb_outs / (gb_outs + fb_outs)) if (gb_outs + fb_outs) > 0 else 0.43
+    gb_to_fb  = _safe_float(stats.get("groundOutsToAirouts"), 1.10)
+    # Light shrinkage — GB% stabilises ~70 BIP (~150 BF), so we use the same
+    # `w` as the rate stats (BF / (BF + 50)).
+    gb_pct = w * raw_gb_pct + (1 - w) * 0.43
+
     return {
         "k9":   w_k * raw_k9 + (1 - w_k) * whiff_prior_k9,
         "bb9":  w * raw_bb9 + (1 - w) * LEAGUE_BB9,
@@ -152,6 +167,8 @@ def pitcher_quality_index(stats: dict, sc_stats: dict | None = None) -> dict:
         "hr9":  w * raw_hr9 + (1 - w) * 1.20,
         "fip_minus": w * api_fip_minus + (1 - w) * 100.0,
         "strike_pct": strike_pct,
+        "gb_pct":   gb_pct,
+        "gb_to_fb": gb_to_fb,
         "bf":   bf,
         "ip":   ip,
         "shrink_w": w,
@@ -354,6 +371,10 @@ class GameFeatures:
     # Platoon-adjusted: lineup wOBA vs OPPOSING starter's throwing hand.
     home_lineup_xwoba_vs_hand: float = 0.315
     away_lineup_xwoba_vs_hand: float = 0.315
+    # Lineup-weighted recent form (last-14d, computed over the 9 starters).
+    # Distinguishes "5 of 9 starters in 14d slumps" from "team's bench is hot".
+    home_lineup_woba_recent: float = 0.315; away_lineup_woba_recent: float = 0.315
+    home_lineup_ops_recent:  float = 0.720; away_lineup_ops_recent:  float = 0.720
     # Pipe-delimited starter player_ids ("123|456|...") for downstream use.
     home_lineup_ids: str = ""; away_lineup_ids: str = ""
 
@@ -374,6 +395,7 @@ def build_game_features(
     bat_vs_r: dict[int, dict] | None = None,
     bat_sides: dict[int, str] | None = None,
     pit_throws: dict[int, str] | None = None,
+    batter_recent: dict[int, dict] | None = None,
 ) -> Optional[GameFeatures]:
     """Build one feature row for a scheduled game given pre-game stats lookups.
 
@@ -467,6 +489,18 @@ def build_game_features(
     else:
         a_lu_vs = a_lu_off["woba"]
 
+    # Lineup recent form — aggregate per-batter 14d stats over the actual 9
+    # starters. Falls back to season aggregate when no recent data.
+    _br = batter_recent or {}
+    if home_lu and _bs and _br:
+        h_lu_recent = lf.lineup_recent_form(home_lu, _bs, _br)
+    else:
+        h_lu_recent = {"ops": h_lu_off["ops"], "woba": h_lu_off["woba"]}
+    if away_lu and _bs and _br:
+        a_lu_recent = lf.lineup_recent_form(away_lu, _bs, _br)
+    else:
+        a_lu_recent = {"ops": a_lu_off["ops"], "woba": a_lu_off["woba"]}
+
     return GameFeatures(
         game_pk=game.get("gamePk"),
         date=game.get("officialDate") or (game.get("gameDate", "")[:10]),
@@ -537,6 +571,8 @@ def build_game_features(
         home_lineup_k_pct=h_lu_off["k_pct"], away_lineup_k_pct=a_lu_off["k_pct"],
         home_lineup_bb_pct=h_lu_off["bb_pct"], away_lineup_bb_pct=a_lu_off["bb_pct"],
         home_lineup_xwoba_vs_hand=h_lu_vs, away_lineup_xwoba_vs_hand=a_lu_vs,
+        home_lineup_woba_recent=h_lu_recent["woba"], away_lineup_woba_recent=a_lu_recent["woba"],
+        home_lineup_ops_recent=h_lu_recent["ops"],   away_lineup_ops_recent=a_lu_recent["ops"],
         home_lineup_ids=lf.serialize_lineup_ids(home_lu),
         away_lineup_ids=lf.serialize_lineup_ids(away_lu),
     )
