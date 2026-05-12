@@ -58,6 +58,9 @@ FEATURES = [
     "opp_bp_era", "opp_pit_era_recent",
     # Park
     "park_pf_runs", "park_pf_hr", "park_elev_ft",
+    # Roof indicators — domes and retractables suppress runs more than the park
+    # factor alone captures (May 11 full-season audit: bias +0.69 to +0.81).
+    "park_is_dome", "park_is_retractable",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
@@ -119,6 +122,13 @@ def _half(g: dict, batting: str) -> dict:
         "park_pf_runs":    g["park_pf_runs"],
         "park_pf_hr":      g["park_pf_hr"],
         "park_elev_ft":    g.get("park_elev_ft", 500),
+        # Roof indicators — derive from park_roof string (present in BOTH
+        # 2025 and 2026 CSVs) rather than reading a column that only exists
+        # in 2026. Prevents the era-bias bug where 2025 rows would default
+        # to 0 and the GLM would learn "dome=1 means 2026" instead of the
+        # real roof effect.
+        "park_is_dome":        1 if str(g.get("park_roof", "")).lower() == "dome"        else 0,
+        "park_is_retractable": 1 if str(g.get("park_roof", "")).lower() == "retractable" else 0,
         # Weather
         "runs_mult":       g["runs_mult"],
         "hr_mult":         g["hr_mult"],

@@ -377,6 +377,13 @@ class GameFeatures:
     home_lineup_ops_recent:  float = 0.720; away_lineup_ops_recent:  float = 0.720
     # Pipe-delimited starter player_ids ("123|456|...") for downstream use.
     home_lineup_ids: str = ""; away_lineup_ids: str = ""
+    # Roof indicators — May 11 full-season audit: dome (+0.81) and retractable
+    # (+0.69) games are systematically over-projected by the team-runs model.
+    # Park factor alone doesn't capture the closed-roof effect (reduced wind
+    # variance, neutralized HR conditions, fewer extreme games). Binary flags
+    # let the GLM learn it as a separate coefficient.
+    park_is_dome: int = 0
+    park_is_retractable: int = 0
 
 
 def build_game_features(
@@ -517,6 +524,8 @@ def build_game_features(
         park_pf_hr=park.pf_hr,
         park_elev_ft=park.elevation_ft,
         park_roof=park.roof,
+        park_is_dome=1 if park.roof == "dome" else 0,
+        park_is_retractable=1 if park.roof == "retractable" else 0,
 
         runs_mult=wadj["runs_mult"],
         hr_mult=wadj["hr_mult"],

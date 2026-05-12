@@ -42,6 +42,15 @@ def main():
                 if base in df25.columns:
                     df25[c] = df25[base]
                     continue
+            # Roof flags: derive from park_roof (present in 2025) rather than
+            # filling with mean. Otherwise the GLM learns "dome=1 means 2026"
+            # via era bias, not the real roof effect.
+            if c in ("home_park_is_dome", "away_park_is_dome", "park_is_dome"):
+                df25[c] = (df25["park_roof"].astype(str).str.lower() == "dome").astype(int)
+                continue
+            if c in ("home_park_is_retractable", "away_park_is_retractable", "park_is_retractable"):
+                df25[c] = (df25["park_roof"].astype(str).str.lower() == "retractable").astype(int)
+                continue
             df25[c] = df26[c].mean() if df26[c].dtype != "O" else df26[c].iloc[0]
 
     df = pd.concat([df25, df26], ignore_index=True)
