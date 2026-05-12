@@ -142,6 +142,13 @@ def batter_feature_row(
         "sc_xwoba":      float((sc_stats or {}).get("xwoba")      or 0.315),
         "sc_xba":        float((sc_stats or {}).get("xba")        or 0.245),
         "sc_exit_velo":  float((sc_stats or {}).get("exit_velo")  or 88.5),
+        # Plate discipline — addresses the per-team gap where OPS-weighted
+        # features under-project contact-driven teams (Nationals, Cubs,
+        # Pirates) and over-project power-driven free swingers (Tigers, Phillies).
+        "sc_oz_swing":   float((sc_stats or {}).get("oz_swing")   or 32.0),   # league ~32%
+        "sc_oz_contact": float((sc_stats or {}).get("oz_contact") or 58.0),   # league ~58%
+        "sc_z_swing":    float((sc_stats or {}).get("z_swing")    or 68.0),   # league ~68%
+        "sc_sweet_spot": float((sc_stats or {}).get("sweet_spot") or 33.0),   # league ~33%
     }
 
 
@@ -276,6 +283,17 @@ def pitcher_feature_row(
         "arsenal_fb_ivb":    float((arsenal or {}).get("fb_ivb")          or 15.0),
         "arsenal_sl_spin":   float((arsenal or {}).get("sl_spin")         or 2400.0),
         "arsenal_sl_drop":   float((arsenal or {}).get("sl_drop")         or 3.0),
+        # Pitch effectiveness — plate-discipline metrics against this pitcher.
+        # Captures the same signal per-pitch run-values would convey, but
+        # season-aggregated (per-pitch CSV endpoint not exposed).
+        # - iz_contact:   % of in-zone pitches that get contact (lower = miss-bat stuff)
+        # - induce_chase: % of out-of-zone batters chase (higher = deception/tunnel)
+        # - oz_contact:   % of out-of-zone swings that make contact (lower = unhittable)
+        # - z_swing:      % of in-zone pitches batters swing at (lower = pitcher hides)
+        "sc_iz_contact":   float((sc.get("iz_contact")   or 82.0)),
+        "sc_induce_chase": float((sc.get("induce_chase") or 31.0)),
+        "sc_oz_contact":   float((sc.get("oz_contact")   or 60.0)),
+        "sc_z_swing":      float((sc.get("z_swing")      or 67.0)),
     }
 
 

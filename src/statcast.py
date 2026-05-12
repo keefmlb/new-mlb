@@ -46,8 +46,8 @@ _PRIOR_PA_TEAM = 500    # ≈ 25 games × 20 PA/game
 _PRIOR_BF_PIT  = 150    # ≈ 50 IP
 
 # Cache version suffix — bump when selections change so stale files are ignored
-_BAT_VER = "v3"   # bumped when xba added
-_PIT_VER = "v4"   # v4: added called_strike_percent (csp) to pitcher dict
+_BAT_VER = "v4"   # v4: added plate discipline (oz_swing, oz_contact, z_swing, sweet_spot)
+_PIT_VER = "v6"   # v6: pitcher discipline (iz_contact, oz_swing, oz_contact, z_swing)
 
 
 # ---------- Internals ----------
@@ -120,7 +120,8 @@ def get_batter_stats(year: int) -> dict[int, dict]:
     """
     df = _fetch_leaderboard(
         year, "batter",
-        "pa,xwoba,xba,barrel_batted_rate,hard_hit_percent,avg_exit_velocity",
+        "pa,xwoba,xba,barrel_batted_rate,hard_hit_percent,avg_exit_velocity,"
+        "oz_swing_percent,oz_contact_percent,z_swing_percent,sweet_spot_percent",
         min_pa=10,
         cache_key=f"batter_{_BAT_VER}",
     )
@@ -136,6 +137,15 @@ def get_batter_stats(year: int) -> dict[int, dict]:
             "hard_hit":   _safe(row.get("hard_hit_percent")),
             "exit_velo":  _safe(row.get("avg_exit_velocity")),
             "pa":         _safe(row.get("pa"), 0.0),
+            # Plate discipline — distinguishes small-ball/contact batters (Cubs,
+            # Nationals, Pirates — under-projected on OPS-weighted features)
+            # from free swingers. oz_swing is chase rate; oz_contact is how
+            # often they make contact when fooled. sweet_spot is quality of
+            # contact frequency (optimal launch angle).
+            "oz_swing":   _safe(row.get("oz_swing_percent")),
+            "oz_contact": _safe(row.get("oz_contact_percent")),
+            "z_swing":    _safe(row.get("z_swing_percent")),
+            "sweet_spot": _safe(row.get("sweet_spot_percent")),
         }
     return out
 
@@ -151,7 +161,16 @@ def get_pitcher_stats(year: int) -> dict[int, dict]:
     """
     df = _fetch_leaderboard(
         year, "pitcher",
-        "pa,xera,xwoba,barrel_batted_rate,hard_hit_percent,whiff_percent,k_percent,called_strike_percent",
+        "pa,xera,xwoba,barrel_batted_rate,hard_hit_percent,whiff_percent,k_percent,"
+        "called_strike_percent,"
+        # Pitch effectiveness — per-pitch breakdowns aren't accessible via
+        # the CSV endpoint, but season-level plate-discipline-against tells
+        # the same story:
+        # - iz_contact_percent: in-zone contact rate against (lower = miss-bat)
+        # - oz_swing_percent:   chase rate against (higher = stuff/deception)
+        # - oz_contact_percent: contact on chases (lower = stuff)
+        # - z_swing_percent:    in-zone swing rate (lower = pitcher hides ball)
+        "iz_contact_percent,oz_swing_percent,oz_contact_percent,z_swing_percent",
         min_pa=10,
         cache_key=f"pitcher_{_PIT_VER}",
     )
@@ -169,6 +188,13 @@ def get_pitcher_stats(year: int) -> dict[int, dict]:
             "k_pct":      _safe(row.get("k_percent")),
             "csp":        _safe(row.get("called_strike_percent")),  # called-strike% — stabilises ~10 BF
             "bf":         _safe(row.get("pa"), 0.0),   # Savant returns "pa" for pitchers too
+            # Pitch effectiveness (plate discipline against) — captures the
+            # per-pitch effectiveness signal without per-pitch granularity.
+            # League averages: iz_contact 82%, oz_swing 31%, oz_contact 60%, z_swing 67%.
+            "iz_contact":   _safe(row.get("iz_contact_percent")),  # contact in zone (lower = miss-bat)
+            "induce_chase": _safe(row.get("oz_swing_percent")),    # chase rate vs this pitcher (higher = deception)
+            "oz_contact":   _safe(row.get("oz_contact_percent")),  # contact when chasing (lower = stuff)
+            "z_swing":      _safe(row.get("z_swing_percent")),     # in-zone swing % (lower = pitcher hides ball)
         }
     return out
 
