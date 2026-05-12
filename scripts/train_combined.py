@@ -68,6 +68,8 @@ def main():
                 "off_gidp_pg":   0.75, "off_sb_net_pg": 0.30,
                 "sp_days_rest":  5.0,  "def_oaa":       0.0,
                 "is_day_game":   0,
+                "bp_ip_72h":     2.0,    # league avg ~2 IP/team/day
+                "bp_top_rest":   2.5,    # avg top-relief rest
             }
             matched = False
             for suffix, val in neutral_defaults.items():

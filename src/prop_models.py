@@ -269,6 +269,13 @@ def pitcher_feature_row(
         "arsenal_fb_velo":   float((arsenal or {}).get("fb_avg_velo")     or 93.0),
         "arsenal_velo_gap":  float((arsenal or {}).get("velo_gap")        or 8.0),
         "arsenal_fb_pct":    float((arsenal or {}).get("fastball_pct")    or 55.0),
+        # Spin + induced vertical break — distinguishes "good fastball" from
+        # "fast fastball". High-spin risers (IVB > 17) beat the top of the
+        # zone; gyro/heavy fastballs (IVB < 14) get groundballs but fewer Ks.
+        "arsenal_fb_spin":   float((arsenal or {}).get("fb_avg_spin")     or 2300.0),
+        "arsenal_fb_ivb":    float((arsenal or {}).get("fb_ivb")          or 15.0),
+        "arsenal_sl_spin":   float((arsenal or {}).get("sl_spin")         or 2400.0),
+        "arsenal_sl_drop":   float((arsenal or {}).get("sl_drop")         or 3.0),
     }
 
 

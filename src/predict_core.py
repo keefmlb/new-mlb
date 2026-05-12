@@ -200,8 +200,10 @@ def predict_slate(target_date: date | str | None = None,
     try:
         _box_df = pd.read_csv(ROOT / "data" / "games" / "box_2026.csv")
         pitcher_last_appearance = feats.build_pitcher_last_appearance(_box_df)
+        bullpen_usage = feats.BullpenUsageLookup(_box_df)
     except Exception:
         pitcher_last_appearance = {}
+        bullpen_usage = None
     batter_stats = _stats_lookup(snap["batter_stats"])
     bat_recent = _stats_lookup(snap.get("batter_stats_recent", {}))
     pit_recent = _stats_lookup(snap.get("pitcher_stats_recent", {}))
@@ -275,7 +277,8 @@ def predict_slate(target_date: date | str | None = None,
                                       bat_sides=bat_sides, pit_throws=pit_throws,
                                       batter_recent=bat_recent,
                                       bullpen_stats=bullpen_stats,
-                                      pitcher_last_appearance=pitcher_last_appearance)
+                                      pitcher_last_appearance=pitcher_last_appearance,
+                                      bullpen_usage=bullpen_usage)
         if f is None:
             continue
 

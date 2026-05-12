@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
+import pandas as pd
+
 from . import mlb_api, parks, weather, statcast as sc, lineup_features as lf
 
 
@@ -286,6 +288,81 @@ def build_pitcher_last_appearance(box_df) -> dict[int, str]:
     return {int(pid): str(d) for pid, d in last.items()}
 
 
+class BullpenUsageLookup:
+    """O(1)-per-game lookup of (team_id, game_date) -> bullpen workload.
+
+    Pre-indexes relief appearances by (team_id, date) for fast windowed
+    sums. Captures the bullpen-fatigue signal that static stats miss:
+    teams with 12+ IP burned in the prior 72 hours give up ~0.3-0.5 more
+    runs in close games.
+    """
+    def __init__(self, box_df):
+        from collections import defaultdict
+        self._by_team_date: dict = defaultdict(lambda: {"outs": 0.0, "bf": 0.0})
+        self._top_rels: dict[int, set[int]] = {}      # team_id -> top-3 pids
+        self._last_app: dict[tuple, str] = {}          # (team_id, pid) -> last app date BEFORE we built
+        # Track top-relief appearances per (team, pid) -> sorted list of dates
+        from collections import defaultdict as _dd
+        rel_dates: dict = _dd(list)
+        if box_df is None or len(box_df) == 0:
+            return
+        relief = box_df[(box_df["started"] == False) & (box_df["outs"].fillna(0) > 0)]
+        if "date" not in relief.columns or "team_id" not in relief.columns:
+            return
+
+        # Per-(team, date) outs and BF totals
+        rel_g = relief.groupby(["team_id", "date"]).agg(
+            outs=("outs", "sum"), bf=("bf", "sum"))
+        for (tid, d), row in rel_g.iterrows():
+            self._by_team_date[(int(tid), str(d)[:10])] = {
+                "outs": float(row["outs"]), "bf": float(row["bf"]),
+            }
+
+        # Top-3 relievers per team by appearance count
+        apps = relief.groupby(["team_id", "player_id"]).size().reset_index(name="apps")
+        for tid, grp in apps.groupby("team_id"):
+            self._top_rels[int(tid)] = set(grp.nlargest(3, "apps")["player_id"].astype(int).tolist())
+
+        # Per-(team, pid) sorted appearance dates for rest-day lookups
+        for (tid, pid), grp in relief.groupby(["team_id", "player_id"]):
+            rel_dates[(int(tid), int(pid))] = sorted(grp["date"].astype(str).str[:10].tolist())
+        self._rel_dates = dict(rel_dates)
+
+    def get(self, team_id: int, game_date: str) -> dict:
+        """Return {ip_72h, bf_72h, top_relief_rest_days} for the prior 3
+        calendar days. game_date is the date of the game we're predicting."""
+        from datetime import date as _date, timedelta as _td
+        try:
+            d = _date.fromisoformat(str(game_date)[:10])
+        except Exception:
+            return {"ip_72h": 0.0, "bf_72h": 0.0, "top_relief_rest_days": 7.0}
+
+        outs_sum = 0.0; bf_sum = 0.0
+        for back in (1, 2, 3):
+            key = (int(team_id), (d - _td(days=back)).isoformat())
+            if key in self._by_team_date:
+                outs_sum += self._by_team_date[key]["outs"]
+                bf_sum   += self._by_team_date[key]["bf"]
+
+        # Top-relief rest: max days-since-last-appearance across team's top-3
+        top_pids = self._top_rels.get(int(team_id), set())
+        rest_days_list = []
+        if hasattr(self, "_rel_dates"):
+            for pid in top_pids:
+                dates = self._rel_dates.get((int(team_id), int(pid)), [])
+                # Binary-search the latest date < game_date
+                prior = [x for x in dates if x < d.isoformat()]
+                if prior:
+                    last_d = _date.fromisoformat(prior[-1])
+                    rest_days_list.append((d - last_d).days)
+        top_rest = float(max(rest_days_list)) if rest_days_list else 7.0
+        return {
+            "ip_72h": outs_sum / 3.0,
+            "bf_72h": bf_sum,
+            "top_relief_rest_days": top_rest,
+        }
+
+
 def days_rest(prev_date_str: str | None, game_date_str: str) -> float:
     """Days between two ISO dates. Returns 5.0 (typical SP rotation) when
     prev is None. Capped at 30 days (longer = first start of season or IL).
@@ -370,6 +447,8 @@ def weather_adjustment(park: parks.Park, w: dict) -> dict:
 
     temp_f = w.get("temp_f", 70.0)
     humidity = w.get("humidity", 50.0)
+    dew_point_f = w.get("dew_point_f", 55.0)
+    pressure_hpa = w.get("pressure_hpa", 1013.0)
     wind_mph = w.get("wind_mph", 5.0)
     wind_dir = w.get("wind_dir_deg", 0.0)
     precip = w.get("precip_in", 0.0)
@@ -396,11 +475,22 @@ def weather_adjustment(park: parks.Park, w: dict) -> dict:
     wind_factor_runs = 1.0 + 0.006 * cf_wind     # ~0.6%/mph effective CF wind
     wind_factor_hr = 1.0 + 0.018 * cf_wind       # ~1.8%/mph
 
+    # Pressure factor (HR only): lower pressure -> thinner air -> ball flies
+    # farther. Sea-level baseline ~1013 hPa; storm low 990 hPa = -2.3% density.
+    # Standard relation: ~0.18% HR distance per hPa below 1013 -> ~0.5% HR rate.
+    pressure_factor_hr = 1.0 + 0.005 * (1013.0 - pressure_hpa) / 10.0
+
+    # Dewpoint factor (HR only): humid air is LESS dense than dry air at same
+    # temp (water vapor is lighter than N2/O2). Dewpoint > 65F = humid; < 45F = dry.
+    # Effect is small: ~0.5% HR rate per 20F dewpoint, capped at +/-1%.
+    dewpoint_factor_hr = 1.0 + max(-0.01, min(0.01, 0.00025 * (dew_point_f - 55.0)))
+
     humidity_factor = 1.0 - 0.0005 * (humidity - 50.0)
 
     return {
         "runs_mult": max(0.7, min(1.4, temp_factor * wind_factor_runs * humidity_factor)),
-        "hr_mult":   max(0.5, min(1.7, temp_factor_hr * wind_factor_hr * humidity_factor)),
+        "hr_mult":   max(0.5, min(1.7, temp_factor_hr * wind_factor_hr * humidity_factor
+                                       * pressure_factor_hr * dewpoint_factor_hr)),
         "rain_risk": min(1.0, precip / 0.25),     # 0.25" in the hour ≈ near-certain delay
         "wind_to_cf_mph": cf_wind,
         "temp_f": temp_f,
@@ -509,6 +599,13 @@ class GameFeatures:
     # bias — good defense converts more balls in play to outs. Higher = better.
     home_def_oaa: float = 0.0
     away_def_oaa: float = 0.0
+    # Bullpen workload (prior 72hr). Fatigued bullpens give up more in close
+    # games. top_relief_rest_days = days since last appearance for the most-
+    # rested of the team's top-3 highest-leverage relievers.
+    home_bp_ip_72h: float = 0.0
+    away_bp_ip_72h: float = 0.0
+    home_bp_top_rest: float = 7.0
+    away_bp_top_rest: float = 7.0
     # Sequential offense — small-ball / situational hitting metrics.
     # Defaults match league averages so older rows still produce sane outputs.
     home_off_sb_pg: float = 0.60;     away_off_sb_pg: float = 0.60
@@ -537,6 +634,7 @@ def build_game_features(
     batter_recent: dict[int, dict] | None = None,
     bullpen_stats: dict[int, dict] | None = None,
     pitcher_last_appearance: dict[int, str] | None = None,
+    bullpen_usage: "BullpenUsageLookup | None" = None,
 ) -> Optional[GameFeatures]:
     """Build one feature row for a scheduled game given pre-game stats lookups.
 
@@ -733,6 +831,15 @@ def build_game_features(
         # Team defensive value (OAA from Statcast)
         home_def_oaa=float((sc_team_def or {}).get(home_tid, {}).get("oaa", 0.0) or 0.0),
         away_def_oaa=float((sc_team_def or {}).get(away_tid, {}).get("oaa", 0.0) or 0.0),
+        # Bullpen 72hr workload (prior 3 days of relief outings)
+        home_bp_ip_72h=float((bullpen_usage.get(home_tid, when.date().isoformat())
+                              if bullpen_usage else {"ip_72h": 0.0}).get("ip_72h", 0.0)),
+        away_bp_ip_72h=float((bullpen_usage.get(away_tid, when.date().isoformat())
+                              if bullpen_usage else {"ip_72h": 0.0}).get("ip_72h", 0.0)),
+        home_bp_top_rest=float((bullpen_usage.get(home_tid, when.date().isoformat())
+                                if bullpen_usage else {"top_relief_rest_days": 7.0}).get("top_relief_rest_days", 7.0)),
+        away_bp_top_rest=float((bullpen_usage.get(away_tid, when.date().isoformat())
+                                if bullpen_usage else {"top_relief_rest_days": 7.0}).get("top_relief_rest_days", 7.0)),
         # Pitcher days rest
         home_sp_days_rest=days_rest(
             (pitcher_last_appearance or {}).get(home_sp_id) if home_sp_id else None,

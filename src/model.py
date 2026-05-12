@@ -75,6 +75,9 @@ FEATURES = [
     "is_day_game",
     # Defensive value of opposing team — better defense suppresses our offense
     "opp_def_oaa",
+    # Bullpen fatigue of opposing team: high recent workload + no rested
+    # high-leverage arm -> more late-inning runs scored against them.
+    "opp_bp_ip_72h", "opp_bp_top_rest",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
@@ -156,6 +159,10 @@ def _half(g: dict, batting: str) -> dict:
         "is_day_game":      _pick(g, "is_day_game", 0),
         # Opposing team's defense (better defense -> we score less)
         "opp_def_oaa":      _pick(g, f"{o}_def_oaa", 0.0),
+        # Opposing bullpen workload: more IP last 72hr -> more fatigue -> we score more.
+        # top_rest = days since highest-leverage relievers last pitched (lower = tired).
+        "opp_bp_ip_72h":    _pick(g, f"{o}_bp_ip_72h", 0.0),
+        "opp_bp_top_rest":  _pick(g, f"{o}_bp_top_rest", 7.0),
         # Weather
         "runs_mult":       g["runs_mult"],
         "hr_mult":         g["hr_mult"],

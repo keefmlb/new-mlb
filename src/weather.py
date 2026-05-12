@@ -60,7 +60,8 @@ def get_weather(lat: float, lon: float, when: datetime, retries: int = 2) -> dic
         "latitude": lat,
         "longitude": lon,
         "hourly": ",".join([
-            "temperature_2m", "relative_humidity_2m", "precipitation",
+            "temperature_2m", "relative_humidity_2m", "dew_point_2m",
+            "precipitation",
             "wind_speed_10m", "wind_direction_10m", "surface_pressure",
             "cloud_cover",
         ]),
@@ -106,6 +107,7 @@ def get_weather(lat: float, lon: float, when: datetime, retries: int = 2) -> dic
     out = {
         "temp_f":          _val(hourly.get("temperature_2m"),     idx, default=70.0),
         "humidity":        _val(hourly.get("relative_humidity_2m"), idx, default=50.0),
+        "dew_point_f":     _val(hourly.get("dew_point_2m"),       idx, default=55.0),
         "precip_in":       _val(hourly.get("precipitation"),       idx, default=0.0),
         "wind_mph":        _val(hourly.get("wind_speed_10m"),      idx, default=5.0),
         "wind_dir_deg":    _val(hourly.get("wind_direction_10m"),  idx, default=0.0),

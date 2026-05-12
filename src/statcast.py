@@ -315,18 +315,18 @@ def get_pitcher_arsenal(year: int) -> dict[int, dict]:
     effectiveness which raw stats miss.
     """
     sel = ("pitch_count,"
-           "n_ff_formatted,ff_avg_speed,"
-           "n_si_formatted,si_avg_speed,"
+           "n_ff_formatted,ff_avg_speed,ff_avg_spin,ff_avg_break_z_induced,"
+           "n_si_formatted,si_avg_speed,si_avg_spin,si_avg_break_z_induced,"
            "n_fc_formatted,fc_avg_speed,"
-           "n_sl_formatted,sl_avg_speed,"
-           "n_cu_formatted,cu_avg_speed,"
-           "n_ch_formatted,ch_avg_speed,"
+           "n_sl_formatted,sl_avg_speed,sl_avg_spin,sl_avg_break_z_induced,"
+           "n_cu_formatted,cu_avg_speed,cu_avg_spin,"
+           "n_ch_formatted,ch_avg_speed,ch_avg_break_z_induced,"
            "n_fs_formatted,fs_avg_speed,"
-           "n_st_formatted,st_avg_speed")
+           "n_st_formatted,st_avg_speed,st_avg_spin")
     try:
         df = _fetch_leaderboard(
             year, "pitcher", sel, min_pa=30,
-            cache_key=f"arsenal_v1",
+            cache_key=f"arsenal_v2",
         )
     except Exception as exc:
         print(f"[statcast] arsenal fetch failed: {exc}; returning empty")
@@ -362,12 +362,38 @@ def get_pitcher_arsenal(year: int) -> dict[int, dict]:
         # Velo gap: FB velo - changeup velo (deception measure)
         ch_velo = velos.get("ch")
         velo_gap = (fb_avg_velo - ch_velo) if ch_velo else 8.0   # league avg ~8 mph
+        # Average fastball spin (FF + SI weighted by usage). High spin = "rise"
+        # on fastballs which beats high pitches. League avg ~2300 RPM; elite 2500+.
+        fb_spin_sum = 0.0; fb_spin_w = 0.0
+        for c in ("ff", "si"):
+            sp = _safe(row.get(f"{c}_avg_spin"))
+            if sp and c in usages:
+                fb_spin_sum += sp * usages[c]
+                fb_spin_w   += usages[c]
+        fb_avg_spin = (fb_spin_sum / fb_spin_w) if fb_spin_w > 0 else 2300.0
+        # Fastball induced vertical break (FF or SI). High IVB = "rises" relative
+        # to gravity baseline; ~15in is average, 18+ is elite "high-spin riser".
+        fb_ivb_sum = 0.0; fb_ivb_w = 0.0
+        for c in ("ff", "si"):
+            ivb = _safe(row.get(f"{c}_avg_break_z_induced"))
+            if ivb is not None and c in usages:
+                fb_ivb_sum += ivb * usages[c]
+                fb_ivb_w   += usages[c]
+        fb_ivb = (fb_ivb_sum / fb_ivb_w) if fb_ivb_w > 0 else 15.0
+        # Slider spin and drop -- sweepers have low IVB, gyro sliders moderate
+        sl_spin = _safe(row.get("sl_avg_spin")) or 2400.0
+        sl_drop = _safe(row.get("sl_avg_break_z_induced"))
+        sl_drop = sl_drop if sl_drop is not None else 3.0
         out[int(pid)] = {
             "n_pitches":       _safe(row.get("pitch_count"), 0.0),
             "num_pitch_types": float(num_pt),
             "fb_avg_velo":     fb_avg_velo,
             "velo_gap":        velo_gap,
             "fastball_pct":    fb_pct,
+            "fb_avg_spin":     fb_avg_spin,
+            "fb_ivb":          fb_ivb,
+            "sl_spin":         sl_spin,
+            "sl_drop":         sl_drop,
         }
     return out
 

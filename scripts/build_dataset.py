@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import pandas as pd
 from src import mlb_api, features as feats, statcast as sc, umpire as ump, lineup_features as lf
 
 SEASON = 2026
@@ -158,6 +159,10 @@ def main():
     # Pitcher last-appearance lookup: built incrementally as we process games
     # in date order, so each row only sees prior appearances (no leakage).
     _pitcher_last_app: dict[int, str] = {}
+    # Bullpen 72hr usage: also built incrementally as we accumulate relief
+    # appearances. Each new game queries the lookup BEFORE adding its own
+    # box rows -- no leakage of future games into past predictions.
+    _bullpen_rel_log: list[dict] = []  # accumulated relief outings
     # Sort games by date to ensure incremental accumulation works
     try:
         games = sorted(games, key=lambda g: g.get("officialDate") or g.get("gameDate", "")[:10])
@@ -240,7 +245,9 @@ def main():
                                           pit_throws=pit_throws,
                                           batter_recent=g_bat_recent,
                                           bullpen_stats=g_bullpen_stats,
-                                          pitcher_last_appearance=_pitcher_last_app)
+                                          pitcher_last_appearance=_pitcher_last_app,
+                                          bullpen_usage=feats.BullpenUsageLookup(
+                                              pd.DataFrame(_bullpen_rel_log)) if _bullpen_rel_log else None)
         except Exception as e:
             print(f"  feature build failed for game {g.get('gamePk')}: {e}")
             continue
@@ -323,6 +330,16 @@ def main():
                             _pid = person.get("id")
                             if _pid:
                                 _pitcher_last_app[int(_pid)] = gdate
+                            # Track relief outings for bullpen-usage lookup
+                            if not row["started"] and row["outs"] > 0:
+                                _bullpen_rel_log.append({
+                                    "team_id": row["team_id"],
+                                    "player_id": row["player_id"],
+                                    "date": row["date"],
+                                    "outs": row["outs"],
+                                    "bf": row["bf"],
+                                    "started": False,
+                                })
             except Exception as e:
                 print(f"  boxscore fetch failed for {f.game_pk}: {e}")
 
