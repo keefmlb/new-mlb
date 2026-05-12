@@ -141,10 +141,11 @@ def main():
                            for pid, s in bat_stats.items() if s.get("team_id")}
         sc_team_bat = sc.get_team_batting(SEASON, player_team_map)
         sc_pit      = sc.get_pitcher_stats(SEASON)
-        print(f"       {len(sc_team_bat)} teams  {len(sc_pit)} pitchers")
+        sc_team_def = sc.get_team_fielding(SEASON, player_team_map)
+        print(f"       {len(sc_team_bat)} teams  {len(sc_pit)} pitchers  {len(sc_team_def)} team-def")
     except Exception as e:
         print(f"       WARNING: Statcast fetch failed ({e}) — using league-average fallbacks")
-        sc_team_bat, sc_pit = {}, {}
+        sc_team_bat, sc_pit, sc_team_def = {}, {}, {}
 
     print(f"[5/6] Pulling schedule {SEASON_START} through {today + timedelta(days=2)}...")
     games = mlb_api.schedule_range(SEASON_START, today + timedelta(days=2))
@@ -154,6 +155,14 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[6/6] Building feature rows + boxscore extracts...")
+    # Pitcher last-appearance lookup: built incrementally as we process games
+    # in date order, so each row only sees prior appearances (no leakage).
+    _pitcher_last_app: dict[int, str] = {}
+    # Sort games by date to ensure incremental accumulation works
+    try:
+        games = sorted(games, key=lambda g: g.get("officialDate") or g.get("gameDate", "")[:10])
+    except Exception:
+        pass
     feat_rows: list[dict] = []
     box_rows: list[dict] = []
     n_skipped = 0
@@ -197,6 +206,9 @@ def main():
             g_team_pit_recent = team_pit_recent
             g_bat_stats = bat_stats
             g_bat_recent = bat_recent
+        # Per-game (or current) reliever-only team aggregates from individual
+        # pitcher stats — true bullpen ERA/FIP for late-game leverage.
+        g_bullpen_stats = feats.bullpen_stats_by_team(g_pit_stats)
 
         # For finished games, fetch boxscore now to recover the actual starting
         # lineup so lineup-weighted features reflect who really played.
@@ -218,6 +230,7 @@ def main():
                                           team_pit_recent=g_team_pit_recent,
                                           sc_team_bat=sc_team_bat,
                                           sc_pit=sc_pit,
+                                          sc_team_def=sc_team_def,
                                           home_lineup_ids=h_lu_ids,
                                           away_lineup_ids=a_lu_ids,
                                           batter_stats=g_bat_stats,
@@ -225,7 +238,9 @@ def main():
                                           bat_vs_r=bat_vs_r,
                                           bat_sides=bat_sides,
                                           pit_throws=pit_throws,
-                                          batter_recent=g_bat_recent)
+                                          batter_recent=g_bat_recent,
+                                          bullpen_stats=g_bullpen_stats,
+                                          pitcher_last_appearance=_pitcher_last_app)
         except Exception as e:
             print(f"  feature build failed for game {g.get('gamePk')}: {e}")
             continue
@@ -301,6 +316,13 @@ def main():
                             "started": (pit.get("gamesStarted", 0) or 0) > 0,
                         }
                         box_rows.append(row)
+                        # Update pitcher last-appearance map AFTER processing
+                        # this game — so future games see this date as the
+                        # previous appearance (no leakage of future games).
+                        if pit and feats._ip_to_outs(pit.get("inningsPitched")) > 0:
+                            _pid = person.get("id")
+                            if _pid:
+                                _pitcher_last_app[int(_pid)] = gdate
             except Exception as e:
                 print(f"  boxscore fetch failed for {f.game_pk}: {e}")
 

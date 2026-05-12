@@ -51,6 +51,24 @@ def main():
             if c in ("home_park_is_retractable", "away_park_is_retractable", "park_is_retractable"):
                 df25[c] = (df25["park_roof"].astype(str).str.lower() == "retractable").astype(int)
                 continue
+            # Sequential offense / days_rest / day_game / OAA — fill with
+            # NEUTRAL league-average defaults rather than 2026 mean (which
+            # would create era contrast). 2025 rows become "neutral baseline"
+            # and only 2026 variation drives the coefficient learning.
+            neutral_defaults = {
+                "off_sb_pg":     0.60, "off_sf_pg":     0.30,
+                "off_gidp_pg":   0.75, "off_sb_net_pg": 0.30,
+                "sp_days_rest":  5.0,  "def_oaa":       0.0,
+                "is_day_game":   0,
+            }
+            matched = False
+            for suffix, val in neutral_defaults.items():
+                if c.endswith(suffix):
+                    df25[c] = val
+                    matched = True
+                    break
+            if matched:
+                continue
             df25[c] = df26[c].mean() if df26[c].dtype != "O" else df26[c].iloc[0]
 
     df = pd.concat([df25, df26], ignore_index=True)

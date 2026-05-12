@@ -193,6 +193,15 @@ def predict_slate(target_date: date | str | None = None,
     team_off = _stats_lookup(snap["team_off"])
     team_pit = _stats_lookup(snap["team_pit"])
     pitcher_stats = _stats_lookup(snap["pitcher_stats"])
+    # Reliever-only team aggregates for true bullpen ERA/FIP (vs the team_pit
+    # staff-wide aggregate dominated by starter innings).
+    bullpen_stats = feats.bullpen_stats_by_team(pitcher_stats)
+    # Pitcher last-appearance map for days-rest computation
+    try:
+        _box_df = pd.read_csv(ROOT / "data" / "games" / "box_2026.csv")
+        pitcher_last_appearance = feats.build_pitcher_last_appearance(_box_df)
+    except Exception:
+        pitcher_last_appearance = {}
     batter_stats = _stats_lookup(snap["batter_stats"])
     bat_recent = _stats_lookup(snap.get("batter_stats_recent", {}))
     pit_recent = _stats_lookup(snap.get("pitcher_stats_recent", {}))
@@ -210,8 +219,9 @@ def predict_slate(target_date: date | str | None = None,
         sc_team_bat = sc.get_team_batting(2026, _player_team_map)
         sc_pit_data = sc.get_pitcher_stats(2026)
         sc_bat_data = sc.get_batter_stats(2026)
+        sc_team_def = sc.get_team_fielding(2026, _player_team_map)
     except Exception:
-        sc_team_bat, sc_pit_data, sc_bat_data = {}, {}, {}
+        sc_team_bat, sc_pit_data, sc_bat_data, sc_team_def = {}, {}, {}, {}
 
     model = mdl.TeamScoreModel.load(ROOT / "data" / "models" / "team_runs.joblib")
     _model_dir = ROOT / "data" / "models"
@@ -256,12 +266,15 @@ def predict_slate(target_date: date | str | None = None,
 
         f = feats.build_game_features(g, team_off, team_pit, pitcher_stats,
                                       sc_team_bat=sc_team_bat, sc_pit=sc_pit_data,
+                                      sc_team_def=sc_team_def,
                                       home_lineup_ids=home_lineup_ids,
                                       away_lineup_ids=away_lineup_ids,
                                       batter_stats=batter_stats,
                                       bat_vs_l=bat_vs_l, bat_vs_r=bat_vs_r,
                                       bat_sides=bat_sides, pit_throws=pit_throws,
-                                      batter_recent=bat_recent)
+                                      batter_recent=bat_recent,
+                                      bullpen_stats=bullpen_stats,
+                                      pitcher_last_appearance=pitcher_last_appearance)
         if f is None:
             continue
 

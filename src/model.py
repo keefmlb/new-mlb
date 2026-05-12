@@ -39,6 +39,10 @@ FEATURES = [
     # Lineup-weighted offense — replaces team-aggregate OPS/BB%/wOBA. PA-weighted
     # over the 9 confirmed starters, so role-player drift doesn't dilute the signal.
     "lineup_ops", "lineup_bb_pct", "lineup_woba",
+    # Sequential offense — small-ball metrics that OPS/wOBA-weighted features
+    # miss. Closes the per-team bias gap for contact-driven teams (Nationals
+    # -0.79, Cubs -0.62, Brewers -0.42) vs. power-driven (Phillies +0.63).
+    "off_sb_net_pg", "off_sf_pg", "off_gidp_pg",
     # NOTE: lineup_woba_recent is computed and persisted on every game row
     # (see GameFeatures.home_lineup_woba_recent), but NOT included in FEATURES.
     # 2025 training rows filled it with the league default (0.315) while 2026
@@ -61,6 +65,12 @@ FEATURES = [
     # Roof indicators — domes and retractables suppress runs more than the park
     # factor alone captures (May 11 full-season audit: bias +0.69 to +0.81).
     "park_is_dome", "park_is_retractable",
+    # Pitcher rest (of the opposing starter we're hitting against)
+    "opp_sp_days_rest",
+    # Day game flag
+    "is_day_game",
+    # Defensive value of opposing team — better defense suppresses our offense
+    "opp_def_oaa",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
@@ -107,6 +117,11 @@ def _half(g: dict, batting: str) -> dict:
         "off_babip":     own("off_babip"),
         "off_rpg_recent": own("off_rpg_recent"),
         "off_ops_recent": own("off_ops_recent"),
+        # Sequential offense — small-ball metrics that OPS/wOBA miss
+        "off_sb_pg":     own("off_sb_pg")     if f"{h}_off_sb_pg" in g else 0.60,
+        "off_sf_pg":     own("off_sf_pg")     if f"{h}_off_sf_pg" in g else 0.30,
+        "off_gidp_pg":   own("off_gidp_pg")   if f"{h}_off_gidp_pg" in g else 0.75,
+        "off_sb_net_pg": own("off_sb_net_pg") if f"{h}_off_sb_net_pg" in g else 0.30,
         # Opposing starter
         "opp_sp_fip":      opp("sp_fip"),
         "opp_sp_xfip":     opp("sp_xfip"),
@@ -129,6 +144,13 @@ def _half(g: dict, batting: str) -> dict:
         # real roof effect.
         "park_is_dome":        1 if str(g.get("park_roof", "")).lower() == "dome"        else 0,
         "park_is_retractable": 1 if str(g.get("park_roof", "")).lower() == "retractable" else 0,
+        # Pitcher days rest — applies to the OPPOSING starter (relevant for
+        # how much offense scores). 5 = typical, <4 = quick rest, >7 = rust.
+        "opp_sp_days_rest": _pick(g, f"{o}_sp_days_rest", 5.0),
+        # Day/night flag
+        "is_day_game":      _pick(g, "is_day_game", 0),
+        # Opposing team's defense (better defense -> we score less)
+        "opp_def_oaa":      _pick(g, f"{o}_def_oaa", 0.0),
         # Weather
         "runs_mult":       g["runs_mult"],
         "hr_mult":         g["hr_mult"],

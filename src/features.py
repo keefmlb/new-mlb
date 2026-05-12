@@ -224,6 +224,26 @@ def team_offense_index(stats: dict) -> dict:
         woba_lite = 0.315
     woba_lite = w * woba_lite + (1 - w) * 0.315
 
+    # Sequential / situational offense — captures the gap between power-driven
+    # teams (Phillies, Tigers, Rockies — we over-project) and small-ball teams
+    # (Nationals, Cubs, Brewers — we under-project). OPS/wOBA don't see SF/SB/
+    # situational hitting; these features expose that signal directly.
+    sb        = _safe_float(stats.get("stolenBases"))
+    cs        = _safe_float(stats.get("caughtStealing"))
+    sf        = _safe_float(stats.get("sacFlies"))
+    sb_bunts  = _safe_float(stats.get("sacBunts"))
+    gidp      = _safe_float(stats.get("groundIntoDoublePlay"))
+    lob       = _safe_float(stats.get("leftOnBase"))
+    # Per-game rates (shrunk lightly toward league at prior=15 games)
+    g_prior   = 15.0
+    g_w       = g / (g + g_prior) if g > 0 else 0.0
+    sb_pg     = g_w * (sb / g)   + (1 - g_w) * 0.60   # league ~0.6 SB/game
+    sf_pg     = g_w * (sf / g)   + (1 - g_w) * 0.30   # league ~0.3 SF/game
+    gidp_pg   = g_w * (gidp / g) + (1 - g_w) * 0.75   # league ~0.75 GIDP/game
+    lob_pg    = g_w * (lob / g)  + (1 - g_w) * 6.7    # league ~6.7 LOB/game
+    # SB net = stolen - caught (running game value, ~+0.25 runs per net SB)
+    sb_net_pg = g_w * ((sb - cs) / g) + (1 - g_w) * 0.30
+
     return {
         "rpg":   w * rpg_raw + (1 - w) * LEAGUE_RPG,
         "k_pct": w * k_pct_raw + (1 - w) * 0.225,
@@ -235,12 +255,105 @@ def team_offense_index(stats: dict) -> dict:
         "woba":  woba_lite,
         "hr_rate": (hr / pa) if pa else 0.030,
         "g":     g,
+        # Sequential offense
+        "sb_pg":     sb_pg,
+        "sf_pg":     sf_pg,
+        "gidp_pg":   gidp_pg,
+        "lob_pg":    lob_pg,
+        "sb_net_pg": sb_net_pg,
     }
 
 
 def team_pitching_index(stats: dict) -> dict:
     """Bullpen / staff-wide pitching profile (used for relief innings)."""
     return pitcher_quality_index(stats)
+
+
+def build_pitcher_last_appearance(box_df) -> dict[int, str]:
+    """Walk the box-score dataframe and return {pitcher_id -> latest ISO date
+    they pitched in}. Used to compute days-rest at game-build time.
+    """
+    if box_df is None or len(box_df) == 0:
+        return {}
+    pit_rows = box_df[(box_df["outs"].fillna(0) > 0)] if "outs" in box_df.columns else box_df
+    if "started" in pit_rows.columns:
+        # Include both starters and relievers — rest applies to either
+        pass
+    # Group by player_id, find max date
+    if "player_id" not in pit_rows.columns or "date" not in pit_rows.columns:
+        return {}
+    last = pit_rows.groupby("player_id")["date"].max().to_dict()
+    return {int(pid): str(d) for pid, d in last.items()}
+
+
+def days_rest(prev_date_str: str | None, game_date_str: str) -> float:
+    """Days between two ISO dates. Returns 5.0 (typical SP rotation) when
+    prev is None. Capped at 30 days (longer = first start of season or IL).
+    """
+    if not prev_date_str:
+        return 5.0
+    try:
+        from datetime import date as _date
+        a = _date.fromisoformat(str(prev_date_str)[:10])
+        b = _date.fromisoformat(str(game_date_str)[:10])
+        diff = (b - a).days
+        return max(0.0, min(30.0, float(diff)))
+    except Exception:
+        return 5.0
+
+
+def bullpen_stats_by_team(pitcher_stats: dict[int, dict]) -> dict[int, dict]:
+    """Aggregate per-team RELIEVER-ONLY pitching stats from individual pitcher
+    season lines. A pitcher is treated as a reliever if (gamesStarted == 0 and
+    gamesPitched > 0) OR (gamesStarted / gamesPitched < 0.20). The latter
+    catches long-relief / occasional-starter types.
+
+    Returns dict[team_id -> {sum of IP, ER, BB, K, HR, H, BF}]. Pass this to
+    `pitcher_quality_index` to get a true bullpen ERA/FIP/WHIP instead of the
+    staff-wide aggregate (which is dominated by 5x more starter innings).
+    """
+    out: dict[int, dict] = {}
+    for pid, stats in (pitcher_stats or {}).items():
+        tid = stats.get("team_id")
+        if tid is None:
+            continue
+        gp = _safe_float(stats.get("gamesPitched"))
+        gs = _safe_float(stats.get("gamesStarted"))
+        if gp <= 0:
+            continue
+        is_reliever = (gs == 0) or (gs / gp < 0.20)
+        if not is_reliever:
+            continue
+        outs = _ip_to_outs(stats.get("inningsPitched", 0))
+        if outs <= 0:
+            continue
+        acc = out.setdefault(int(tid), {
+            "outs": 0.0, "earnedRuns": 0.0, "baseOnBalls": 0.0,
+            "strikeOuts": 0.0, "homeRuns": 0.0, "hits": 0.0, "battersFaced": 0.0,
+        })
+        acc["outs"] += outs
+        acc["earnedRuns"]   += _safe_float(stats.get("earnedRuns"))
+        acc["baseOnBalls"]  += _safe_float(stats.get("baseOnBalls"))
+        acc["strikeOuts"]   += _safe_float(stats.get("strikeOuts"))
+        acc["homeRuns"]     += _safe_float(stats.get("homeRuns"))
+        acc["hits"]         += _safe_float(stats.get("hits"))
+        acc["battersFaced"] += _safe_float(stats.get("battersFaced"))
+
+    # Re-format for pitcher_quality_index consumption (it wants string IP)
+    result: dict[int, dict] = {}
+    for tid, acc in out.items():
+        outs = acc["outs"]
+        ip_str = f"{int(outs // 3)}.{int(outs % 3)}"
+        result[tid] = {
+            "inningsPitched": ip_str,
+            "earnedRuns":   acc["earnedRuns"],
+            "baseOnBalls":  acc["baseOnBalls"],
+            "strikeOuts":   acc["strikeOuts"],
+            "homeRuns":     acc["homeRuns"],
+            "hits":         acc["hits"],
+            "battersFaced": acc["battersFaced"],
+        }
+    return result
 
 
 # ---------- Weather effects ----------
@@ -384,6 +497,23 @@ class GameFeatures:
     # let the GLM learn it as a separate coefficient.
     park_is_dome: int = 0
     park_is_retractable: int = 0
+    # Pitcher rest — captures fatigue / quick-rest dropoff (4-day rest worse
+    # than 5-day) and rust (10+ days since last appearance).
+    home_sp_days_rest: float = 5.0
+    away_sp_days_rest: float = 5.0
+    # Day/night flag derived from first_pitch_utc hour (Eastern). Day games
+    # historically slightly lower-scoring; explicit flag lets model see it.
+    is_day_game: int = 0
+    # Defensive value (Statcast OAA summed per team). Affects pitcher H/ER
+    # bias — good defense converts more balls in play to outs. Higher = better.
+    home_def_oaa: float = 0.0
+    away_def_oaa: float = 0.0
+    # Sequential offense — small-ball / situational hitting metrics.
+    # Defaults match league averages so older rows still produce sane outputs.
+    home_off_sb_pg: float = 0.60;     away_off_sb_pg: float = 0.60
+    home_off_sf_pg: float = 0.30;     away_off_sf_pg: float = 0.30
+    home_off_gidp_pg: float = 0.75;   away_off_gidp_pg: float = 0.75
+    home_off_sb_net_pg: float = 0.30; away_off_sb_net_pg: float = 0.30
 
 
 def build_game_features(
@@ -395,6 +525,7 @@ def build_game_features(
     team_pit_recent: dict[int, dict] | None = None,
     sc_team_bat: dict[int, dict] | None = None,
     sc_pit: dict[int, dict] | None = None,
+    sc_team_def: dict[int, dict] | None = None,
     home_lineup_ids: list[int] | None = None,
     away_lineup_ids: list[int] | None = None,
     batter_stats: dict[int, dict] | None = None,
@@ -403,6 +534,8 @@ def build_game_features(
     bat_sides: dict[int, str] | None = None,
     pit_throws: dict[int, str] | None = None,
     batter_recent: dict[int, dict] | None = None,
+    bullpen_stats: dict[int, dict] | None = None,
+    pitcher_last_appearance: dict[int, str] | None = None,
 ) -> Optional[GameFeatures]:
     """Build one feature row for a scheduled game given pre-game stats lookups.
 
@@ -425,8 +558,14 @@ def build_game_features(
 
     home_off = team_offense_index(team_off.get(home_tid, {}))
     away_off = team_offense_index(team_off.get(away_tid, {}))
-    home_pit = team_pitching_index(team_pit.get(home_tid, {}))
-    away_pit = team_pitching_index(team_pit.get(away_tid, {}))
+    # Bullpen-only stats when available; falls back to team aggregate. The team
+    # aggregate is dominated by starter innings (~70%), so its "bullpen ERA" is
+    # really a staff-wide ERA — drag-dominated by 1-2 ace starters or hurt by
+    # one bad starter rotation. Reliever-only aggregation gives a much truer
+    # picture of late-inning leverage for close games.
+    _bp = bullpen_stats or {}
+    home_pit = team_pitching_index(_bp.get(home_tid) or team_pit.get(home_tid, {}))
+    away_pit = team_pitching_index(_bp.get(away_tid) or team_pit.get(away_tid, {}))
 
     # Recent form: blend last-14-day stats with season; defaults to season if no recent data.
     tor = team_off_recent or {}
@@ -584,4 +723,25 @@ def build_game_features(
         home_lineup_ops_recent=h_lu_recent["ops"],   away_lineup_ops_recent=a_lu_recent["ops"],
         home_lineup_ids=lf.serialize_lineup_ids(home_lu),
         away_lineup_ids=lf.serialize_lineup_ids(away_lu),
+        # Sequential offense (PA-weighted small-ball metrics)
+        home_off_sb_pg=home_off["sb_pg"],     away_off_sb_pg=away_off["sb_pg"],
+        home_off_sf_pg=home_off["sf_pg"],     away_off_sf_pg=away_off["sf_pg"],
+        home_off_gidp_pg=home_off["gidp_pg"], away_off_gidp_pg=away_off["gidp_pg"],
+        home_off_sb_net_pg=home_off["sb_net_pg"], away_off_sb_net_pg=away_off["sb_net_pg"],
+        # Team defensive value (OAA from Statcast)
+        home_def_oaa=float((sc_team_def or {}).get(home_tid, {}).get("oaa", 0.0) or 0.0),
+        away_def_oaa=float((sc_team_def or {}).get(away_tid, {}).get("oaa", 0.0) or 0.0),
+        # Pitcher days rest
+        home_sp_days_rest=days_rest(
+            (pitcher_last_appearance or {}).get(home_sp_id) if home_sp_id else None,
+            when.date().isoformat(),
+        ),
+        away_sp_days_rest=days_rest(
+            (pitcher_last_appearance or {}).get(away_sp_id) if away_sp_id else None,
+            when.date().isoformat(),
+        ),
+        # Day-game flag: first_pitch hour (Eastern) < 17:00 -> day game.
+        # Open-Meteo gave us the local hour; the game time is UTC. Use UTC hour
+        # converted to ET (UTC-4 during DST). 13-21 UTC = 9am-5pm ET ~= day game.
+        is_day_game=1 if 13 <= when.hour <= 20 else 0,
     )

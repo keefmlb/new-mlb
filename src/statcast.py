@@ -219,6 +219,83 @@ def get_team_batting(year: int,
     return out
 
 
+# ---------- Fielding / defense ----------
+
+def get_team_fielding(year: int,
+                      player_team_map: dict[int, int]) -> dict[int, dict]:
+    """Per-team aggregated defensive value from Statcast fielder leaderboard.
+
+    Pulls Outs Above Average (OAA) and Fielding Runs Value — Savant's
+    park/defense-neutral defensive metrics. Sums per-fielder values to team.
+
+    OAA: extra outs vs an average fielder (positive = better). League neutral 0.
+    FRV: defensive runs above average. About OAA * 0.78 (one out ~= 0.78 runs).
+
+    Pass the same player_team_map used for batting (player_id -> team_id).
+    Returns dict[team_id -> {oaa, frv, n_fielders}].
+    """
+    try:
+        df = _fetch_leaderboard(
+            year, "fielder",
+            "fielding_runs_prevented,outs_above_average",
+            min_pa=1,                  # min attempts, not PA
+            cache_key=f"fielder_v1",
+        )
+    except Exception as exc:
+        print(f"[statcast] fielder fetch failed: {exc}; returning empty")
+        return {}
+
+    out: dict[int, dict] = {}
+    for _, row in df.iterrows():
+        pid = _safe(row.get("player_id"))
+        if pid is None:
+            continue
+        tid = player_team_map.get(int(pid))
+        if tid is None:
+            continue
+        oaa = _safe(row.get("outs_above_average"), 0.0)
+        frv = _safe(row.get("fielding_runs_prevented"), 0.0)
+        if oaa is None and frv is None:
+            continue
+        acc = out.setdefault(int(tid), {"oaa": 0.0, "frv": 0.0, "n": 0})
+        acc["oaa"] += (oaa or 0.0)
+        acc["frv"] += (frv or 0.0)
+        acc["n"]   += 1
+    return out
+
+
+# ---------- Catcher framing ----------
+
+def get_catcher_framing(year: int) -> dict[int, dict]:
+    """Per-catcher framing runs from Statcast.
+
+    framing_runs: extra called strikes converted to runs (positive = better).
+    A great framer is worth +10 runs/season; average 0; bad -10.
+
+    Returns dict[player_id -> {framing_runs}].
+    """
+    try:
+        df = _fetch_leaderboard(
+            year, "catcher",
+            "runs_extra_strikes",
+            min_pa=1,
+            cache_key=f"catcher_v1",
+        )
+    except Exception as exc:
+        print(f"[statcast] catcher fetch failed: {exc}; returning empty")
+        return {}
+
+    out: dict[int, dict] = {}
+    for _, row in df.iterrows():
+        pid = _safe(row.get("player_id"))
+        if pid is None:
+            continue
+        out[int(pid)] = {
+            "framing_runs": _safe(row.get("runs_extra_strikes"), 0.0),
+        }
+    return out
+
+
 # ---------- Pitcher enrichment ----------
 
 def shrunk_pitcher_sc(sc_stats: dict | None) -> dict:
