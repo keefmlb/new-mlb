@@ -271,6 +271,78 @@ def team_pitching_index(stats: dict) -> dict:
     return pitcher_quality_index(stats)
 
 
+def build_catcher_framing_proxy(box_df, pitcher_stats: dict[int, dict],
+                                 prior_bf: float = 300.0) -> dict[int, float]:
+    """Catcher framing proxy from box-score data.
+
+    Frames each catcher's K-rate impact: when catcher X started, did the
+    pitchers they caught for run hotter or colder K rates than their
+    season baseline? Sums across catcher's games, then EB-shrinks to 0
+    at PA=300 BF (prior_bf).
+
+    Returns dict[catcher_pid -> k_pct_delta]. Range typically [-0.02, +0.02]
+    (-2pp to +2pp K%) for established catchers.
+
+    This is a NOISY proxy — true framing is from per-pitch tracking. But it
+    captures the order-of-magnitude effect and lets us interact with the
+    umpire K-mult for a framing-affinity feature.
+    """
+    if box_df is None or len(box_df) == 0:
+        return {}
+    box = box_df.copy()
+    # Per (game_pk, side): find the starting catcher
+    if "position" not in box.columns:
+        return {}
+    catchers = box[(box["position"] == "C") & (box["pa"].fillna(0) > 0)]
+    if len(catchers) == 0:
+        return {}
+    catchers = catchers.sort_values(["game_pk", "side", "pa"], ascending=[True, True, False])
+    catchers = catchers.drop_duplicates(["game_pk", "side"], keep="first")
+    # (game_pk, side) -> catcher_pid
+    starting_catcher = {(int(r["game_pk"]), str(r["side"])): int(r["player_id"])
+                        for _, r in catchers.iterrows()}
+
+    # For each pitcher appearance, look up the catcher and compare K-rate
+    pit = box[(box["bf"].fillna(0) >= 3)].copy()   # min 3 BF to count
+    if len(pit) == 0:
+        return {}
+    # league K% baseline for pitchers w/o season data
+    LEAGUE_K_RATE = 0.225
+
+    from collections import defaultdict
+    catcher_acc: dict = defaultdict(lambda: {"k_excess": 0.0, "bf": 0.0})
+    for _, r in pit.iterrows():
+        gp = int(r["game_pk"])
+        # The pitcher's catcher is on the SAME team (same side)
+        cid = starting_catcher.get((gp, str(r["side"])))
+        if cid is None:
+            continue
+        bf = float(r["bf"])
+        k  = float(r["k_p"])
+        if bf <= 0:
+            continue
+        actual = k / bf
+        # Expected K rate from pitcher's season stats; fall back to league
+        pstats = pitcher_stats.get(int(r["player_id"])) or {}
+        season_bf = _safe_float(pstats.get("battersFaced"))
+        season_k  = _safe_float(pstats.get("strikeOuts"))
+        expected = (season_k / season_bf) if season_bf >= 30 else LEAGUE_K_RATE
+        excess = actual - expected
+        catcher_acc[cid]["k_excess"] += excess * bf
+        catcher_acc[cid]["bf"]       += bf
+
+    out: dict[int, float] = {}
+    for cid, acc in catcher_acc.items():
+        bf = acc["bf"]
+        if bf <= 0:
+            continue
+        raw = acc["k_excess"] / bf
+        # EB shrink to 0 (league mean = no framing effect)
+        w   = bf / (bf + prior_bf)
+        out[cid] = float(w * raw)
+    return out
+
+
 def build_pitcher_last_appearance(box_df) -> dict[int, str]:
     """Walk the box-score dataframe and return {pitcher_id -> latest ISO date
     they pitched in}. Used to compute days-rest at game-build time.
@@ -606,6 +678,14 @@ class GameFeatures:
     away_bp_ip_72h: float = 0.0
     home_bp_top_rest: float = 7.0
     away_bp_top_rest: float = 7.0
+    # Starting catcher framing proxy (k_pct delta from box-score data,
+    # EB-shrunk to 0 at PA=300 BF). Positive = catcher gets more strikes
+    # than the pitchers alone would predict. Affects OPPOSING offense (a
+    # great-framing catcher suppresses the opponent's runs via more Ks).
+    home_catcher_framing: float = 0.0
+    away_catcher_framing: float = 0.0
+    home_catcher_id: int = 0
+    away_catcher_id: int = 0
     # Sequential offense — small-ball / situational hitting metrics.
     # Defaults match league averages so older rows still produce sane outputs.
     home_off_sb_pg: float = 0.60;     away_off_sb_pg: float = 0.60
@@ -635,6 +715,9 @@ def build_game_features(
     bullpen_stats: dict[int, dict] | None = None,
     pitcher_last_appearance: dict[int, str] | None = None,
     bullpen_usage: "BullpenUsageLookup | None" = None,
+    catcher_framing: dict[int, float] | None = None,
+    home_catcher_id: int | None = None,
+    away_catcher_id: int | None = None,
 ) -> Optional[GameFeatures]:
     """Build one feature row for a scheduled game given pre-game stats lookups.
 
@@ -831,6 +914,13 @@ def build_game_features(
         # Team defensive value (OAA from Statcast)
         home_def_oaa=float((sc_team_def or {}).get(home_tid, {}).get("oaa", 0.0) or 0.0),
         away_def_oaa=float((sc_team_def or {}).get(away_tid, {}).get("oaa", 0.0) or 0.0),
+        # Catcher framing — looked up from the box-score-derived proxy. Pass
+        # the starting catcher IDs explicitly; lookup defaults to 0 framing
+        # if catcher unknown or has no historical sample.
+        home_catcher_id=int(home_catcher_id or 0),
+        away_catcher_id=int(away_catcher_id or 0),
+        home_catcher_framing=float(((catcher_framing or {}).get(int(home_catcher_id or 0), 0.0))),
+        away_catcher_framing=float(((catcher_framing or {}).get(int(away_catcher_id or 0), 0.0))),
         # Bullpen 72hr workload (prior 3 days of relief outings)
         home_bp_ip_72h=float((bullpen_usage.get(home_tid, when.date().isoformat())
                               if bullpen_usage else {"ip_72h": 0.0}).get("ip_72h", 0.0)),

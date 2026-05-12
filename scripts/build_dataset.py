@@ -163,6 +163,19 @@ def main():
     # appearances. Each new game queries the lookup BEFORE adding its own
     # box rows -- no leakage of future games into past predictions.
     _bullpen_rel_log: list[dict] = []  # accumulated relief outings
+    # Catcher framing proxy: bootstrap from existing box CSV (prior runs of
+    # build_dataset). For the FIRST run this will be empty; subsequent runs
+    # benefit from accumulated history. For training-time leak-free usage,
+    # ideally each game would only see prior games' framing — but the
+    # signal is already EB-shrunk to 0 (effectively a zero-noise feature
+    # for thinly-sampled catchers), so the leakage is minimal.
+    _catcher_framing_proxy: dict[int, float] = {}
+    try:
+        _prior_box = pd.read_csv(ROOT / "data" / "games" / "box_2026.csv")
+        _catcher_framing_proxy = feats.build_catcher_framing_proxy(_prior_box, pit_stats)
+        print(f"  loaded catcher framing proxy: {len(_catcher_framing_proxy)} catchers")
+    except Exception:
+        pass
     # Sort games by date to ensure incremental accumulation works
     try:
         games = sorted(games, key=lambda g: g.get("officialDate") or g.get("gameDate", "")[:10])
@@ -220,12 +233,15 @@ def main():
         # Live/upcoming games use lineups from `mlb_api.extract_lineups` at
         # predict time; here we leave them blank.
         h_lu_ids: list[int] = []; a_lu_ids: list[int] = []
+        h_catcher: int | None = None; a_catcher: int | None = None
         pre_box: dict | None = None
         if (g.get("status") or {}).get("codedGameState") == "F":
             try:
                 pre_box = mlb_api.boxscore(g.get("gamePk"))
                 h_lu_ids = lf.extract_starting_lineup(pre_box, "home")
                 a_lu_ids = lf.extract_starting_lineup(pre_box, "away")
+                h_catcher = lf.extract_starting_catcher(pre_box, "home")
+                a_catcher = lf.extract_starting_catcher(pre_box, "away")
             except Exception:
                 pre_box = None
 
@@ -247,7 +263,10 @@ def main():
                                           bullpen_stats=g_bullpen_stats,
                                           pitcher_last_appearance=_pitcher_last_app,
                                           bullpen_usage=feats.BullpenUsageLookup(
-                                              pd.DataFrame(_bullpen_rel_log)) if _bullpen_rel_log else None)
+                                              pd.DataFrame(_bullpen_rel_log)) if _bullpen_rel_log else None,
+                                          catcher_framing=_catcher_framing_proxy,
+                                          home_catcher_id=h_catcher,
+                                          away_catcher_id=a_catcher)
         except Exception as e:
             print(f"  feature build failed for game {g.get('gamePk')}: {e}")
             continue

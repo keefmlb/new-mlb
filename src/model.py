@@ -78,6 +78,10 @@ FEATURES = [
     # Bullpen fatigue of opposing team: high recent workload + no rested
     # high-leverage arm -> more late-inning runs scored against them.
     "opp_bp_ip_72h", "opp_bp_top_rest",
+    # Catcher framing: opp catcher's K-rate-boost proxy from box-score history,
+    # plus its interaction with the home-plate umpire's K-mult (great framer
+    # under a wide-zone umpire = bigger K bonus than either alone).
+    "opp_catcher_framing", "opp_catcher_x_ump",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
@@ -163,6 +167,12 @@ def _half(g: dict, batting: str) -> dict:
         # top_rest = days since highest-leverage relievers last pitched (lower = tired).
         "opp_bp_ip_72h":    _pick(g, f"{o}_bp_ip_72h", 0.0),
         "opp_bp_top_rest":  _pick(g, f"{o}_bp_top_rest", 7.0),
+        # Opposing catcher framing — positive = catcher steals strikes, more Ks for
+        # opp pitching, our offense suffers. Plus interaction with umpire K-mult
+        # so we capture "framing pays more under wide-zone umpires" effect.
+        "opp_catcher_framing":     _pick(g, f"{o}_catcher_framing", 0.0),
+        "opp_catcher_x_ump":       _pick(g, f"{o}_catcher_framing", 0.0) * (
+                                       _pick(g, "ump_k_mult", 1.0) - 1.0),
         # Weather
         "runs_mult":       g["runs_mult"],
         "hr_mult":         g["hr_mult"],

@@ -76,6 +76,23 @@ def extract_lineups(game: dict) -> dict[str, list[int]]:
     return result
 
 
+def extract_starting_catchers(game: dict) -> dict[str, int | None]:
+    """Pull the starting catcher's player_id from a hydrated game dict.
+
+    Returns {"home": pid|None, "away": pid|None}. Uses primaryPosition.code
+    or primaryPosition.abbreviation = 'C' if present.
+    """
+    lineups = game.get("lineups") or {}
+    result: dict[str, int | None] = {"home": None, "away": None}
+    for side, key in [("home", "homePlayers"), ("away", "awayPlayers")]:
+        for p in lineups.get(key) or []:
+            pos = p.get("primaryPosition") or {}
+            if pos.get("abbreviation") == "C" or pos.get("code") == "2":
+                result[side] = p.get("id")
+                break
+    return result
+
+
 def schedule_range(start: date, end: date) -> list[dict]:
     """All games between [start, end] inclusive — single API call when possible."""
     s, e = start.isoformat(), end.isoformat()

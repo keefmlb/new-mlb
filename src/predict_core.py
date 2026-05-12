@@ -201,9 +201,13 @@ def predict_slate(target_date: date | str | None = None,
         _box_df = pd.read_csv(ROOT / "data" / "games" / "box_2026.csv")
         pitcher_last_appearance = feats.build_pitcher_last_appearance(_box_df)
         bullpen_usage = feats.BullpenUsageLookup(_box_df)
+        # Catcher framing proxy (k-rate delta from box-score history,
+        # EB-shrunk to 0 at PA=300 BF).
+        catcher_framing = feats.build_catcher_framing_proxy(_box_df, pitcher_stats)
     except Exception:
         pitcher_last_appearance = {}
         bullpen_usage = None
+        catcher_framing = {}
     batter_stats = _stats_lookup(snap["batter_stats"])
     bat_recent = _stats_lookup(snap.get("batter_stats_recent", {}))
     pit_recent = _stats_lookup(snap.get("pitcher_stats_recent", {}))
@@ -266,6 +270,8 @@ def predict_slate(target_date: date | str | None = None,
         lineups = mlb_api.extract_lineups(g)
         home_lineup_ids = lineups["home"] or None
         away_lineup_ids = lineups["away"] or None
+        # Starting catchers (for framing proxy lookup)
+        _catchers = mlb_api.extract_starting_catchers(g)
 
         f = feats.build_game_features(g, team_off, team_pit, pitcher_stats,
                                       sc_team_bat=sc_team_bat, sc_pit=sc_pit_data,
@@ -278,6 +284,9 @@ def predict_slate(target_date: date | str | None = None,
                                       batter_recent=bat_recent,
                                       bullpen_stats=bullpen_stats,
                                       pitcher_last_appearance=pitcher_last_appearance,
+                                      catcher_framing=catcher_framing,
+                                      home_catcher_id=_catchers["home"],
+                                      away_catcher_id=_catchers["away"],
                                       bullpen_usage=bullpen_usage)
         if f is None:
             continue

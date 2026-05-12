@@ -46,7 +46,7 @@ _PRIOR_PA_TEAM = 500    # ≈ 25 games × 20 PA/game
 _PRIOR_BF_PIT  = 150    # ≈ 50 IP
 
 # Cache version suffix — bump when selections change so stale files are ignored
-_BAT_VER = "v4"   # v4: added plate discipline (oz_swing, oz_contact, z_swing, sweet_spot)
+_BAT_VER = "v5"   # v5: spray + batted-ball type (pull%, oppo%, fb%, gb%, launch angle)
 _PIT_VER = "v6"   # v6: pitcher discipline (iz_contact, oz_swing, oz_contact, z_swing)
 
 
@@ -121,7 +121,13 @@ def get_batter_stats(year: int) -> dict[int, dict]:
     df = _fetch_leaderboard(
         year, "batter",
         "pa,xwoba,xba,barrel_batted_rate,hard_hit_percent,avg_exit_velocity,"
-        "oz_swing_percent,oz_contact_percent,z_swing_percent,sweet_spot_percent",
+        "oz_swing_percent,oz_contact_percent,z_swing_percent,sweet_spot_percent,"
+        # Spatial profile — "hot/cold zone" via spray direction + batted ball type.
+        # True 9-zone grid data isn't accessible via the CSV endpoint, but these
+        # aggregates capture the same park-interaction signal: pull hitters
+        # interact with Yankee/Fenway short porches; FB hitters get HR boosts
+        # in Coors/Cinci; GB hitters benefit in larger parks.
+        "pull_percent,opposite_percent,flyballs_percent,groundballs_percent,launch_angle_avg",
         min_pa=10,
         cache_key=f"batter_{_BAT_VER}",
     )
@@ -146,6 +152,14 @@ def get_batter_stats(year: int) -> dict[int, dict]:
             "oz_contact": _safe(row.get("oz_contact_percent")),
             "z_swing":    _safe(row.get("z_swing_percent")),
             "sweet_spot": _safe(row.get("sweet_spot_percent")),
+            # Spatial profile — captures hot/cold-zone effects via spray
+            # direction and batted-ball type. Pairs naturally with park HR
+            # factors and park orientation (Fenway pull hitters etc).
+            "pull_pct":     _safe(row.get("pull_percent")),
+            "oppo_pct":     _safe(row.get("opposite_percent")),
+            "fb_pct":       _safe(row.get("flyballs_percent")),
+            "gb_pct":       _safe(row.get("groundballs_percent")),
+            "launch_angle": _safe(row.get("launch_angle_avg")),
         }
     return out
 

@@ -70,6 +70,8 @@ def main():
                 "is_day_game":   0,
                 "bp_ip_72h":     2.0,    # league avg ~2 IP/team/day
                 "bp_top_rest":   2.5,    # avg top-relief rest
+                "catcher_framing": 0.0,  # neutral (league average framing)
+                "catcher_id":      0,
             }
             matched = False
             for suffix, val in neutral_defaults.items():

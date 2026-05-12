@@ -344,6 +344,36 @@ def pitcher_split_vs_lineup(
     }
 
 
+def extract_starting_catcher(boxscore: dict, side: str) -> int | None:
+    """Pull the starting catcher's player_id from a boxscore.
+
+    A starting catcher is the player whose position is C and who is in the
+    batting order (battingOrder ending in '00'). If multiple, take the one
+    with the most PA. Returns None if no catcher could be identified.
+    """
+    if not boxscore:
+        return None
+    teams = boxscore.get("teams", {}).get(side, {})
+    players = teams.get("players", {}) or {}
+    candidates = []
+    for _, p in players.items():
+        pos = (p.get("position") or {}).get("abbreviation", "")
+        if pos != "C":
+            continue
+        bat = (p.get("stats", {}) or {}).get("batting", {}) or {}
+        pa = _safe_float(bat.get("plateAppearances"))
+        batting_order = (p.get("battingOrder") or "")
+        is_starter = bool(batting_order) and batting_order.endswith("00")
+        if not is_starter:
+            continue
+        candidates.append((pa, p.get("person", {}).get("id")))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda t: -t[0])
+    pid = candidates[0][1]
+    return int(pid) if pid else None
+
+
 def parse_lineup_ids(s: str | None) -> list[int]:
     """Parse a CSV-stored lineup_ids field back to a list of ints."""
     if not s or (isinstance(s, float)):

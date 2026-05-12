@@ -149,6 +149,14 @@ def batter_feature_row(
         "sc_oz_contact": float((sc_stats or {}).get("oz_contact") or 58.0),   # league ~58%
         "sc_z_swing":    float((sc_stats or {}).get("z_swing")    or 68.0),   # league ~68%
         "sc_sweet_spot": float((sc_stats or {}).get("sweet_spot") or 33.0),   # league ~33%
+        # Spatial profile — spray and batted-ball type. Pulls naturally interact
+        # with the park HR/runs factors the GBT also sees (Fenway pull-hitters,
+        # Coors fly-ball hitters, etc.). Defaults at league averages.
+        "sc_pull_pct":     float((sc_stats or {}).get("pull_pct")     or 40.0),  # ~40%
+        "sc_oppo_pct":     float((sc_stats or {}).get("oppo_pct")     or 25.0),  # ~25%
+        "sc_fb_pct":       float((sc_stats or {}).get("fb_pct")       or 25.0),
+        "sc_gb_pct":       float((sc_stats or {}).get("gb_pct")       or 45.0),
+        "sc_launch_angle": float((sc_stats or {}).get("launch_angle") or 12.0),  # ~12 deg
     }
 
 
