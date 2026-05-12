@@ -1,20 +1,33 @@
-"""Per-stat isotonic calibration for player projections.
+"""Per-stat calibration for player projections.
 
-The 21-day backtest showed every top-decile counting stat under-projects
-and every bottom-decile over-projects — a uniform compression toward the
-mean across batter and pitcher markets. Fitting a monotonic curve
-`actual = f(projected)` per stat and applying it at predict time bends the
-curve back to observed reality, attacking the compression in one shot.
+Two-layer correction:
 
-Calibrators live at data/models/projection_calibration.joblib (a dict of
-sklearn IsotonicRegression objects keyed by stat name like 'pitcher_k',
-'batter_tb', etc.). Fitting is done by scripts/fit_projection_calibration.py
-on holdout backtest data; loading happens once per session and the result
-is cached.
+1. **Rate factor** — a simple `actual_mean / proj_mean` multiplier computed
+   over the calibration window. Captures global run-environment shifts (cool
+   pitching weeks, league-wide BABIP regression) that isotonic regression
+   cannot capture robustly at the tails. Always applied if present.
+
+2. **Isotonic curve** — monotonic `actual = f(projected)` per stat. Captures
+   per-decile compression/expansion (the original purpose: bottom-bin
+   over-projection, top-bin under-projection). Applied with a soft blend
+   weight; iso outputs are clamped to ±25% of the rate-corrected projection
+   so degenerate tail fits can't corrupt the leaderboard.
+
+May 11 2026 redesign: the iso-only approach worked when the bias was tail
+compression. But running it at blend 0.85 caused catastrophic over-correction
+when the recent window flipped to systematic over-projection (May 7-10
+backtest showed batter_h iso predicting 2.33 from a raw 1.50 — a 56% upshift
+on a stat the data actually wanted scaled DOWN by ~15%). The rate-factor
+layer captures that systematic shift directly while iso handles only the
+residual shape.
+
+Calibrators live at data/models/projection_calibration.joblib as a dict.
+Each entry may be:
+  - an sklearn IsotonicRegression object (legacy), or
+  - a dict with keys {"iso": IsotonicRegression, "rate_factor": float}.
 
 If the calibration file is missing or a stat key isn't present, we return
-the raw projection unchanged — safe-fallback behaviour. This means we can
-ship the apply() integration before any calibrators exist on disk.
+the raw projection unchanged — safe-fallback behaviour.
 """
 from __future__ import annotations
 from pathlib import Path
@@ -26,7 +39,7 @@ _PATH = Path(__file__).resolve().parent.parent / "data" / "models" / "projection
 
 
 def load() -> dict:
-    """Load the per-stat isotonic calibrators from disk; return empty if absent."""
+    """Load the per-stat calibrators from disk; return empty if absent."""
     global _CALIBRATORS
     if _CALIBRATORS is not None:
         return _CALIBRATORS
@@ -47,39 +60,61 @@ def reload() -> None:
     _CALIBRATORS = None
 
 
-# How much weight to give the isotonic curve vs the raw projection. The
-# isotonic regressor produces a STEP FUNCTION — many distinct inputs collapse
-# to the same output, which destroys player-level differentiation (e.g. five
-# different pitchers all projected at 4.66 K). Blending with the raw value
-# preserves most of the calibration shape while ensuring a strictly
-# distinct output per distinct input.
-# Raised 0.70 -> 0.85 after May 2026 deep backtest showed top-quintile
-# batter hits/TB/RBI still under-projected by ~0.10 at 0.70 blend.
-# The higher weight pulls elite hitters closer to their true level without
-# collapsing distinct projections into ties (distinct raw inputs remain
-# distinct after blending even at 0.85).
-_ISO_BLEND_WEIGHT = 0.85
+# Iso blend weight. Lowered from 0.85 -> 0.30 after May 11 audit showed iso
+# curves were producing extreme tail upshifts (batter_h 1.50 -> 2.33) and zero
+# outputs at low ends (pitcher_er 1.50 -> 0.0). The rate-factor layer now
+# absorbs the systematic level shifts that iso was forced to chase, so iso
+# only contributes shape correction at lower weight.
+_ISO_BLEND_WEIGHT = 0.30
+
+# Cap iso output to within +/-25% of the rate-corrected projection. Prevents
+# pathological extrapolations from corrupting the leaderboard when iso fits
+# get unstable at the tails (sparse training data -> wild conditional means).
+_ISO_DEVIATION_CAP = 0.25
 
 
 def apply(stat: str, raw_proj: float) -> float:
-    """Apply the calibrated mapping for `stat` if available, else passthrough.
+    """Apply rate-factor + isotonic calibration for `stat` if available.
 
-    Calibrator keys are like 'batter_h', 'batter_hr', 'pitcher_k', etc.
-    The output blends the isotonic prediction with the raw projection so
-    that two players with slightly different raw projections never map to
-    the exact same calibrated value (otherwise the leaderboard collapses
-    distinct pitchers/batters into ties).
+    Order of operations:
+      1. raw_proj      — analytical/ML output
+      2. * rate_factor — global mean correction (always trusted)
+      3. blend with iso(rate_corrected) — soft shape correction, capped
     """
     if raw_proj is None:
         return raw_proj
     cals = load()
-    iso = cals.get(stat)
+    entry = cals.get(stat)
+    if entry is None:
+        return float(raw_proj)
+
+    # Back-compat: legacy entries are bare IsotonicRegression objects.
+    if hasattr(entry, "predict"):
+        iso = entry
+        rate_factor = 1.0
+    elif isinstance(entry, dict):
+        iso = entry.get("iso")
+        rate_factor = float(entry.get("rate_factor", 1.0))
+    else:
+        return float(raw_proj)
+
+    # Step 1: apply rate factor (always)
+    after_rate = float(raw_proj) * rate_factor
+
+    # Step 2: optional iso blend on the rate-corrected value
     if iso is None:
-        return float(raw_proj)
+        return max(0.0, after_rate)
     try:
-        iso_pred = float(iso.predict([raw_proj])[0])
+        iso_pred = float(iso.predict([after_rate])[0])
     except Exception:
-        return float(raw_proj)
-    blended = _ISO_BLEND_WEIGHT * iso_pred + (1.0 - _ISO_BLEND_WEIGHT) * float(raw_proj)
-    # Guard against negative or absurd outputs from a degenerate fit.
+        return max(0.0, after_rate)
+
+    # Cap iso deviation. If iso wants to push more than +/-25% from rate-corrected,
+    # clamp -- protects against degenerate tail extrapolations like the
+    # batter_h 1.50 -> 2.33 mapping we saw before the redesign.
+    lo = after_rate * (1.0 - _ISO_DEVIATION_CAP)
+    hi = after_rate * (1.0 + _ISO_DEVIATION_CAP)
+    iso_capped = min(hi, max(lo, iso_pred))
+
+    blended = _ISO_BLEND_WEIGHT * iso_capped + (1.0 - _ISO_BLEND_WEIGHT) * after_rate
     return max(0.0, blended)

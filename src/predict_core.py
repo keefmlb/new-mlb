@@ -22,6 +22,21 @@ from . import lineup_features as lf
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def _team_runs_rate_factor() -> float:
+    """Load the recent team-runs rate factor (actual_mean / pred_mean over
+    last N days). Captures league-wide run-environment shifts that the static
+    feature set can't see. Clamped to [0.85, 1.15] by the fit script.
+    Returns 1.0 when the file is missing.
+    """
+    p = ROOT / "data" / "models" / "team_runs_rate.json"
+    if not p.exists():
+        return 1.0
+    try:
+        return float(json.loads(p.read_text(encoding="utf-8")).get("rate_factor", 1.0))
+    except Exception:
+        return 1.0
+
+
 # ---------- Data classes ----------
 @dataclass
 class GamePrediction:
@@ -260,6 +275,13 @@ def predict_slate(target_date: date | str | None = None,
 
         long = mdl.long_form(pd.DataFrame([asdict(f)]))
         long["pred_runs"] = mdl.predict_ensemble(_all_models, long)
+        # League-level rate-factor correction. Captures recent run-environment
+        # shifts (cool offensive weeks, league-wide BABIP regression) that the
+        # static feature set can't see. Persisted in team_runs_rate.json by
+        # scripts/fit_team_runs_rate.py.
+        _trrf = _team_runs_rate_factor()
+        if _trrf != 1.0:
+            long["pred_runs"] = long["pred_runs"] * _trrf
         home_pred = float(long[long["is_home"] == 1].iloc[0]["pred_runs"])
         away_pred = float(long[long["is_home"] == 0].iloc[0]["pred_runs"])
 

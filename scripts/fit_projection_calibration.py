@@ -94,7 +94,7 @@ def main():
         ("pitcher_outs", pit, "proj_outs", "actual_outs"),
     ]
 
-    print(f"\n{'stat':<15}  {'n':>4}  {'pre_top':>8}  {'pre_bot':>8}  "
+    print(f"\n{'stat':<15}  {'n':>4}  {'rate':>5}  {'pre_top':>8}  {'pre_bot':>8}  "
           f"{'cal_top':>8}  {'cal_bot':>8}")
     for name, df, pc, ac in targets:
         if pc not in df.columns or ac not in df.columns:
@@ -105,12 +105,23 @@ def main():
             print(f"  {name:<13s}  {len(sub):>4}  (skipped — fewer than {MIN_SAMPLES})")
             continue
 
-        x = sub[pc].values
+        # Rate factor: simple global mean-actual / mean-proj. Captures
+        # systematic level shifts (cool pitching weeks, run-environment
+        # drift) that isotonic regression handles poorly at the tails.
+        # Clamp to [0.80, 1.20] so a freak window can't whipsaw projections.
+        proj_mean = float(sub[pc].mean())
+        act_mean  = float(sub[ac].mean())
+        rate = act_mean / proj_mean if proj_mean > 0 else 1.0
+        rate_factor = max(0.80, min(1.20, rate))
+
+        # Isotonic fit on rate-corrected projections — so iso learns only the
+        # residual shape after the global level has been corrected.
+        x = sub[pc].values * rate_factor
         y = sub[ac].values
 
         iso = IsotonicRegression(out_of_bounds="clip")
         iso.fit(x, y)
-        cals[name] = iso
+        cals[name] = {"iso": iso, "rate_factor": rate_factor}
 
         # Diagnostics: top/bottom decile bias before vs after
         sub2 = sub.sort_values(pc).reset_index(drop=True)
@@ -119,9 +130,12 @@ def main():
         top = sub2.iloc[-n // 10:]
         pre_top = top[pc].mean() - top[ac].mean()
         pre_bot = bot[pc].mean() - bot[ac].mean()
-        cal_top = float(np.mean(iso.predict(top[pc].values))) - top[ac].mean()
-        cal_bot = float(np.mean(iso.predict(bot[pc].values))) - bot[ac].mean()
-        print(f"  {name:<13s}  {n:>4}  {pre_top:>+8.3f}  {pre_bot:>+8.3f}"
+        # Post-cal: apply rate_factor then iso prediction
+        top_rate = top[pc].values * rate_factor
+        bot_rate = bot[pc].values * rate_factor
+        cal_top = float(np.mean(iso.predict(top_rate))) - top[ac].mean()
+        cal_bot = float(np.mean(iso.predict(bot_rate))) - bot[ac].mean()
+        print(f"  {name:<13s}  {n:>4}  {rate_factor:>5.2f}  {pre_top:>+8.3f}  {pre_bot:>+8.3f}"
               f"  {cal_top:>+8.3f}  {cal_bot:>+8.3f}")
 
     # Persist
