@@ -244,6 +244,7 @@ def _apply_ml_adjustment_pitcher(
     blend: float | None = None,
     sc_stats: dict | None = None,
     split_stats: dict | None = None,
+    arsenal: dict | None = None,
 ) -> "PitcherProjection":
     models = _get_prop_models().get("pitcher", {})
     if not models:
@@ -251,7 +252,7 @@ def _apply_ml_adjustment_pitcher(
     from . import prop_models as pm
     feat = pm.pitcher_feature_row(proj, pit_stats, rec_stats, opp_off_idx, park,
                                   weather_adj, opp_pred_runs, sc_stats=sc_stats,
-                                  split_stats=split_stats)
+                                  split_stats=split_stats, arsenal=arsenal)
     df = pd.DataFrame([feat])
     new = PitcherProjection(**asdict(proj))
     for stat, attr in [("k", "proj_k"), ("bb", "proj_bb"), ("h", "proj_h"),
@@ -604,6 +605,7 @@ def project_pitcher(
     ml_blend: float | None = None,
     sc_stats: dict | None = None,
     split_stats: dict | None = None,
+    arsenal: dict | None = None,
 ) -> PitcherProjection:
     pid = int(pit_stats.get("player_id") or pit_stats.get("id") or 0)
     name = pit_stats.get("name") or pit_stats.get("fullName", "")
@@ -669,7 +671,8 @@ def project_pitcher(
                                            opp_off_idx, park, weather_adj,
                                            opp_pred_runs, blend=ml_blend,
                                            sc_stats=sc_stats,
-                                           split_stats=split_stats)
+                                           split_stats=split_stats,
+                                           arsenal=arsenal)
     # Per-stat isotonic calibration. No-op when calibrators missing.
     from . import projection_cal as _cal
     out.proj_k         = _cal.apply("pitcher_k",    out.proj_k)

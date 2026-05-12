@@ -296,6 +296,82 @@ def get_catcher_framing(year: int) -> dict[int, dict]:
     return out
 
 
+# ---------- Pitcher arsenal ----------
+
+def get_pitcher_arsenal(year: int) -> dict[int, dict]:
+    """Per-pitcher pitch-mix profile from Baseball Savant.
+
+    Returns dict[player_id -> {
+        n_pitches:         total pitches thrown
+        num_pitch_types:   count of pitch types thrown >= 5% of the time
+        fb_avg_velo:       average fastball velocity (4-seam or sinker, whichever more used)
+        velo_gap:          fastball velo minus changeup velo (deception)
+        fastball_pct:      % of pitches that are FF or SI
+    }]
+
+    Pitch-mix diversity correlates with pitcher quality independently of
+    K%/whiff% — a 3-pitch starter is more vulnerable on TTO than a 5-pitch
+    starter even at the same overall stats. Velocity gap captures changeup
+    effectiveness which raw stats miss.
+    """
+    sel = ("pitch_count,"
+           "n_ff_formatted,ff_avg_speed,"
+           "n_si_formatted,si_avg_speed,"
+           "n_fc_formatted,fc_avg_speed,"
+           "n_sl_formatted,sl_avg_speed,"
+           "n_cu_formatted,cu_avg_speed,"
+           "n_ch_formatted,ch_avg_speed,"
+           "n_fs_formatted,fs_avg_speed,"
+           "n_st_formatted,st_avg_speed")
+    try:
+        df = _fetch_leaderboard(
+            year, "pitcher", sel, min_pa=30,
+            cache_key=f"arsenal_v1",
+        )
+    except Exception as exc:
+        print(f"[statcast] arsenal fetch failed: {exc}; returning empty")
+        return {}
+
+    out: dict[int, dict] = {}
+    for _, row in df.iterrows():
+        pid = _safe(row.get("player_id"))
+        if pid is None:
+            continue
+        # Pitch usage percentages per pitch type
+        usages = {}
+        velos = {}
+        for code in ("ff", "si", "fc", "sl", "cu", "ch", "fs", "st"):
+            pct = _safe(row.get(f"n_{code}_formatted"))
+            v   = _safe(row.get(f"{code}_avg_speed"))
+            if pct is not None and pct > 0:
+                usages[code] = pct
+                if v is not None and v > 0:
+                    velos[code] = v
+        if not usages:
+            continue
+        # Number of pitches used at least 5%
+        num_pt = sum(1 for p in usages.values() if p >= 5.0)
+        # Fastball velocity: average of FF+SI weighted by usage
+        fb_velo = 0.0
+        fb_pct  = 0.0
+        for c in ("ff", "si"):
+            if c in velos and c in usages:
+                fb_velo += velos[c] * usages[c]
+                fb_pct  += usages[c]
+        fb_avg_velo = (fb_velo / fb_pct) if fb_pct > 0 else 92.0
+        # Velo gap: FB velo - changeup velo (deception measure)
+        ch_velo = velos.get("ch")
+        velo_gap = (fb_avg_velo - ch_velo) if ch_velo else 8.0   # league avg ~8 mph
+        out[int(pid)] = {
+            "n_pitches":       _safe(row.get("pitch_count"), 0.0),
+            "num_pitch_types": float(num_pt),
+            "fb_avg_velo":     fb_avg_velo,
+            "velo_gap":        velo_gap,
+            "fastball_pct":    fb_pct,
+        }
+    return out
+
+
 # ---------- Pitcher enrichment ----------
 
 def shrunk_pitcher_sc(sc_stats: dict | None) -> dict:

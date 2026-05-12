@@ -155,6 +155,7 @@ def pitcher_feature_row(
     opp_pred_runs: float,
     sc_stats: dict | None = None,  # player-level Statcast (xera, xwoba, whiff%, k%, csp, ...)
     split_stats: dict | None = None,  # lineup-mix-weighted L/R splits (k_pct, bb_pct, ops, lhb_pct)
+    arsenal: dict | None = None,   # pitch-mix profile (num_pitch_types, fb_avg_velo, velo_gap)
 ) -> dict:
     bf = float(pit_stats.get("battersFaced") or 0)
     ip_str = pit_stats.get("inningsPitched", 0)
@@ -260,6 +261,14 @@ def pitcher_feature_row(
         "split_bb_pct":   float(sp.get("bb_pct")  or 0.085),
         "split_hr_pct":   float(sp.get("hr_pct")  or 0.030),
         "split_ops":      float(sp.get("ops")     or 0.720),
+
+        # Pitch-mix arsenal: # of pitch types thrown >=5%, fastball velocity,
+        # velocity gap (FB - changeup). 3-pitch starters get hit harder TTO+2;
+        # high velo + big gap = better deception independent of K rate.
+        "arsenal_num_pt":    float((arsenal or {}).get("num_pitch_types") or 4.0),
+        "arsenal_fb_velo":   float((arsenal or {}).get("fb_avg_velo")     or 93.0),
+        "arsenal_velo_gap":  float((arsenal or {}).get("velo_gap")        or 8.0),
+        "arsenal_fb_pct":    float((arsenal or {}).get("fastball_pct")    or 55.0),
     }
 
 

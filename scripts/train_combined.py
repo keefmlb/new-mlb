@@ -51,6 +51,14 @@ def main():
             if c in ("home_park_is_retractable", "away_park_is_retractable", "park_is_retractable"):
                 df25[c] = (df25["park_roof"].astype(str).str.lower() == "retractable").astype(int)
                 continue
+            # park_pf_h: look up per-venue from parks registry
+            if c == "park_pf_h":
+                from src import parks as _parks
+                def _pf_h(name: str) -> float:
+                    p = _parks.PARKS_BY_NAME.get(name)
+                    return p.pf_h if p else 1.0
+                df25[c] = df25["venue"].astype(str).map(_pf_h)
+                continue
             # Sequential offense / days_rest / day_game / OAA — fill with
             # NEUTRAL league-average defaults rather than 2026 mean (which
             # would create era contrast). 2025 rows become "neutral baseline"

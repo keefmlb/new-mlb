@@ -424,6 +424,7 @@ class GameFeatures:
     # Park
     park_pf_runs: float
     park_pf_hr: float
+    park_pf_h: float        # hit park factor (singles+doubles+triples-focused)
     park_elev_ft: int
     park_roof: str
 
@@ -661,6 +662,7 @@ def build_game_features(
 
         park_pf_runs=park.pf_runs,
         park_pf_hr=park.pf_hr,
+        park_pf_h=park.pf_h,
         park_elev_ft=park.elevation_ft,
         park_roof=park.roof,
         park_is_dome=1 if park.roof == "dome" else 0,

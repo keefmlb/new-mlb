@@ -99,10 +99,11 @@ def main():
     try:
         sc_bat = sc.get_batter_stats(2026)
         sc_pit = sc.get_pitcher_stats(2026)
-        print(f"  {len(sc_bat)} batters, {len(sc_pit)} pitchers with Statcast data")
+        sc_arsenal = sc.get_pitcher_arsenal(2026)
+        print(f"  {len(sc_bat)} batters, {len(sc_pit)} pitchers, {len(sc_arsenal)} arsenals")
     except Exception as e:
         print(f"  WARNING: Statcast fetch failed ({e}), using league-average defaults")
-        sc_bat, sc_pit = {}, {}
+        sc_bat, sc_pit, sc_arsenal = {}, {}, {}
 
     print("Building feature rows for batters and starters...")
     bat_rows: list[dict] = []
@@ -221,10 +222,12 @@ def main():
                 pproj = proj.project_pitcher(ps, tid, opp_off_idx, opp_pred, park, wadj,
                                              recent_stats=rs, ml_blend=0,
                                              sc_stats=sc_pit.get(pid),
-                                             split_stats=_split_stats)
+                                             split_stats=_split_stats,
+                                             arsenal=sc_arsenal.get(pid))
                 feat_row = prop_models.pitcher_feature_row(pproj, ps, rs, opp_off_idx, park, wadj, opp_pred,
                                                             sc_stats=sc_pit.get(pid),
-                                                            split_stats=_split_stats)
+                                                            split_stats=_split_stats,
+                                                            arsenal=sc_arsenal.get(pid))
                 feat_row.update({
                     "game_pk": gpk, "date": gdate, "side": side,
                     "player_id": pid, "name": prow["name"],

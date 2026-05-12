@@ -220,8 +220,9 @@ def predict_slate(target_date: date | str | None = None,
         sc_pit_data = sc.get_pitcher_stats(2026)
         sc_bat_data = sc.get_batter_stats(2026)
         sc_team_def = sc.get_team_fielding(2026, _player_team_map)
+        sc_arsenal  = sc.get_pitcher_arsenal(2026)
     except Exception:
-        sc_team_bat, sc_pit_data, sc_bat_data, sc_team_def = {}, {}, {}, {}
+        sc_team_bat, sc_pit_data, sc_bat_data, sc_team_def, sc_arsenal = {}, {}, {}, {}, {}
 
     model = mdl.TeamScoreModel.load(ROOT / "data" / "models" / "team_runs.joblib")
     _model_dir = ROOT / "data" / "models"
@@ -528,7 +529,8 @@ def predict_slate(target_date: date | str | None = None,
                                                  {"runs_mult": f.runs_mult, "hr_mult": f.hr_mult},
                                                  recent_stats=pit_recent.get(_pid),
                                                  sc_stats=sc_pit_data.get(_pid),
-                                                 split_stats=_split_stats)
+                                                 split_stats=_split_stats,
+                                                 arsenal=sc_arsenal.get(_pid))
                     means = {
                         "pitcher_k": pproj.proj_k, "pitcher_outs": pproj.expected_outs,
                         "pitcher_er": pproj.proj_er, "pitcher_h": pproj.proj_h,

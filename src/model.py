@@ -60,7 +60,11 @@ FEATURES = [
     "opp_sp_xera_sc",
     # Opposing bullpen / staff
     "opp_bp_era", "opp_pit_era_recent",
-    # Park
+    # Park — runs and HR factors. park_pf_h (hit factor) is persisted on
+    # GameFeatures but NOT included here: highly collinear with park_pf_runs
+    # (correlation ~0.85), and adding it destabilized GLM bootstrap variance
+    # in May 12 retraining (ML accuracy 61.6% -> 59.5%). Available for prop
+    # models or future Lasso/regularized fitting that can handle collinearity.
     "park_pf_runs", "park_pf_hr", "park_elev_ft",
     # Roof indicators — domes and retractables suppress runs more than the park
     # factor alone captures (May 11 full-season audit: bias +0.69 to +0.81).
@@ -136,6 +140,7 @@ def _half(g: dict, batting: str) -> dict:
         # Park
         "park_pf_runs":    g["park_pf_runs"],
         "park_pf_hr":      g["park_pf_hr"],
+        "park_pf_h":       _pick(g, "park_pf_h", 1.0),
         "park_elev_ft":    g.get("park_elev_ft", 500),
         # Roof indicators — derive from park_roof string (present in BOTH
         # 2025 and 2026 CSVs) rather than reading a column that only exists
