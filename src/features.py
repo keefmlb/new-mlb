@@ -686,6 +686,11 @@ class GameFeatures:
     away_catcher_framing: float = 0.0
     home_catcher_id: int = 0
     away_catcher_id: int = 0
+    # Opposing starter's RECENT (14d) FIP from raw counts. Sharper than the
+    # season aggregate when a pitcher's last 2-3 starts have shifted from his
+    # season profile. Falls back to season FIP when recent sample too thin.
+    home_sp_fip_recent: float = 4.10
+    away_sp_fip_recent: float = 4.10
     # Sequential offense — small-ball / situational hitting metrics.
     # Defaults match league averages so older rows still produce sane outputs.
     home_off_sb_pg: float = 0.60;     away_off_sb_pg: float = 0.60
@@ -718,6 +723,7 @@ def build_game_features(
     catcher_framing: dict[int, float] | None = None,
     home_catcher_id: int | None = None,
     away_catcher_id: int | None = None,
+    pit_recent: dict[int, dict] | None = None,
 ) -> Optional[GameFeatures]:
     """Build one feature row for a scheduled game given pre-game stats lookups.
 
@@ -764,6 +770,19 @@ def build_game_features(
 
     home_sp_q = pitcher_quality_index(pitcher_stats.get(home_sp_id, {})) if home_sp_id else pitcher_quality_index({})
     away_sp_q = pitcher_quality_index(pitcher_stats.get(away_sp_id, {})) if away_sp_id else pitcher_quality_index({})
+
+    # Recent SP form (last-14d FIP from raw counts; helps when an ace stumbles
+    # or a journeyman finds a groove). Fall back to season FIP when recent
+    # sample is too thin (< 3 BF — pitcher_quality_index returns LEAGUE_FIP).
+    _pit_recent = pit_recent or {}
+    _home_sp_q_recent = pitcher_quality_index(_pit_recent.get(home_sp_id, {})) if home_sp_id else pitcher_quality_index({})
+    _away_sp_q_recent = pitcher_quality_index(_pit_recent.get(away_sp_id, {})) if away_sp_id else pitcher_quality_index({})
+    # When recent BF < 5 (basically no signal), fall back to season FIP so the
+    # GLM sees season as the baseline rather than a noisy 0-BF league-mean fill.
+    _home_sp_fip_recent = (_home_sp_q_recent["fip"] if _home_sp_q_recent.get("bf", 0) >= 5
+                            else home_sp_q["fip"])
+    _away_sp_fip_recent = (_away_sp_q_recent["fip"] if _away_sp_q_recent.get("bf", 0) >= 5
+                            else away_sp_q["fip"])
 
     state = (game.get("status") or {}).get("codedGameState", "")
     is_final = state == "F"
@@ -921,6 +940,9 @@ def build_game_features(
         away_catcher_id=int(away_catcher_id or 0),
         home_catcher_framing=float(((catcher_framing or {}).get(int(home_catcher_id or 0), 0.0))),
         away_catcher_framing=float(((catcher_framing or {}).get(int(away_catcher_id or 0), 0.0))),
+        # Recent SP form (14d FIP)
+        home_sp_fip_recent=float(_home_sp_fip_recent),
+        away_sp_fip_recent=float(_away_sp_fip_recent),
         # Bullpen 72hr workload (prior 3 days of relief outings)
         home_bp_ip_72h=float((bullpen_usage.get(home_tid, when.date().isoformat())
                               if bullpen_usage else {"ip_72h": 0.0}).get("ip_72h", 0.0)),

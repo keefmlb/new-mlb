@@ -287,6 +287,7 @@ def predict_slate(target_date: date | str | None = None,
                                       catcher_framing=catcher_framing,
                                       home_catcher_id=_catchers["home"],
                                       away_catcher_id=_catchers["away"],
+                                      pit_recent=pit_recent,
                                       bullpen_usage=bullpen_usage)
         if f is None:
             continue

@@ -82,6 +82,9 @@ FEATURES = [
     # plus its interaction with the home-plate umpire's K-mult (great framer
     # under a wide-zone umpire = bigger K bonus than either alone).
     "opp_catcher_framing", "opp_catcher_x_ump",
+    # Opposing SP recent-form gap (recent FIP - season FIP). Sharper than
+    # season aggregate when starters shift form mid-season.
+    "opp_sp_fip_recent_gap",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
@@ -173,6 +176,12 @@ def _half(g: dict, batting: str) -> dict:
         "opp_catcher_framing":     _pick(g, f"{o}_catcher_framing", 0.0),
         "opp_catcher_x_ump":       _pick(g, f"{o}_catcher_framing", 0.0) * (
                                        _pick(g, "ump_k_mult", 1.0) - 1.0),
+        # Opposing SP recent FIP gap (recent - season). Negative = SP has been
+        # running hotter than season (better recent form). Lets the GLM
+        # capture "ace stumbling" or "journeyman dialed in" effects that the
+        # static season xFIP misses.
+        "opp_sp_fip_recent_gap":   (_pick(g, f"{o}_sp_fip_recent", 4.10)
+                                    - _pick(g, f"{o}_sp_fip", 4.10)),
         # Weather
         "runs_mult":       g["runs_mult"],
         "hr_mult":         g["hr_mult"],

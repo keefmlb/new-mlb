@@ -215,6 +215,7 @@ def main():
             g_team_pit_recent = _int_keys(snap.get("team_pit_recent", {}))
             g_bat_stats = _int_keys(snap.get("batter_stats", {}))
             g_bat_recent = _int_keys(snap.get("batter_stats_recent", {}))
+            g_pit_recent = _int_keys(snap.get("pitcher_stats_recent", {}))
             n_snap_used += 1
         else:
             g_team_off = team_off
@@ -224,6 +225,7 @@ def main():
             g_team_pit_recent = team_pit_recent
             g_bat_stats = bat_stats
             g_bat_recent = bat_recent
+            g_pit_recent = pit_recent
         # Per-game (or current) reliever-only team aggregates from individual
         # pitcher stats — true bullpen ERA/FIP for late-game leverage.
         g_bullpen_stats = feats.bullpen_stats_by_team(g_pit_stats)
@@ -266,7 +268,8 @@ def main():
                                               pd.DataFrame(_bullpen_rel_log)) if _bullpen_rel_log else None,
                                           catcher_framing=_catcher_framing_proxy,
                                           home_catcher_id=h_catcher,
-                                          away_catcher_id=a_catcher)
+                                          away_catcher_id=a_catcher,
+                                          pit_recent=g_pit_recent)
         except Exception as e:
             print(f"  feature build failed for game {g.get('gamePk')}: {e}")
             continue

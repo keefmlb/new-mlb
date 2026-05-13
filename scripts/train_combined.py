@@ -73,6 +73,13 @@ def main():
                 "catcher_framing": 0.0,  # neutral (league average framing)
                 "catcher_id":      0,
             }
+            # Recent SP FIP: backfill to season FIP so the recent-gap = 0 for
+            # 2025 rows (i.e. no era-bias signal).
+            if c.endswith("sp_fip_recent"):
+                base = c.replace("_recent", "")
+                if base in df25.columns:
+                    df25[c] = df25[base]
+                    continue
             matched = False
             for suffix, val in neutral_defaults.items():
                 if c.endswith(suffix):
