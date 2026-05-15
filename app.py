@@ -7,6 +7,7 @@ Pages:
   - Slate (default): date picker, top value bets, per-game cards, drill-down
 """
 from __future__ import annotations
+import json
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -23,6 +24,12 @@ from src import dispersion as disp_mod
 
 _DISP_PATH = ROOT / "data" / "models" / "dispersion.json"
 _TEAM_RUN_DISP = 1.4   # typical MLB over-dispersion for team scoring (var/mean)
+
+_STAT_REL_PATH = ROOT / "data" / "models" / "stat_reliability.json"
+try:
+    _stat_rel_weights: dict = json.loads(_STAT_REL_PATH.read_text(encoding="utf-8"))
+except Exception:
+    _stat_rel_weights = {}
 
 
 # ---------- Page config ----------
@@ -470,6 +477,7 @@ with main_tab_value:
         ("Overall",        None),
         ("Confidence",     "__confidence__"),
         ("Pure Conf.",     "__pure_confidence__"),
+        ("Model Conf.",    "__model_confidence__"),
         ("HR",          ["prop_hr"]),
         # Split Hits into two markets-by-line buckets so 1-hit (line 0.5)
         # and 2+ hit (line >= 1.5) bets get their own top-20 list.
@@ -514,6 +522,8 @@ with main_tab_value:
             return min(20, len(_all_bets))
         if markets == "__pure_confidence__":
             return min(20, len(_market_pool_for_counts))
+        if markets == "__model_confidence__":
+            return min(80, len(_market_pool_for_counts))
         if markets == "__hits_one__":
             return min(20, len(_hits_subset(_market_pool_for_counts, multi=False)))
         if markets == "__hits_multi__":
@@ -541,12 +551,20 @@ with main_tab_value:
                 if markets is None:
                     pool = sorted(slate.top_value, key=lambda x: -x.get(sort_key, 0))[:40]
                 elif markets == "__confidence__":
-                    pool = sorted(_all_bets, key=lambda x: -(x.get("confidence") or 0))[:20]
+                    pool = sorted(
+                        _all_bets,
+                        key=lambda x: -(x.get("model_prob", 0) * _stat_rel_weights.get(x.get("market", ""), 0.10)),
+                    )[:20]
                 elif markets == "__pure_confidence__":
                     pool = sorted(
                         getattr(slate, "all_bets", []) or [],
-                        key=lambda x: -(x.get("confidence") or 0),
+                        key=lambda x: -(x.get("model_prob", 0) * _stat_rel_weights.get(x.get("market", ""), 0.10)),
                     )[:20]
+                elif markets == "__model_confidence__":
+                    pool = sorted(
+                        getattr(slate, "all_bets", []) or _all_bets,
+                        key=lambda x: -x.get("model_prob", 0),
+                    )[:80]
                 elif markets == "__hits_one__":
                     _market_pool = getattr(slate, "all_bets", []) or _all_bets
                     pool = sorted(
@@ -571,6 +589,7 @@ with main_tab_value:
 
                 is_confidence_tab = (markets in ("__confidence__", "__pure_confidence__"))
                 is_pure_confidence_tab = (markets == "__pure_confidence__")
+                is_model_confidence_tab = (markets == "__model_confidence__")
                 if markets == "__confidence__":
                     st.caption(
                         "**Confidence** = stat-reliability × 4·p·(1−p), filtered to bets that beat "
@@ -582,6 +601,11 @@ with main_tab_value:
                         "ignoring the edge filter. Surfaces the bets the model is most certain about "
                         "regardless of whether the book line agrees — useful for spotting model conviction "
                         "even when the price isn't favourable."
+                    )
+                elif is_model_confidence_tab:
+                    st.caption(
+                        "Top 80 bets sorted by **raw model probability** — no edge, no reliability weighting. "
+                        "Every evaluated bet is included regardless of edge threshold."
                     )
 
                 _raw = pd.DataFrame(pool)
@@ -601,11 +625,20 @@ with main_tab_value:
                     "No-vig%":    (_raw["novig_prob"] * 100).round(1),
                     "Edge%":      _raw["edge_pct"].round(1),
                     "Confidence": _raw["confidence"].round(3) if "confidence" in _raw.columns else 0.0,
+                    "Pure Conf%": (
+                        _raw["model_prob"] * _raw["market"].map(
+                            lambda m: _stat_rel_weights.get(str(m), 0.10)
+                        )
+                    ).round(3) if "market" in _raw.columns else (_raw["model_prob"] * 0.10).round(3),
                     "Score":      _raw["score"].round(3),
                     "EV/$":       _raw["ev_per_dollar"].round(4),
                     "Kelly%":     (_raw["kelly"] * 100).round(3),
                 }
-                _sort_for_tab = "Confidence" if is_confidence_tab else _sort_col
+                _sort_for_tab = (
+                    "Pure Conf%" if is_confidence_tab
+                    else "Model%" if is_model_confidence_tab
+                    else _sort_col
+                )
                 df_lb = pd.DataFrame(_df_cols).sort_values(_sort_for_tab, ascending=False)
 
                 # Color-code Edge% column: deeper green = bigger edge
@@ -631,6 +664,7 @@ with main_tab_value:
                     "No-vig%":    "{:.1f}%",
                     "Edge%":      "+{:.1f}%",
                     "Confidence": "{:.3f}",
+                    "Pure Conf%": "{:.3f}",
                     "Score":      "{:.2f}",
                     "EV/$":       "{:+.3f}",
                     "Kelly%":     "{:.2f}%",

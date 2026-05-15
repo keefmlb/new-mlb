@@ -43,12 +43,11 @@ FEATURES = [
     # miss. Closes the per-team bias gap for contact-driven teams (Nationals
     # -0.79, Cubs -0.62, Brewers -0.42) vs. power-driven (Phillies +0.63).
     "off_sb_net_pg", "off_sf_pg", "off_gidp_pg",
-    # NOTE: lineup_woba_recent is computed and persisted on every game row
-    # (see GameFeatures.home_lineup_woba_recent), but NOT included in FEATURES.
-    # 2025 training rows filled it with the league default (0.315) while 2026
-    # rows have real variation, so the GLM learns a spurious era contrast (the
-    # same bug that bit off_rpg_recent). Re-include after rebuilding 2025 with
-    # per-batter 14d snapshots — currently a 10+ min rebuild.
+    # Lineup recent form (14-day per-batter aggregate over the 9 starters).
+    # Re-enabled May 15: train_combined now backfills 2025 _recent columns to
+    # the base season value, so era contrast is gone and the previously-bad
+    # negative coefficient should no longer appear.
+    "lineup_woba_recent",
     # Platoon: lineup wOBA vs the OPPOSING starter's throwing hand (EB-shrunk).
     "lineup_xwoba_vs_hand",
     # Statcast offense — park/defense-neutral contact quality (team-level, kept
@@ -85,6 +84,9 @@ FEATURES = [
     # Opposing SP recent-form gap (recent FIP - season FIP). Sharper than
     # season aggregate when starters shift form mid-season.
     "opp_sp_fip_recent_gap",
+    # Opposing SP pitches-per-inning efficiency (low = goes deeper = less
+    # bullpen damage to us, fewer runs scored).
+    "opp_sp_ppi",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
@@ -182,6 +184,9 @@ def _half(g: dict, batting: str) -> dict:
         # static season xFIP misses.
         "opp_sp_fip_recent_gap":   (_pick(g, f"{o}_sp_fip_recent", 4.10)
                                     - _pick(g, f"{o}_sp_fip", 4.10)),
+        # Opposing SP pitches-per-inning. Low PPI = command, goes deeper,
+        # less bullpen exposure -> we score less. League ~15.5.
+        "opp_sp_ppi":              _pick(g, f"{o}_sp_ppi", 15.5),
         # Weather
         "runs_mult":       g["runs_mult"],
         "hr_mult":         g["hr_mult"],

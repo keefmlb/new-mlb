@@ -33,10 +33,14 @@ GAMES = ROOT / "data" / "games" / "games_2026.csv"
 MODEL = ROOT / "data" / "models" / "team_runs.joblib"
 OUT   = ROOT / "data" / "models" / "team_runs_rate.json"
 
-WINDOW_DAYS  = 14    # how many recent days to fit on
-MIN_GAMES    = 40    # below this, keep rate_factor at 1.0
-CLAMP_LO     = 0.85
-CLAMP_HI     = 1.15
+WINDOW_DAYS  = 14     # how many recent days to fit on
+MIN_GAMES    = 40     # below this, keep rate_factor at 1.0
+CLAMP_LO     = 0.92   # tightened May 15 — over-aggressive 0.85 corrections
+CLAMP_HI     = 1.08   # tightened May 15 — were under-correcting full season
+# Dead-band: when raw bias is small, the rate factor was over-correcting.
+# Only activate the factor when the model is genuinely off — otherwise leave
+# predictions alone at 1.0.
+DEAD_BAND_BIAS = 0.4   # |raw_bias| < 0.4 runs/game -> use rate_factor 1.0
 
 
 def main():
@@ -66,14 +70,22 @@ def main():
         pred_mean = float(totals["pred"].mean())
         act_mean  = float(totals["actual"].mean())
         raw_rate  = act_mean / pred_mean if pred_mean > 0 else 1.0
-        rate_factor = max(CLAMP_LO, min(CLAMP_HI, raw_rate))
 
-        bias = (totals["pred"] - totals["actual"]).mean()
-        mae  = (totals["pred"] - totals["actual"]).abs().mean()
+        bias = float((totals["pred"] - totals["actual"]).mean())
+        mae  = float((totals["pred"] - totals["actual"]).abs().mean())
+
+        # Dead-band check: if raw bias is small, don't activate the factor.
+        # Past misses were over-correcting full-season when only one bad week.
+        if abs(bias) < DEAD_BAND_BIAS:
+            rate_factor = 1.0
+            print(f"  raw rate     = {raw_rate:.4f}  (raw bias {bias:+.2f} < +/-{DEAD_BAND_BIAS} -> NO correction)")
+        else:
+            rate_factor = max(CLAMP_LO, min(CLAMP_HI, raw_rate))
+
         print(f"  pred_mean    = {pred_mean:.3f}")
         print(f"  actual_mean  = {act_mean:.3f}")
         print(f"  raw rate     = {raw_rate:.4f}")
-        print(f"  clamped rate = {rate_factor:.4f}  (clamp [{CLAMP_LO}, {CLAMP_HI}])")
+        print(f"  applied rate = {rate_factor:.4f}  (clamp [{CLAMP_LO}, {CLAMP_HI}], dead-band {DEAD_BAND_BIAS})")
         print(f"  MAE          = {mae:.3f}")
         print(f"  bias         = {bias:+.3f}")
 

@@ -143,6 +143,10 @@ def pitcher_quality_index(stats: dict, sc_stats: dict | None = None) -> dict:
     # returns string ".---" when undefined.
     api_fip_minus = _safe_float(stats.get("fipMinus"), 100.0) or 100.0
     strike_pct = _safe_float(stats.get("strikePercentage"), 0.62) or 0.62
+    # Pitches per inning — efficiency / command proxy. Low PPI = pitcher
+    # works deep into games, reduces bullpen exposure, allows fewer runs.
+    # League average ~15-16 PPI; elite command 13-14; struggling 18+.
+    pitches_per_inning = _safe_float(stats.get("pitchesPerInning"), 15.5) or 15.5
 
     # GB/FB tendency. groundOuts and airOuts together cover all balls in play
     # that produced an out (GB+FB+LD ~= GO+AO ignoring LD which API folds in).
@@ -171,6 +175,7 @@ def pitcher_quality_index(stats: dict, sc_stats: dict | None = None) -> dict:
         "strike_pct": strike_pct,
         "gb_pct":   gb_pct,
         "gb_to_fb": gb_to_fb,
+        "pitches_per_inning": w * pitches_per_inning + (1 - w) * 15.5,
         "bf":   bf,
         "ip":   ip,
         "shrink_w": w,
@@ -691,6 +696,9 @@ class GameFeatures:
     # season profile. Falls back to season FIP when recent sample too thin.
     home_sp_fip_recent: float = 4.10
     away_sp_fip_recent: float = 4.10
+    # Starter pitches-per-inning. Low PPI = command/efficiency. League ~15.5.
+    home_sp_ppi: float = 15.5
+    away_sp_ppi: float = 15.5
     # Sequential offense — small-ball / situational hitting metrics.
     # Defaults match league averages so older rows still produce sane outputs.
     home_off_sb_pg: float = 0.60;     away_off_sb_pg: float = 0.60
@@ -943,6 +951,9 @@ def build_game_features(
         # Recent SP form (14d FIP)
         home_sp_fip_recent=float(_home_sp_fip_recent),
         away_sp_fip_recent=float(_away_sp_fip_recent),
+        # Starter pitches-per-inning efficiency
+        home_sp_ppi=float(home_sp_q.get("pitches_per_inning", 15.5)),
+        away_sp_ppi=float(away_sp_q.get("pitches_per_inning", 15.5)),
         # Bullpen 72hr workload (prior 3 days of relief outings)
         home_bp_ip_72h=float((bullpen_usage.get(home_tid, when.date().isoformat())
                               if bullpen_usage else {"ip_72h": 0.0}).get("ip_72h", 0.0)),

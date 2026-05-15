@@ -80,6 +80,10 @@ def main():
                 if base in df25.columns:
                     df25[c] = df25[base]
                     continue
+            # Starter pitches-per-inning: 15.5 league average for 2025
+            if c.endswith("sp_ppi"):
+                df25[c] = 15.5
+                continue
             matched = False
             for suffix, val in neutral_defaults.items():
                 if c.endswith(suffix):
