@@ -229,6 +229,8 @@ def main():
         # Per-game (or current) reliever-only team aggregates from individual
         # pitcher stats — true bullpen ERA/FIP for late-game leverage.
         g_bullpen_stats = feats.bullpen_stats_by_team(g_pit_stats)
+        # Bullpen RECENT (14d) ERA per team, from per-game snapshot's pit_recent.
+        g_bullpen_era_recent = feats.bullpen_recent_era_by_team(g_pit_recent, g_pit_stats)
 
         # For finished games, fetch boxscore now to recover the actual starting
         # lineup so lineup-weighted features reflect who really played.
@@ -269,7 +271,8 @@ def main():
                                           catcher_framing=_catcher_framing_proxy,
                                           home_catcher_id=h_catcher,
                                           away_catcher_id=a_catcher,
-                                          pit_recent=g_pit_recent)
+                                          pit_recent=g_pit_recent,
+                                          bullpen_era_recent=g_bullpen_era_recent)
         except Exception as e:
             print(f"  feature build failed for game {g.get('gamePk')}: {e}")
             continue

@@ -84,6 +84,12 @@ def main():
             if c.endswith("sp_ppi"):
                 df25[c] = 15.5
                 continue
+            # Bullpen recent ERA: backfill to season bp_era so gap=0 (no era contrast)
+            if c.endswith("bp_era_recent"):
+                base = c.replace("_recent", "")
+                if base in df25.columns:
+                    df25[c] = df25[base]
+                    continue
             matched = False
             for suffix, val in neutral_defaults.items():
                 if c.endswith(suffix):

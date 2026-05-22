@@ -348,6 +348,50 @@ def build_catcher_framing_proxy(box_df, pitcher_stats: dict[int, dict],
     return out
 
 
+def bullpen_recent_era_by_team(pit_recent: dict[int, dict] | None,
+                                pitcher_stats: dict[int, dict] | None = None) -> dict[int, float]:
+    """Reliever-only RECENT (14d) ERA per team.
+
+    Filters pit_recent to relievers (using pitcher_stats season gamesStarted
+    info to identify them — pit_recent itself may not have gamesStarted).
+    Sums earned runs and innings, returns ERA. Falls back to 4.30 league
+    avg when too thin.
+
+    Pairs with bullpen_stats_by_team (season ERA): the GLM can learn
+    season-vs-recent gap to capture short-term bullpen form (cold streaks,
+    closer call-ups, etc).
+    """
+    if not pit_recent:
+        return {}
+    pstats = pitcher_stats or {}
+    by_team: dict[int, dict] = {}
+    for pid, rs in pit_recent.items():
+        season = pstats.get(int(pid)) or {}
+        gp = _safe_float(season.get("gamesPitched"))
+        gs = _safe_float(season.get("gamesStarted"))
+        is_reliever = (gp > 0) and ((gs == 0) or (gs / gp < 0.20))
+        if not is_reliever:
+            continue
+        tid = season.get("team_id") or rs.get("team_id")
+        if tid is None:
+            continue
+        outs = _ip_to_outs(rs.get("inningsPitched", 0))
+        if outs <= 0:
+            continue
+        acc = by_team.setdefault(int(tid), {"outs": 0.0, "er": 0.0})
+        acc["outs"] += outs
+        acc["er"]   += _safe_float(rs.get("earnedRuns"))
+
+    out: dict[int, float] = {}
+    for tid, acc in by_team.items():
+        ip = acc["outs"] / 3.0
+        if ip <= 5:                          # too thin a sample
+            out[int(tid)] = 4.30
+        else:
+            out[int(tid)] = acc["er"] * 9.0 / ip
+    return out
+
+
 def build_pitcher_last_appearance(box_df) -> dict[int, str]:
     """Walk the box-score dataframe and return {pitcher_id -> latest ISO date
     they pitched in}. Used to compute days-rest at game-build time.
@@ -699,6 +743,10 @@ class GameFeatures:
     # Starter pitches-per-inning. Low PPI = command/efficiency. League ~15.5.
     home_sp_ppi: float = 15.5
     away_sp_ppi: float = 15.5
+    # Bullpen-only RECENT (14d) ERA. Captures short-term bullpen form not in
+    # the season aggregate — cold streaks, fresh call-ups, recent over-use.
+    home_bp_era_recent: float = 4.30
+    away_bp_era_recent: float = 4.30
     # Sequential offense — small-ball / situational hitting metrics.
     # Defaults match league averages so older rows still produce sane outputs.
     home_off_sb_pg: float = 0.60;     away_off_sb_pg: float = 0.60
@@ -732,6 +780,7 @@ def build_game_features(
     home_catcher_id: int | None = None,
     away_catcher_id: int | None = None,
     pit_recent: dict[int, dict] | None = None,
+    bullpen_era_recent: dict[int, float] | None = None,
 ) -> Optional[GameFeatures]:
     """Build one feature row for a scheduled game given pre-game stats lookups.
 
@@ -954,6 +1003,9 @@ def build_game_features(
         # Starter pitches-per-inning efficiency
         home_sp_ppi=float(home_sp_q.get("pitches_per_inning", 15.5)),
         away_sp_ppi=float(away_sp_q.get("pitches_per_inning", 15.5)),
+        # Bullpen 14d ERA
+        home_bp_era_recent=float((bullpen_era_recent or {}).get(home_tid, 4.30)),
+        away_bp_era_recent=float((bullpen_era_recent or {}).get(away_tid, 4.30)),
         # Bullpen 72hr workload (prior 3 days of relief outings)
         home_bp_ip_72h=float((bullpen_usage.get(home_tid, when.date().isoformat())
                               if bullpen_usage else {"ip_72h": 0.0}).get("ip_72h", 0.0)),

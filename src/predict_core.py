@@ -196,6 +196,8 @@ def predict_slate(target_date: date | str | None = None,
     # Reliever-only team aggregates for true bullpen ERA/FIP (vs the team_pit
     # staff-wide aggregate dominated by starter innings).
     bullpen_stats = feats.bullpen_stats_by_team(pitcher_stats)
+    # Reliever-only RECENT (14d) ERA per team — captures short-term bullpen form
+    bullpen_era_recent = feats.bullpen_recent_era_by_team(pit_recent, pitcher_stats)
     # Pitcher last-appearance map for days-rest computation
     try:
         _box_df = pd.read_csv(ROOT / "data" / "games" / "box_2026.csv")
@@ -288,6 +290,7 @@ def predict_slate(target_date: date | str | None = None,
                                       home_catcher_id=_catchers["home"],
                                       away_catcher_id=_catchers["away"],
                                       pit_recent=pit_recent,
+                                      bullpen_era_recent=bullpen_era_recent,
                                       bullpen_usage=bullpen_usage)
         if f is None:
             continue

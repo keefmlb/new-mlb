@@ -87,6 +87,8 @@ FEATURES = [
     # Opposing SP pitches-per-inning efficiency (low = goes deeper = less
     # bullpen damage to us, fewer runs scored).
     "opp_sp_ppi",
+    # Bullpen recent-form deviation from season aggregate.
+    "opp_bp_era_recent_gap",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
@@ -187,6 +189,11 @@ def _half(g: dict, batting: str) -> dict:
         # Opposing SP pitches-per-inning. Low PPI = command, goes deeper,
         # less bullpen exposure -> we score less. League ~15.5.
         "opp_sp_ppi":              _pick(g, f"{o}_sp_ppi", 15.5),
+        # Opposing bullpen 14d ERA gap (recent - season). Captures recent
+        # bullpen form shift: positive = bullpen running hot, negative =
+        # they've been getting torched (good for our offense).
+        "opp_bp_era_recent_gap":   (_pick(g, f"{o}_bp_era_recent", 4.30)
+                                    - _pick(g, f"{o}_bp_era", 4.30)),
         # Weather
         "runs_mult":       g["runs_mult"],
         "hr_mult":         g["hr_mult"],
