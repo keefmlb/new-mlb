@@ -143,10 +143,11 @@ def main():
         sc_team_bat = sc.get_team_batting(SEASON, player_team_map)
         sc_pit      = sc.get_pitcher_stats(SEASON)
         sc_team_def = sc.get_team_fielding(SEASON, player_team_map)
-        print(f"       {len(sc_team_bat)} teams  {len(sc_pit)} pitchers  {len(sc_team_def)} team-def")
+        sc_team_run = sc.get_team_baserunning(SEASON, player_team_map)
+        print(f"       {len(sc_team_bat)} teams  {len(sc_pit)} pitchers  {len(sc_team_def)} team-def  {len(sc_team_run)} team-run")
     except Exception as e:
         print(f"       WARNING: Statcast fetch failed ({e}) — using league-average fallbacks")
-        sc_team_bat, sc_pit, sc_team_def = {}, {}, {}
+        sc_team_bat, sc_pit, sc_team_def, sc_team_run = {}, {}, {}, {}
 
     print(f"[5/6] Pulling schedule {SEASON_START} through {today + timedelta(days=2)}...")
     games = mlb_api.schedule_range(SEASON_START, today + timedelta(days=2))
@@ -256,6 +257,7 @@ def main():
                                           sc_team_bat=sc_team_bat,
                                           sc_pit=sc_pit,
                                           sc_team_def=sc_team_def,
+                                          sc_team_run=sc_team_run,
                                           home_lineup_ids=h_lu_ids,
                                           away_lineup_ids=a_lu_ids,
                                           batter_stats=g_bat_stats,

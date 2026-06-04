@@ -196,8 +196,6 @@ def predict_slate(target_date: date | str | None = None,
     # Reliever-only team aggregates for true bullpen ERA/FIP (vs the team_pit
     # staff-wide aggregate dominated by starter innings).
     bullpen_stats = feats.bullpen_stats_by_team(pitcher_stats)
-    # Reliever-only RECENT (14d) ERA per team — captures short-term bullpen form
-    bullpen_era_recent = feats.bullpen_recent_era_by_team(pit_recent, pitcher_stats)
     # Pitcher last-appearance map for days-rest computation
     try:
         _box_df = pd.read_csv(ROOT / "data" / "games" / "box_2026.csv")
@@ -213,6 +211,8 @@ def predict_slate(target_date: date | str | None = None,
     batter_stats = _stats_lookup(snap["batter_stats"])
     bat_recent = _stats_lookup(snap.get("batter_stats_recent", {}))
     pit_recent = _stats_lookup(snap.get("pitcher_stats_recent", {}))
+    # Reliever-only RECENT (14d) ERA per team — captures short-term bullpen form
+    bullpen_era_recent = feats.bullpen_recent_era_by_team(pit_recent, pitcher_stats)
     bat_vs_l = _stats_lookup(snap.get("bat_vs_l", {}))
     bat_vs_r = _stats_lookup(snap.get("bat_vs_r", {}))
     pit_vs_l = _stats_lookup(snap.get("pit_vs_l", {}))   # pitcher splits vs LHB
@@ -228,9 +228,10 @@ def predict_slate(target_date: date | str | None = None,
         sc_pit_data = sc.get_pitcher_stats(2026)
         sc_bat_data = sc.get_batter_stats(2026)
         sc_team_def = sc.get_team_fielding(2026, _player_team_map)
+        sc_team_run = sc.get_team_baserunning(2026, _player_team_map)
         sc_arsenal  = sc.get_pitcher_arsenal(2026)
     except Exception:
-        sc_team_bat, sc_pit_data, sc_bat_data, sc_team_def, sc_arsenal = {}, {}, {}, {}, {}
+        sc_team_bat, sc_pit_data, sc_bat_data, sc_team_def, sc_team_run, sc_arsenal = {}, {}, {}, {}, {}, {}
 
     model = mdl.TeamScoreModel.load(ROOT / "data" / "models" / "team_runs.joblib")
     _model_dir = ROOT / "data" / "models"
@@ -278,6 +279,7 @@ def predict_slate(target_date: date | str | None = None,
         f = feats.build_game_features(g, team_off, team_pit, pitcher_stats,
                                       sc_team_bat=sc_team_bat, sc_pit=sc_pit_data,
                                       sc_team_def=sc_team_def,
+                                      sc_team_run=sc_team_run,
                                       home_lineup_ids=home_lineup_ids,
                                       away_lineup_ids=away_lineup_ids,
                                       batter_stats=batter_stats,

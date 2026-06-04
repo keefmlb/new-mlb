@@ -720,6 +720,10 @@ class GameFeatures:
     # bias — good defense converts more balls in play to outs. Higher = better.
     home_def_oaa: float = 0.0
     away_def_oaa: float = 0.0
+    # Team sprint speed (ft/s) — baserunning/athleticism proxy for the
+    # small-ball signal OPS/wOBA miss. League avg ~27.0.
+    home_sprint_speed: float = 27.0
+    away_sprint_speed: float = 27.0
     # Bullpen workload (prior 72hr). Fatigued bullpens give up more in close
     # games. top_relief_rest_days = days since last appearance for the most-
     # rested of the team's top-3 highest-leverage relievers.
@@ -765,6 +769,7 @@ def build_game_features(
     sc_team_bat: dict[int, dict] | None = None,
     sc_pit: dict[int, dict] | None = None,
     sc_team_def: dict[int, dict] | None = None,
+    sc_team_run: dict[int, dict] | None = None,
     home_lineup_ids: list[int] | None = None,
     away_lineup_ids: list[int] | None = None,
     batter_stats: dict[int, dict] | None = None,
@@ -990,6 +995,8 @@ def build_game_features(
         # Team defensive value (OAA from Statcast)
         home_def_oaa=float((sc_team_def or {}).get(home_tid, {}).get("oaa", 0.0) or 0.0),
         away_def_oaa=float((sc_team_def or {}).get(away_tid, {}).get("oaa", 0.0) or 0.0),
+        home_sprint_speed=float((sc_team_run or {}).get(home_tid, {}).get("sprint_speed", 27.0) or 27.0),
+        away_sprint_speed=float((sc_team_run or {}).get(away_tid, {}).get("sprint_speed", 27.0) or 27.0),
         # Catcher framing — looked up from the box-score-derived proxy. Pass
         # the starting catcher IDs explicitly; lookup defaults to 0 framing
         # if catcher unknown or has no historical sample.

@@ -80,6 +80,52 @@ def calibrate_prob(p: float) -> float:
     return 0.5 + CALIBRATION_SHRINK * (p - 0.5)
 
 
+# ---- Data-driven game-line win-probability calibration ----
+# Fitted by scripts/fit_winprob_calibration.py on actual game outcomes:
+#   logit(p_cal) = a + b * logit(p_raw)   (b < 1 shrinks toward 0.5)
+# This is the COHERENT two-sided calibration for ML and run-line (both sides
+# sum to 1), replacing the asymmetric calibrate_prob for those two markets.
+# The June 2026 backtest showed the raw joint-Poisson win probs are
+# over-dispersed: predicted 0.30 -> actual 0.42, predicted 0.60 -> actual 0.54.
+# Over-confidence inflates fake edges on the bets the model is most wrong
+# about. Totals and props keep calibrate_prob (totals are already well
+# calibrated; props need the asymmetric no-longshot-inflation behaviour).
+_WINPROB_CAL: dict | None = None
+_WINPROB_CAL_PATH = (
+    Path(__file__).resolve().parent.parent / "data" / "models" / "winprob_calibration.json"
+)
+
+
+def _load_winprob_cal() -> dict:
+    global _WINPROB_CAL
+    if _WINPROB_CAL is not None:
+        return _WINPROB_CAL
+    try:
+        _WINPROB_CAL = json.loads(_WINPROB_CAL_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        _WINPROB_CAL = {}
+    return _WINPROB_CAL
+
+
+def reload_winprob_cal() -> None:
+    global _WINPROB_CAL
+    _WINPROB_CAL = None
+
+
+def calibrate_winprob(p: float, market: str) -> float:
+    """Apply the fitted logistic recalibration for a game-line market
+    ('moneyline' or 'run_line'). Falls back to the asymmetric calibrate_prob
+    when no fitted parameters exist (safe default before first fit)."""
+    cal = _load_winprob_cal().get(market)
+    if not cal or "a" not in cal or "b" not in cal:
+        return calibrate_prob(p)
+    a = float(cal["a"]); b = float(cal["b"])
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    z = math.log(p / (1 - p))
+    z_cal = a + b * z
+    return 1.0 / (1.0 + math.exp(-z_cal))
+
+
 def kelly_fraction(p: float, decimal_odds: float, cap: float = 0.05) -> float:
     """Kelly bet size as fraction of bankroll. Capped to cap (e.g. 5%)."""
     b = decimal_odds - 1.0
@@ -346,7 +392,7 @@ def evaluate_game_lines(
     # Moneyline
     ml = book.get("moneyline") or {}
     if "home" in ml and "away" in ml:
-        p_home = calibrate_prob(home_win_prob(lam_home, lam_away))
+        p_home = calibrate_winprob(home_win_prob(lam_home, lam_away), "moneyline")
         p_away = 1.0 - p_home
         imp_home = american_to_prob(ml["home"])
         imp_away = american_to_prob(ml["away"])
@@ -397,7 +443,7 @@ def evaluate_game_lines(
     if "line" in rl:
         home_line = float(rl["line"])
         away_line = -home_line
-        p_home_cover = calibrate_prob(run_line_cover_prob(lam_home, lam_away, home_line))
+        p_home_cover = calibrate_winprob(run_line_cover_prob(lam_home, lam_away, home_line), "run_line")
         p_away_cover = 1.0 - p_home_cover
         imp_h = american_to_prob(rl.get("home", +160))
         imp_a = american_to_prob(rl.get("away", -185))

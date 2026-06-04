@@ -72,6 +72,7 @@ def main():
                 "bp_top_rest":   2.5,    # avg top-relief rest
                 "catcher_framing": 0.0,  # neutral (league average framing)
                 "catcher_id":      0,
+                "sprint_speed":    27.0,  # league average ft/s
             }
             # Recent SP FIP: backfill to season FIP so the recent-gap = 0 for
             # 2025 rows (i.e. no era-bias signal).

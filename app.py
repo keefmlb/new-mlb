@@ -324,6 +324,8 @@ with st.sidebar:
     if st.button(":arrows_counterclockwise: Refresh data", use_container_width=True):
         run_prediction.clear()
         proj.reload_prop_models()
+        from src import value as _value
+        _value.reload_winprob_cal()
         st.rerun()
 
     st.caption(

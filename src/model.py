@@ -43,6 +43,10 @@ FEATURES = [
     # miss. Closes the per-team bias gap for contact-driven teams (Nationals
     # -0.79, Cubs -0.62, Brewers -0.42) vs. power-driven (Phillies +0.63).
     "off_sb_net_pg", "off_sf_pg", "off_gidp_pg",
+    # Team sprint speed — baserunning/athleticism (extra bases, infield hits,
+    # GIDP avoidance) that OPS/wOBA miss. Helps the contact/speed teams we
+    # persistently under-project.
+    "off_sprint_speed",
     # Lineup recent form (14-day per-batter aggregate over the 9 starters).
     # Re-enabled May 15: train_combined now backfills 2025 _recent columns to
     # the base season value, so era contrast is gone and the previously-bad
@@ -140,6 +144,8 @@ def _half(g: dict, batting: str) -> dict:
         "off_sf_pg":     own("off_sf_pg")     if f"{h}_off_sf_pg" in g else 0.30,
         "off_gidp_pg":   own("off_gidp_pg")   if f"{h}_off_gidp_pg" in g else 0.75,
         "off_sb_net_pg": own("off_sb_net_pg") if f"{h}_off_sb_net_pg" in g else 0.30,
+        # Team sprint speed (own batting team) — athleticism/baserunning proxy
+        "off_sprint_speed": own("sprint_speed") if f"{h}_sprint_speed" in g else 27.0,
         # Opposing starter
         "opp_sp_fip":      opp("sp_fip"),
         "opp_sp_xfip":     opp("sp_xfip"),

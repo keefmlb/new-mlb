@@ -304,6 +304,53 @@ def get_team_fielding(year: int,
     return out
 
 
+# ---------- Baserunning / athleticism ----------
+
+def get_team_baserunning(year: int,
+                         player_team_map: dict[int, int]) -> dict[int, dict]:
+    """Per-team PA-weighted sprint speed from the Statcast running leaderboard.
+
+    sprint_speed (ft/sec, "bolt" speed) is a clean athleticism proxy that
+    captures extra-bases-taken, infield hits, and GIDP avoidance — exactly the
+    small-ball signal that OPS/wOBA-weighted features miss (the persistent
+    under-projection of contact/speed teams like the Nationals and Cubs).
+    League average ~27 ft/s; elite team ~28+, slow ~26.
+
+    Returns dict[team_id -> {sprint_speed, n_runners}].
+    """
+    try:
+        df = _fetch_leaderboard(
+            year, "runner",
+            "sprint_speed",
+            min_pa=5,
+            cache_key="runner_v1",
+        )
+    except Exception as exc:
+        print(f"[statcast] runner fetch failed: {exc}; returning empty")
+        return {}
+
+    acc: dict[int, dict] = {}
+    for _, row in df.iterrows():
+        pid = _safe(row.get("player_id"))
+        if pid is None:
+            continue
+        tid = player_team_map.get(int(pid))
+        if tid is None:
+            continue
+        ss = _safe(row.get("sprint_speed"))
+        if ss is None:
+            continue
+        a = acc.setdefault(int(tid), {"ss_sum": 0.0, "n": 0})
+        a["ss_sum"] += ss
+        a["n"] += 1
+
+    out: dict[int, dict] = {}
+    for tid, a in acc.items():
+        n = a["n"] or 1
+        out[tid] = {"sprint_speed": a["ss_sum"] / n, "n_runners": a["n"]}
+    return out
+
+
 # ---------- Catcher framing ----------
 
 def get_catcher_framing(year: int) -> dict[int, dict]:
