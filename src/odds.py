@@ -174,6 +174,49 @@ def load_manual() -> dict:
         return {}
 
 
+def _dec(odds) -> float:
+    """American -> decimal for best-price comparison; None -> 0 (never best)."""
+    try:
+        o = int(odds)
+    except (TypeError, ValueError):
+        return 0.0
+    return (1.0 + o / 100.0) if o > 0 else (1.0 + 100.0 / (-o))
+
+
+def merge_prop_sources(*prop_lists: list[dict]) -> list[dict]:
+    """Line-shop player props across books, keeping the BEST price per side.
+
+    Props from different books that share (player, market, line) are the same
+    bet; taking the highest-decimal over and the highest-decimal under price
+    (possibly from different books) is free, guaranteed EV. Tags each side with
+    the offering book (`over_book` / `under_book`). Non-overlapping props are
+    passed through unchanged. Player names are matched case-insensitively.
+    """
+    merged: dict[tuple, dict] = {}
+    for plist in prop_lists:
+        for p in plist or []:
+            player = (p.get("player") or "").strip()
+            market = p.get("market"); line = p.get("line")
+            if not player or market is None or line is None:
+                continue
+            key = (player.lower(), market, float(line))
+            src = p.get("source", "?")
+            cur = merged.get(key)
+            if cur is None:
+                cur = {"player": player, "market": market, "line": float(line),
+                       "over": None, "under": None, "game": p.get("game"),
+                       "over_book": None, "under_book": None, "source": "merged"}
+                merged[key] = cur
+            for side, book_key in (("over", "over_book"), ("under", "under_book")):
+                v = p.get(side)
+                if v is None:
+                    continue
+                if cur[side] is None or _dec(v) > _dec(cur[side]):
+                    cur[side] = v
+                    cur[book_key] = src
+    return list(merged.values())
+
+
 def load_lines_with_fallback() -> tuple[list[dict], list[dict], str]:
     """Load best-available lines. Returns (game_books, player_props, source_label).
 
@@ -184,11 +227,23 @@ def load_lines_with_fallback() -> tuple[list[dict], list[dict], str]:
       3. Bovada free JSON (game lines + player props, single book)
       4. Manual JSON file
     """
-    # 1. odds-api.io (Fanatics + Polymarket sharp reference)
+    # 1. odds-api.io (Fanatics + Polymarket sharp reference). When it succeeds,
+    #    we ALSO pull Bovada and line-shop the props to the best price across
+    #    both books — free EV. Game lines stay on Fanatics (it carries the
+    #    Polymarket sharp reference the value pipeline anchors to).
     try:
         from . import odds_api_io
         g, p, s = odds_api_io.fetch_mlb()
         if g:
+            try:
+                from . import bovada
+                bov = bovada.parse_mlb_lines()
+                bov_props = bov.get("player_props", [])
+                if bov_props:
+                    p = merge_prop_sources(p, bov_props)
+                    s = "odds-api.io+bovada"
+            except Exception:
+                pass
             return g, p, s
     except Exception:
         pass
