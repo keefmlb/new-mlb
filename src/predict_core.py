@@ -582,6 +582,16 @@ def predict_slate(target_date: date | str | None = None,
                                   and ((" Over " in vb.description and total_pred < vb.line)
                                        or (" Under " in vb.description and total_pred > vb.line)))]
 
+            # Run-line plus-money restriction. The bet log is unambiguous:
+            # minus-money run-line bets (laying juice on a "safe" +1.5 cover)
+            # ran -36% over 31 bets and the market blend made them worse — a
+            # structural no-edge market, the game-line analog of K OVERs.
+            # Plus-money run-lines (+39% over 7) are the only side where we've
+            # shown anything. Restricting to plus-money flips the whole
+            # game-line book from net-negative to +5.4% (63 bets) in sim.
+            game_value = [vb for vb in game_value
+                          if not (vb.market == "run_line" and vb.odds <= 0)]
+
             gp.game_value = [_vb_to_dict(vb) for vb in game_value]
             gp.all_bets.extend(_vb_to_dict(vb) for vb in game_value_all)
             all_value_bets.extend(game_value)
