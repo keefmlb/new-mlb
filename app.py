@@ -213,11 +213,25 @@ def _amer(v):
     return f"+{v}" if v > 0 else str(v)
 
 
-def _render_value_df(rows: list[dict]) -> pd.DataFrame:
+def _stake_dollars(kelly: float, bankroll: float, kelly_frac: float) -> float:
+    """Recommended stake = bankroll × full-Kelly fraction × the chosen Kelly
+    fraction. The bet's `kelly` field is already the (capped) full-Kelly
+    fraction of bankroll."""
+    return max(0.0, float(bankroll) * float(kelly) * float(kelly_frac))
+
+
+def _render_value_df(rows: list[dict], bankroll: float = 0.0,
+                     kelly_frac: float = 0.0) -> pd.DataFrame:
     df = pd.DataFrame(rows)
     if df.empty:
         return df
     df = df.copy()
+    # Recommended stake / to-win (before we string-format odds)
+    if bankroll and kelly_frac:
+        _stake = df["kelly"].apply(lambda k: _stake_dollars(k, bankroll, kelly_frac))
+        _dec = df["odds"].apply(lambda o: (1.0 + o / 100.0) if o > 0 else (1.0 + 100.0 / (-o)))
+        df["Stake"] = _stake.apply(lambda s: f"${s:,.0f}")
+        df["To win"] = (_stake * (_dec - 1.0)).apply(lambda w: f"${w:,.0f}")
     df["odds"] = df["odds"].apply(_amer)
     df["model"] = (df["model_prob"] * 100).round(1).astype(str) + "%"
     df["no-vig"] = (df["novig_prob"] * 100).round(1).astype(str) + "%"
@@ -230,6 +244,8 @@ def _render_value_df(rows: list[dict]) -> pd.DataFrame:
     if "Score" in df.columns:
         cols.append("Score")
     cols += ["EV/$", "Kelly"]
+    if "Stake" in df.columns:
+        cols += ["Stake", "To win"]
     return df[cols].rename(columns={"description": "Bet"})
 
 
@@ -282,7 +298,7 @@ def run_prediction(target_iso: str, edge: float, fetch_odds: bool):
 # ---------- Sidebar controls ----------
 with st.sidebar:
     st.title(":baseball: MLB Predictor")
-    st.caption("Live model + Bovada lines · free, no API key required")
+    st.caption("Fanatics lines + props · Polymarket sharp reference")
 
     st.divider()
 
@@ -296,7 +312,7 @@ with st.sidebar:
         max_value=today + timedelta(days=14),
         label_visibility="collapsed",
     )
-    fetch_odds = st.checkbox("Pull live odds (Bovada)", value=True)
+    fetch_odds = st.checkbox("Pull live odds (Fanatics)", value=True)
 
     st.divider()
 
@@ -320,6 +336,26 @@ with st.sidebar:
 
     st.divider()
 
+    # ----- Bankroll / staking (Kelly) -----
+    st.markdown("**:moneybag: Staking**")
+    bankroll = st.number_input(
+        "Bankroll ($)", min_value=0.0, value=1000.0, step=50.0,
+        help="Recommended stakes are computed as a fraction of this bankroll.",
+    )
+    kelly_frac = st.select_slider(
+        "Kelly fraction",
+        options=[0.10, 0.125, 0.25, 0.33, 0.50, 1.0],
+        value=0.25,
+        format_func=lambda x: {0.10: "1/10", 0.125: "1/8", 0.25: "1/4",
+                               0.33: "1/3", 0.50: "1/2", 1.0: "Full"}.get(x, str(x)),
+        help=("Stake = bankroll × Kelly × this fraction. Fractional Kelly (¼ is "
+              "the common default) curbs variance and the cost of any model "
+              "over-confidence. Full Kelly maximises growth but is high-variance "
+              "and unforgiving of mis-estimated edges."),
+    )
+
+    st.divider()
+
     # ----- Actions -----
     if st.button(":arrows_counterclockwise: Refresh data", use_container_width=True):
         run_prediction.clear()
@@ -329,8 +365,8 @@ with st.sidebar:
         st.rerun()
 
     st.caption(
-        ":information_source: MLB Stats API · Open-Meteo · Bovada · Baseball Savant. "
-        "Edges are vs Bovada — expect haircut at sharper books."
+        ":information_source: MLB Stats API · Open-Meteo · Baseball Savant · "
+        "Fanatics (odds-api.io) · Polymarket sharp reference."
     )
 
 
@@ -534,14 +570,18 @@ with main_tab_value:
 
     _tab_labels = [f"{lab} ({_tab_count(mk)})" for lab, mk in MARKET_TABS]
 
-    with st.expander(":information_source: About these edges (vs Bovada — read once)", expanded=False):
+    with st.expander(":information_source: About these edges (read once)", expanded=False):
         st.markdown(
-            "- **Edges are vs Bovada lines.** Bovada's juice is wider than DK/FD/BetMGM. "
-            "A 5–6% edge vs Bovada may shrink to 1–3% or disappear at sharper books.\n"
-            "- One-sided props (Bovada Yes/No) are labelled `[1-sided, ~6% juice est.]` — the no-vig "
-            "estimate is rough at extreme odds. Treat +500 longshots with caution.\n"
+            "- **Game lines** are priced against the **Polymarket sharp** (near-vigless) "
+            "reference: we only surface a game bet when Fanatics' price beats the true line "
+            "(model-free +EV). When the market is efficient there will be none — that's honest.\n"
+            "- **Props** are model projections blended toward the Fanatics market price. "
+            "One-sided props show `[1-sided, ~8% juice est.]` — the no-vig estimate is rough at "
+            "extreme odds; treat +500 longshots with caution.\n"
+            "- **Stake** uses fractional Kelly on your sidebar bankroll. ¼ Kelly is the "
+            "conservative default; it curbs variance and the cost of model over-confidence.\n"
             "- **Score** = (edge / √(p·(1−p))) × stat-reliability — Sharpe-like ranking. "
-            "**EV / $** = expected profit per dollar — raw model value."
+            "**EV / $** = expected profit per dollar."
         )
 
     if not slate.top_value and not _all_bets:
@@ -636,6 +676,12 @@ with main_tab_value:
                     "EV/$":       _raw["ev_per_dollar"].round(4),
                     "Kelly%":     (_raw["kelly"] * 100).round(3),
                 }
+                # Recommended stake (fractional Kelly) + profit if it wins.
+                if bankroll and kelly_frac:
+                    _stk = _raw["kelly"].apply(lambda k: _stake_dollars(k, bankroll, kelly_frac))
+                    _decf = _raw["odds"].apply(lambda o: (1.0 + o / 100.0) if o > 0 else (1.0 + 100.0 / (-o)))
+                    _df_cols["Stake"] = _stk.round(0)
+                    _df_cols["To win"] = (_stk * (_decf - 1.0)).round(0)
                 _sort_for_tab = (
                     "Pure Conf%" if is_confidence_tab
                     else "Model%" if is_model_confidence_tab
@@ -661,7 +707,7 @@ with main_tab_value:
                 # whichever exists to stay portable across local & Streamlit Cloud.
                 _styler = df_lb.style
                 _style_fn = getattr(_styler, "map", None) or _styler.applymap
-                _styled = _style_fn(_edge_style, subset=["Edge%"]).format({
+                _fmt = {
                     "Model%":     "{:.1f}%",
                     "No-vig%":    "{:.1f}%",
                     "Edge%":      "+{:.1f}%",
@@ -670,7 +716,11 @@ with main_tab_value:
                     "Score":      "{:.2f}",
                     "EV/$":       "{:+.3f}",
                     "Kelly%":     "{:.2f}%",
-                })
+                }
+                if "Stake" in df_lb.columns:
+                    _fmt["Stake"] = "${:,.0f}"
+                    _fmt["To win"] = "${:,.0f}"
+                _styled = _style_fn(_edge_style, subset=["Edge%"]).format(_fmt)
 
                 st.dataframe(
                     _styled,
@@ -1009,10 +1059,10 @@ with main_tab_games:
 
             if gp.game_value:
                 st.markdown("**Game-line value:**")
-                st.dataframe(_render_value_df(gp.game_value), use_container_width=True, hide_index=True)
+                st.dataframe(_render_value_df(gp.game_value, bankroll, kelly_frac), use_container_width=True, hide_index=True)
             if gp.prop_value:
                 st.markdown("**Player prop value:**")
-                st.dataframe(_render_value_df(gp.prop_value), use_container_width=True, hide_index=True)
+                st.dataframe(_render_value_df(gp.prop_value, bankroll, kelly_frac), use_container_width=True, hide_index=True)
 
             st.markdown("---")
             b1, b2 = st.columns(2)

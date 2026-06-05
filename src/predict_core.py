@@ -718,14 +718,6 @@ def predict_slate(target_date: date | str | None = None,
                 vbs_all = value.evaluate_prop(name, pp["market"], mean, pp["line"],
                                               pp.get("over"), pp.get("under"),
                                               edge_threshold=-1.0)
-                # Tag each prop bet with the book offering the best price on
-                # that side (from line-shopping across Fanatics + Bovada) so the
-                # leaderboard tells the user WHERE to bet for the listed price.
-                _ob = pp.get("over_book"); _ub = pp.get("under_book")
-                for _vb in vbs_all:
-                    _bk = _ob if " OVER " in _vb.description else (_ub if " UNDER " in _vb.description else None)
-                    if _bk:
-                        _vb.description = f"{_vb.description} @{_bk}"
                 _pid = int(pdata.get("player_id") or 0)
                 # Short-start guard: drop pitcher counting-stat OVERs when we
                 # project < 4.5 IP (13.5 outs). Quick-hook starts — rookies on
