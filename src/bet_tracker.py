@@ -19,6 +19,137 @@ ROOT = Path(__file__).resolve().parent.parent
 LOG_PATH = ROOT / "data" / "bets" / "bet_log.json"
 GAMES_CSV = ROOT / "data" / "games" / "games_2026.csv"
 BOX_CSV   = ROOT / "data" / "games" / "box_2026.csv"
+CLOSING_CSV = ROOT / "data" / "odds" / "closing_lines.csv"
+
+
+# ---------- Closing Line Value (CLV) ----------
+# CLV measures whether we bet at a better price than the line closed at. It is
+# the professional gold standard for evaluating a betting model: consistently
+# beating the close is the single most reliable indicator of genuine edge, and
+# it converges FAR faster than win/loss ROI (which needs hundreds of bets to
+# separate skill from variance). Closing lines are captured per-game by
+# predict_core into data/odds/closing_lines.csv as the slate is run near first
+# pitch; CLV becomes computable for any logged game-line bet once its closing
+# line has been captured. (Props are not yet captured at close — future work.)
+
+def _load_closing_map() -> dict[int, dict]:
+    """{game_pk: closing-line row} from data/odds/closing_lines.csv."""
+    import csv as _csv
+    out: dict[int, dict] = {}
+    if not CLOSING_CSV.exists():
+        return out
+    try:
+        with CLOSING_CSV.open("r", encoding="utf-8", newline="") as fh:
+            for r in _csv.DictReader(fh):
+                try:
+                    out[int(r["game_pk"])] = r
+                except (TypeError, ValueError, KeyError):
+                    continue
+    except Exception:
+        pass
+    return out
+
+
+def _amer_to_prob(odds) -> Optional[float]:
+    try:
+        o = float(odds)
+    except (TypeError, ValueError):
+        return None
+    if o == 0:
+        return None
+    return (100.0 / (o + 100.0)) if o > 0 else (abs(o) / (abs(o) + 100.0))
+
+
+def _devig(p_a: Optional[float], p_b: Optional[float]) -> Optional[float]:
+    """No-vig probability of side A from a two-way market."""
+    if p_a is None or p_b is None or (p_a + p_b) <= 0:
+        return None
+    return p_a / (p_a + p_b)
+
+
+def clv_for_entry(entry: dict, closing: dict) -> Optional[dict]:
+    """Compute CLV for a single logged game-line bet against its closing line.
+
+    Returns {clv_prob_pct, beat_close} where clv_prob_pct is
+    (closing no-vig prob of OUR side) - (bet-time no-vig prob of our side), in
+    percentage points; positive = the line moved toward us = we beat the close.
+    Totals fall back to a runs-based line-movement signal. Returns None when the
+    bet can't be matched (e.g. props, missing closing odds).
+    """
+    mkt = entry.get("market"); desc = (entry.get("description") or "")
+    bettime_nv = entry.get("novig_prob")
+    home = (closing.get("home_team") or ""); away = (closing.get("away_team") or "")
+
+    def _our_side_is_home() -> Optional[bool]:
+        if home and home.lower() in desc.lower():
+            return True
+        if away and away.lower() in desc.lower():
+            return False
+        return None
+
+    if mkt == "moneyline":
+        is_home = _our_side_is_home()
+        if is_home is None or bettime_nv is None:
+            return None
+        p_h = _amer_to_prob(closing.get("ml_home")); p_a = _amer_to_prob(closing.get("ml_away"))
+        close_nv = _devig(p_h, p_a) if is_home else _devig(p_a, p_h)
+        if close_nv is None:
+            return None
+        return {"clv_prob_pct": (close_nv - bettime_nv) * 100.0,
+                "beat_close": close_nv > bettime_nv}
+
+    if mkt == "run_line":
+        is_home = _our_side_is_home()
+        if is_home is None or bettime_nv is None:
+            return None
+        p_h = _amer_to_prob(closing.get("rl_home")); p_a = _amer_to_prob(closing.get("rl_away"))
+        close_nv = _devig(p_h, p_a) if is_home else _devig(p_a, p_h)
+        if close_nv is None:
+            return None
+        return {"clv_prob_pct": (close_nv - bettime_nv) * 100.0,
+                "beat_close": close_nv > bettime_nv}
+
+    if mkt == "total":
+        try:
+            close_total = float(closing.get("market_total"))
+            bet_line = float(entry.get("line"))
+        except (TypeError, ValueError):
+            return None
+        is_over = " over " in desc.lower()
+        # Line moving UP helps an Over (we locked a lower number) and hurts an
+        # Under. Express CLV as the favourable line movement in runs.
+        move = (close_total - bet_line) if is_over else (bet_line - close_total)
+        return {"clv_runs": move, "beat_close": move > 0}
+
+    return None
+
+
+def get_clv_summary(days: int = 30) -> dict:
+    """Aggregate CLV over recently logged game-line bets that have a captured
+    closing line. Returns counts, % that beat the close, and average CLV."""
+    entries = _load_log()
+    closing = _load_closing_map()
+    cutoff = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
+    rows = []
+    for e in entries:
+        if e.get("date", "") < cutoff:
+            continue
+        cl = closing.get(int(e["game_pk"])) if e.get("game_pk") else None
+        if not cl:
+            continue
+        r = clv_for_entry(e, cl)
+        if r:
+            rows.append(r)
+    n = len(rows)
+    beat = sum(1 for r in rows if r.get("beat_close"))
+    prob_vals = [r["clv_prob_pct"] for r in rows if "clv_prob_pct" in r]
+    return {
+        "n": n,
+        "beat_close": beat,
+        "pct_beat_close": (beat / n) if n else None,
+        "avg_clv_pct": (sum(prob_vals) / len(prob_vals)) if prob_vals else None,
+        "n_priced": len(prob_vals),
+    }
 
 
 # ---------- Logging ----------
@@ -282,5 +413,6 @@ def get_track_record(days: int = 30) -> dict:
         "pending":  pending,
         "win_rate": wins / decided if decided else None,
         "by_market": by_market,
+        "clv":      get_clv_summary(days),
         "entries":  sorted(recent, key=lambda x: x["date"], reverse=True),
     }

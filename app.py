@@ -1058,6 +1058,28 @@ with main_tab_track:
                 delta=f"{(_wr - 0.5)*100:+.1f}pp vs 50%" if _wr is not None else None,
             )
 
+            # Closing Line Value — the fastest, most reliable edge signal.
+            _clv = _record.get("clv") or {}
+            if _clv.get("n"):
+                st.caption(
+                    ":dart: **Closing Line Value** — did we bet a better price than the line closed at? "
+                    "Beating the close is the gold-standard proof of edge and converges far faster than ROI."
+                )
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Game-line bets w/ CLV", _clv["n"])
+                _pbc = _clv.get("pct_beat_close")
+                c2.metric("Beat the close",
+                          f"{_pbc:.0%}" if _pbc is not None else "—",
+                          delta=f"{(_pbc-0.5)*100:+.0f}pp vs 50%" if _pbc is not None else None)
+                _ac = _clv.get("avg_clv_pct")
+                c3.metric("Avg CLV", f"{_ac:+.2f} pp" if _ac is not None else "—")
+            else:
+                st.caption(
+                    ":dart: **Closing Line Value** populates as logged bets and their captured "
+                    "closing lines accumulate (capture began Jun 4). It will be the primary edge "
+                    "gauge going forward."
+                )
+
             if _record["by_market"]:
                 _mkt_rows = []
                 for mkt, bm in sorted(_record["by_market"].items()):
