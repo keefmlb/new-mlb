@@ -352,6 +352,12 @@ class ValueBet:
 # exists. Run `value.write_stat_reliability()` once to create the seed file,
 # then update it after each backtest run.
 _STAT_RELIABILITY_DEFAULTS: dict[str, float] = {
+    # Sharp-value bets (book price beats the Polymarket near-vigless true line).
+    # Highest reliability: these are model-free, market-measured edges — the
+    # most trustworthy signal we have. edge_pct is already EV%.
+    "sharp_moneyline": 0.85,
+    "sharp_total":     0.80,
+    "sharp_run_line":  0.78,
     # Game lines (team-runs model R^2 ≈ 0.18 on totals)
     "moneyline":   0.55,
     "total":       0.55,
@@ -466,6 +472,72 @@ def score_bet(vb: ValueBet) -> float:
     rel = _get_stat_reliability().get(vb.market, 0.40)
     p = max(0.01, min(0.99, vb.model_prob))
     return _shrunk_edge_for_ranking(vb.edge_pct) * rel / math.sqrt(p * (1.0 - p))
+
+
+def evaluate_sharp_value(home_team: str, away_team: str, book: dict,
+                         min_ev: float = 0.02) -> list[ValueBet]:
+    """Find genuine +EV bets where the bettable book's PRICE beats the SHARP
+    true probability (Polymarket no-vig, via odds_api_io's `sharp` reference).
+
+    This is real advantage betting, not model guesswork: we treat Polymarket's
+    near-vigless implied probability as truth and bet the bettable book (Fanatics)
+    only where its actual offered price yields positive expected value. EV per
+    dollar = p_sharp * decimal_odds - 1. Edge here is the model-free, market-
+    measured kind — and it's exactly what CLV will validate.
+
+    Only fires when the bettable book and the sharp reference quote the SAME
+    line (so the comparison is apples-to-apples). Returns ValueBets tagged with
+    market 'sharp_*' and edge_pct = EV%.
+    """
+    sharp = book.get("sharp") or {}
+    out: list[ValueBet] = []
+
+    def _mk(market, desc, odds, p_sharp, p_book_novig):
+        d = american_to_decimal(int(odds))
+        ev = p_sharp * d - 1.0
+        if ev < min_ev:
+            return
+        out.append(annotate(ValueBet(
+            market=market, description=desc, line=0.0,
+            odds=int(odds), decimal_odds=d,
+            model_prob=p_sharp, novig_prob=p_book_novig,
+            edge_pct=ev * 100.0,                 # rank by expected ROI %
+            ev_per_dollar=ev, kelly=kelly_fraction(p_sharp, d),
+        )))
+
+    # Moneyline
+    ml = book.get("moneyline") or {}
+    if sharp.get("ml_home") is not None and "home" in ml and "away" in ml:
+        nv_h, nv_a = devig_two_way(american_to_prob(int(ml["home"])),
+                                   american_to_prob(int(ml["away"])))
+        _mk("sharp_moneyline", f"{home_team} ML [sharp value vs {sharp.get('ml_source','sharp')}]",
+            ml["home"], float(sharp["ml_home"]), nv_h)
+        _mk("sharp_moneyline", f"{away_team} ML [sharp value vs {sharp.get('ml_source','sharp')}]",
+            ml["away"], float(sharp["ml_away"]), nv_a)
+
+    # Total — only when the book line matches the sharp line exactly
+    tot = book.get("total") or {}
+    if (sharp.get("p_over") is not None and "line" in tot
+            and abs(float(tot["line"]) - float(sharp.get("total_line", -999))) < 1e-6):
+        nv_o, nv_u = devig_two_way(american_to_prob(int(tot.get("over", -110))),
+                                   american_to_prob(int(tot.get("under", -110))))
+        _mk("sharp_total", f"{away_team} @ {home_team} Over {tot['line']} [sharp value]",
+            tot.get("over", -110), float(sharp["p_over"]), nv_o)
+        _mk("sharp_total", f"{away_team} @ {home_team} Under {tot['line']} [sharp value]",
+            tot.get("under", -110), float(sharp["p_under"]), nv_u)
+
+    # Run line — only when the book line matches the sharp line
+    rl = book.get("run_line") or {}
+    if (sharp.get("p_home_cover") is not None and "line" in rl
+            and abs(float(rl["line"]) - float(sharp.get("rl_line", -999))) < 1e-6):
+        nv_h, nv_a = devig_two_way(american_to_prob(int(rl.get("home", -110))),
+                                   american_to_prob(int(rl.get("away", -110))))
+        _mk("sharp_run_line", f"{home_team} {rl['line']:+.1f} [sharp value]",
+            rl.get("home", -110), float(sharp["p_home_cover"]), nv_h)
+        _mk("sharp_run_line", f"{away_team} {-float(rl['line']):+.1f} [sharp value]",
+            rl.get("away", -110), float(sharp["p_away_cover"]), nv_a)
+
+    return out
 
 
 def evaluate_game_lines(

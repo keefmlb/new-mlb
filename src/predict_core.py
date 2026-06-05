@@ -597,9 +597,27 @@ def predict_slate(target_date: date | str | None = None,
             game_value = [vb for vb in game_value
                           if not (vb.market == "run_line" and vb.odds <= 0)]
 
-            gp.game_value = [_vb_to_dict(vb) for vb in game_value]
             gp.all_bets.extend(_vb_to_dict(vb) for vb in game_value_all)
-            all_value_bets.extend(game_value)
+
+            # Sharp-value bets: where the bettable book's price beats the
+            # Polymarket near-vigless true line (model-free advantage betting).
+            sharp_bets = value.evaluate_sharp_value(
+                f.home_team, f.away_team, bk, min_ev=0.02)
+            for vb in sharp_bets:
+                vb.game_pk = int(f.game_pk)
+                vb.starters_confirmed = starters_confirmed
+
+            # When a sharp (Polymarket) reference exists, TRUST IT over the
+            # model for game lines: the model cannot beat an efficient sharp
+            # line (measured: best Fanatics ML is ~-2% EV vs the sharp, mean
+            # -4.4%), so its "edges" there are illusory. Bet only sharp-
+            # validated +EV. Fall back to the model's game-line bets only when
+            # no sharp reference is available (e.g. Bovada-only slate).
+            has_sharp = (bk.get("sharp") or {}).get("ml_home") is not None
+            leaderboard_game = sharp_bets if has_sharp else game_value
+            gp.game_value = [_vb_to_dict(vb) for vb in leaderboard_game]
+            gp.all_bets.extend(_vb_to_dict(vb) for vb in sharp_bets)
+            all_value_bets.extend(leaderboard_game)
 
         # Player props for this game
         if merged_props:

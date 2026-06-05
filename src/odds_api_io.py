@@ -204,7 +204,27 @@ def _sharp_reference(books_raw: dict) -> dict:
                 sharp["p_under"] = pu / (po + pu)
                 sharp["total_source"] = "Polymarket" if src is poly else "Fanatics"
                 break
+    # Run line (±1.5): de-vig the home/away decimal at the captured line.
+    for src in (poly, fan):
+        rl = src.get("run_line")
+        if rl:
+            ph = _dec_to_prob(american_to_decimal_local(rl["home"]))
+            pa = _dec_to_prob(american_to_decimal_local(rl["away"]))
+            if ph and pa and (ph + pa) > 0:
+                sharp["rl_line"] = rl["line"]
+                sharp["p_home_cover"] = ph / (ph + pa)
+                sharp["p_away_cover"] = pa / (ph + pa)
+                sharp["rl_source"] = "Polymarket" if src is poly else "Fanatics"
+                break
     return sharp
+
+
+def american_to_decimal_local(odds) -> Optional[float]:
+    try:
+        o = int(odds)
+    except (TypeError, ValueError):
+        return None
+    return (1.0 + o / 100.0) if o > 0 else (1.0 + 100.0 / (-o))
 
 
 # ---------- public API ----------
