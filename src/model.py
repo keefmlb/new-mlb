@@ -33,72 +33,51 @@ from sklearn.isotonic import IsotonicRegression
 # pitcher metrics (kept xFIP, FIP-, BB/9; dropped FIP since xFIP already
 # captures it), and the linear-combination interaction off_minus_oppsp
 # (perfectly collinear with off_rpg + opp_sp_era).
+# Pruned Jun 4 2026: a full-season coefficient audit showed 14 features with
+# |coef| < 0.003 on z-scored inputs (effectively dead under L2). They were
+# either collinear with stronger features or pure noise, and the model beat a
+# constant-mean baseline by only ~2.5% on totals regardless. Removed to cut
+# overfit surface and feature-count fragility. The dropped columns are still
+# COMPUTED in _half()/GameFeatures (available for prop models or a future
+# regularized refit), just not consumed by the team-runs GLM:
+#   lineup_ops, lineup_woba, lineup_woba_recent  (collinear w/ lineup_xwoba_vs_hand, off_xwoba_sc)
+#   off_sf_pg, off_sprint_speed                  (noise / no signal)
+#   opp_sp_fip_minus                             (collinear w/ opp_sp_xfip)
+#   opp_def_oaa, opp_bp_ip_72h, opp_bp_top_rest  (dead bullpen/defense workload)
+#   opp_catcher_x_ump, opp_sp_ppi, opp_bp_era_recent_gap, opp_sp_fip_recent_gap
+#   ump_k_mult                                   (team-level dead; still used for K props)
 FEATURES = [
     # Offense (batting team) — season team aggregate (broad context)
     "off_rpg", "off_babip",
-    # Lineup-weighted offense — replaces team-aggregate OPS/BB%/wOBA. PA-weighted
-    # over the 9 confirmed starters, so role-player drift doesn't dilute the signal.
-    "lineup_ops", "lineup_bb_pct", "lineup_woba",
-    # Sequential offense — small-ball metrics that OPS/wOBA-weighted features
-    # miss. Closes the per-team bias gap for contact-driven teams (Nationals
-    # -0.79, Cubs -0.62, Brewers -0.42) vs. power-driven (Phillies +0.63).
-    "off_sb_net_pg", "off_sf_pg", "off_gidp_pg",
-    # Team sprint speed — baserunning/athleticism (extra bases, infield hits,
-    # GIDP avoidance) that OPS/wOBA miss. Helps the contact/speed teams we
-    # persistently under-project.
-    "off_sprint_speed",
-    # Lineup recent form (14-day per-batter aggregate over the 9 starters).
-    # Re-enabled May 15: train_combined now backfills 2025 _recent columns to
-    # the base season value, so era contrast is gone and the previously-bad
-    # negative coefficient should no longer appear.
-    "lineup_woba_recent",
+    # Lineup-weighted offense (PA-weighted over the 9 confirmed starters)
+    "lineup_bb_pct",
+    # Sequential offense — small-ball metrics that OPS/wOBA-weighted features miss
+    "off_sb_net_pg", "off_gidp_pg",
     # Platoon: lineup wOBA vs the OPPOSING starter's throwing hand (EB-shrunk).
+    # The single strongest team-runs feature.
     "lineup_xwoba_vs_hand",
-    # Statcast offense — park/defense-neutral contact quality (team-level, kept
-    # alongside lineup features for stability when lineup PA samples are thin).
+    # Statcast offense — park/defense-neutral contact quality (team-level)
     "off_xwoba_sc",
     # Opposing starter (advanced)
-    "opp_sp_xfip", "opp_sp_fip_minus", "opp_sp_bb9", "opp_sp_hr9",
+    "opp_sp_xfip", "opp_sp_bb9", "opp_sp_hr9",
     # Opposing starter Statcast — contact quality allowed
     "opp_sp_xera_sc",
     # Opposing bullpen / staff
     "opp_bp_era", "opp_pit_era_recent",
-    # Park — runs and HR factors. park_pf_h (hit factor) is persisted on
-    # GameFeatures but NOT included here: highly collinear with park_pf_runs
-    # (correlation ~0.85), and adding it destabilized GLM bootstrap variance
-    # in May 12 retraining (ML accuracy 61.6% -> 59.5%). Available for prop
-    # models or future Lasso/regularized fitting that can handle collinearity.
+    # Park — runs and HR factors + elevation
     "park_pf_runs", "park_pf_hr", "park_elev_ft",
-    # Roof indicators — domes and retractables suppress runs more than the park
-    # factor alone captures (May 11 full-season audit: bias +0.69 to +0.81).
-    "park_is_dome", "park_is_retractable",
+    # Roof indicator — retractables suppress runs beyond the park factor
+    "park_is_retractable",
     # Pitcher rest (of the opposing starter we're hitting against)
     "opp_sp_days_rest",
     # Day game flag
     "is_day_game",
-    # Defensive value of opposing team — better defense suppresses our offense
-    "opp_def_oaa",
-    # Bullpen fatigue of opposing team: high recent workload + no rested
-    # high-leverage arm -> more late-inning runs scored against them.
-    "opp_bp_ip_72h", "opp_bp_top_rest",
-    # Catcher framing: opp catcher's K-rate-boost proxy from box-score history,
-    # plus its interaction with the home-plate umpire's K-mult (great framer
-    # under a wide-zone umpire = bigger K bonus than either alone).
-    "opp_catcher_framing", "opp_catcher_x_ump",
-    # Opposing SP recent-form gap (recent FIP - season FIP). Sharper than
-    # season aggregate when starters shift form mid-season.
-    "opp_sp_fip_recent_gap",
-    # Opposing SP pitches-per-inning efficiency (low = goes deeper = less
-    # bullpen damage to us, fewer runs scored).
-    "opp_sp_ppi",
-    # Bullpen recent-form deviation from season aggregate.
-    "opp_bp_era_recent_gap",
+    # Catcher framing: opp catcher's K-rate-boost proxy from box-score history
+    "opp_catcher_framing",
     # Weather
     "runs_mult", "hr_mult", "wind_to_cf_mph", "temp_f",
     # Engineered interactions (multiplicative — not linear combos)
     "off_x_park", "opp_sp_x_off",
-    # Umpire
-    "ump_k_mult",
     # Context
     "is_home",
 ]

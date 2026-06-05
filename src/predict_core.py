@@ -21,6 +21,59 @@ from . import lineup_features as lf
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# How much to trust the betting market over the model when pricing GAME LINES.
+# The closing line is the sharpest single signal (injuries, scratches, weather,
+# sharp money); our team-runs model beats a constant baseline by only ~2.5% on
+# totals. Blending the run prediction toward the market-implied value before
+# pricing tightens predictions and prevents over-confident disagreement from
+# manufacturing fake edges (high-disagreement bets ran -34% ROI in the log).
+# 0.5 = equal trust. Applied to ML / total / run-line ONLY; player projections
+# keep the raw model output.
+MARKET_BLEND_WEIGHT = 0.50
+# Raw model-vs-market total disagreement (runs) beyond which game-line bets are
+# suppressed entirely — that magnitude of disagreement is model error, not edge.
+MARKET_MAX_TOTAL_DISAGREE = 3.0
+
+
+def _persist_closing_lines(rows: list[dict]) -> None:
+    """Append per-game market lines to a PERMANENT, game-linked dataset at
+    data/odds/closing_lines.csv. De-dupes by game_pk keeping the LATEST capture
+    (closest to first pitch ≈ closest to the closing line). This accumulates the
+    closing-line history we need to (a) backtest a market-blend weight and
+    (b) feature-ize line value — neither is possible from the 14-day rolling
+    odds_history snapshot. Best-effort; never raises into the prediction path.
+    """
+    if not rows:
+        return
+    import csv as _csv
+    path = ROOT / "data" / "odds" / "closing_lines.csv"
+    fields = ["game_pk", "date", "away_team", "home_team", "captured_at",
+              "market_total", "ml_home", "ml_away",
+              "rl_line", "rl_home", "rl_away"]
+    try:
+        existing: dict[int, dict] = {}
+        if path.exists():
+            with path.open("r", encoding="utf-8", newline="") as fh:
+                for r in _csv.DictReader(fh):
+                    try:
+                        existing[int(r["game_pk"])] = r
+                    except (TypeError, ValueError, KeyError):
+                        continue
+        for row in rows:
+            gpk = int(row["game_pk"])
+            prev = existing.get(gpk)
+            # Keep whichever capture is later (closer to close).
+            if prev is None or str(row["captured_at"]) >= str(prev.get("captured_at", "")):
+                existing[gpk] = {k: row.get(k, prev.get(k) if prev else "") for k in fields}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8", newline="") as fh:
+            w = _csv.DictWriter(fh, fieldnames=fields)
+            w.writeheader()
+            for gpk in sorted(existing):
+                w.writerow({k: existing[gpk].get(k, "") for k in fields})
+    except Exception:
+        pass
+
 
 def _team_runs_rate_factor() -> float:
     """Load the recent team-runs rate factor (actual_mean / pred_mean over
@@ -263,6 +316,7 @@ def predict_slate(target_date: date | str | None = None,
 
     all_value_bets: list[value.ValueBet] = []
     games_out: list[GamePrediction] = []
+    _closing_rows: list[dict] = []   # accumulate market lines for permanent log
 
     for g in games_raw:
         st = (g.get("status") or {}).get("codedGameState", "")
@@ -317,9 +371,35 @@ def predict_slate(target_date: date | str | None = None,
         home_pred = float(long[long["is_home"] == 1].iloc[0]["pred_runs"])
         away_pred = float(long[long["is_home"] == 0].iloc[0]["pred_runs"])
 
-        p_home_win = value.home_win_prob(home_pred, away_pred)
-        p_over_8_5 = value.total_over_prob(home_pred, away_pred, 8.5)
-        total_pred = home_pred + away_pred
+        # Market blend (game lines only): look up the book now and pull the run
+        # prediction toward the market-implied value. Player projections below
+        # keep the RAW model preds; only the game-line quantities use the
+        # blended values. `bk` is reused for the sportsbook lookup further down.
+        bk = _find_book(book_data, f.home_team, f.away_team) if book_data else None
+        if bk is None and manual:
+            bk = _find_book(manual.get("games", []), f.home_team, f.away_team)
+        home_pred_g, away_pred_g, market_total = (home_pred, away_pred, None)
+        if bk is not None:
+            home_pred_g, away_pred_g, market_total = value.blend_to_market(
+                home_pred, away_pred, bk, MARKET_BLEND_WEIGHT)
+            # Capture the market line into the permanent game-linked log.
+            _ml = bk.get("moneyline") or {}
+            _tot = bk.get("total") or {}
+            _rl = bk.get("run_line") or {}
+            _closing_rows.append({
+                "game_pk": int(f.game_pk), "date": f.date,
+                "away_team": f.away_team, "home_team": f.home_team,
+                "captured_at": datetime.now(timezone.utc).isoformat(),
+                "market_total": _tot.get("line"),
+                "ml_home": _ml.get("home"), "ml_away": _ml.get("away"),
+                "rl_line": _rl.get("line"), "rl_home": _rl.get("home"),
+                "rl_away": _rl.get("away"),
+            })
+
+        p_home_win = value.home_win_prob(home_pred_g, away_pred_g)
+        p_over_8_5 = value.total_over_prob(home_pred_g, away_pred_g, 8.5)
+        total_pred = home_pred_g + away_pred_g
+        total_pred_raw = home_pred + away_pred
 
         park = parks.get_park(f.venue)
         utc_dt = mlb_api.parse_game_time(g)
@@ -374,7 +454,9 @@ def predict_slate(target_date: date | str | None = None,
             temp_f=f.temp_f, wind_to_cf_mph=f.wind_to_cf_mph,
             runs_mult=f.runs_mult, hr_mult=f.hr_mult,
 
-            pred_home_runs=home_pred, pred_away_runs=away_pred,
+            # Display the market-blended game-line predictions so the card is
+            # internally consistent (pred_home + pred_away == pred_total).
+            pred_home_runs=home_pred_g, pred_away_runs=away_pred_g,
             pred_total=total_pred, p_home_win=p_home_win, p_over_8_5=p_over_8_5,
         )
 
@@ -436,21 +518,29 @@ def predict_slate(target_date: date | str | None = None,
                 else:
                     gp.home_starter = asdict(pp)
 
-        # Sportsbook lookup
-        bk = _find_book(book_data, f.home_team, f.away_team) if book_data else None
-        if bk is None and manual:
-            bk = _find_book(manual.get("games", []), f.home_team, f.away_team)
+        # Sportsbook lookup — `bk` was resolved earlier for the market blend.
         if bk is not None:
             gp.book = bk
-            gp.book_source = odds_source if bk in book_data else "manual"
+            gp.book_source = odds_source if (book_data and bk in book_data) else "manual"
+            # Price game lines from the MARKET-BLENDED run predictions so the
+            # edge reflects only our residual disagreement after deferring to
+            # the sharper market signal.
             game_value_all = value.evaluate_game_lines(
-                f.home_team, f.away_team, home_pred, away_pred, bk,
+                f.home_team, f.away_team, home_pred_g, away_pred_g, bk,
                 edge_threshold=-1.0,
             )
             for vb in game_value_all:
                 vb.game_pk = int(f.game_pk)
                 vb.starters_confirmed = starters_confirmed
             game_value = [vb for vb in game_value_all if vb.edge_pct >= edge_threshold * 100]
+
+            # Market disagreement guard: if the RAW model total differed from
+            # the market total by more than MARKET_MAX_TOTAL_DISAGREE runs, the
+            # disagreement is model error rather than edge — suppress all
+            # game-line bets for this game.
+            if (market_total is not None
+                    and abs(total_pred_raw - market_total) > MARKET_MAX_TOTAL_DISAGREE):
+                game_value = []
 
             # Elite ace Over filter: when either starter has xFIP < 3.5, the model
             # over-estimates scoring because ace dominance isn't fully captured.
@@ -712,6 +802,10 @@ def predict_slate(target_date: date | str | None = None,
             gp.prop_value = [_vb_to_dict(vb) for vb in game_prop_value]
 
         games_out.append(gp)
+
+    # Persist captured market lines (game-linked, permanent) for future
+    # market-blend backtesting and line-value features.
+    _persist_closing_lines(_closing_rows)
 
     # Build slate-wide leaderboard. We rank by `score` (variance-adjusted edge)
     # rather than raw edge — this puts reliable, near-50/50 plays ahead of

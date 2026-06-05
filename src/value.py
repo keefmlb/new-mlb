@@ -170,6 +170,63 @@ def home_win_prob(lam_home: float, lam_away: float) -> float:
     return p_win + p_tie * 0.5    # split ties (equivalent to flipping a coin in extras)
 
 
+def market_implied_runs(market_total: float, p_home_novig: float,
+                        iters: int = 40) -> tuple[float, float]:
+    """Back out (lam_home, lam_away) that reproduce the market's total and
+    no-vig home win probability under the independent-Poisson grid.
+
+    Binary-searches the home share `s` of the total so that
+    home_win_prob(s*T, (1-s)*T) == p_home_novig. The market total fixes the
+    sum; the moneyline fixes the split. Returns the market-implied expected
+    runs for each side — the sharpest available run estimate.
+    """
+    T = max(1.0, float(market_total))
+    p_target = min(max(float(p_home_novig), 0.05), 0.95)
+    lo, hi = 0.30, 0.70           # plausible home share of the total
+    for _ in range(iters):
+        mid = (lo + hi) / 2.0
+        p = home_win_prob(mid * T, (1.0 - mid) * T)
+        if p < p_target:
+            lo = mid              # need a bigger home share
+        else:
+            hi = mid
+    s = (lo + hi) / 2.0
+    return s * T, (1.0 - s) * T
+
+
+def blend_to_market(home_pred: float, away_pred: float, book: dict,
+                    weight: float) -> tuple[float, float, float | None]:
+    """Blend the model's run predictions toward the market-implied values.
+
+    `weight` in [0,1] is the trust given to the market (0 = pure model,
+    1 = pure market). The closing line aggregates injuries, scratches,
+    weather, and sharp money that no public-data model sees; our team-runs
+    model beats a constant baseline by only ~2.5% on totals, so deferring to
+    the market where we disagree both tightens the prediction and kills the
+    fake edges that over-confident disagreement manufactures.
+
+    Returns (home_blended, away_blended, market_total). When the book lacks a
+    usable total + moneyline, returns the inputs unchanged and market_total
+    None.
+    """
+    tot = book.get("total") or {}
+    ml = book.get("moneyline") or {}
+    if "line" not in tot or "home" not in ml or "away" not in ml:
+        return home_pred, away_pred, None
+    try:
+        market_total = float(tot["line"])
+        imp_h = american_to_prob(int(ml["home"]))
+        imp_a = american_to_prob(int(ml["away"]))
+        p_home_nv, _ = devig_two_way(imp_h, imp_a)
+        mh, ma = market_implied_runs(market_total, p_home_nv)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return home_pred, away_pred, None
+    w = min(max(float(weight), 0.0), 1.0)
+    return ((1 - w) * home_pred + w * mh,
+            (1 - w) * away_pred + w * ma,
+            market_total)
+
+
 def total_over_prob(lam_home: float, lam_away: float, line: float) -> float:
     """P(home + away > line) — handles half-point lines naturally; for whole
     numbers, ties are pushes (we return strict >)."""
