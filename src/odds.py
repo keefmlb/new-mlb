@@ -41,6 +41,18 @@ def _cache(name: str) -> Path:
     return CACHE_DIR / f"{name}.json"
 
 
+def _secret(name: str) -> Optional[str]:
+    """Read a key from the git-ignored data/secrets.json (env var wins)."""
+    try:
+        sec = json.loads(
+            (Path(__file__).resolve().parent.parent / "data" / "secrets.json")
+            .read_text(encoding="utf-8"))
+        v = sec.get(name)
+        return v.strip() if isinstance(v, str) and v.strip() else None
+    except Exception:
+        return None
+
+
 def fetch_mlb_lines(force: bool = False, ttl_seconds: int = 600) -> list[dict]:
     """Fetch current MLB game lines (h2h + totals + spreads) from The Odds API.
 
@@ -48,7 +60,7 @@ def fetch_mlb_lines(force: bool = False, ttl_seconds: int = 600) -> list[dict]:
     Returns empty list (no error) if no API key is set — let callers fall back
     to manual or no-lines mode.
     """
-    api_key = os.environ.get("ODDS_API_KEY")
+    api_key = os.environ.get("ODDS_API_KEY") or _secret("ODDS_API_KEY")
     if not api_key:
         return []
     cf = _cache("mlb_lines")
@@ -166,11 +178,22 @@ def load_lines_with_fallback() -> tuple[list[dict], list[dict], str]:
     """Load best-available lines. Returns (game_books, player_props, source_label).
 
     Order of preference:
-      1. The Odds API (if ODDS_API_KEY env var set; consensus across US books)
-      2. Bovada free JSON (game lines + player props, single book)
-      3. Manual JSON file
+      1. odds-api.io — Fanatics (bettable book + props) with a Polymarket
+         near-vigless SHARP reference attached per game. Strongest source.
+      2. The Odds API (if ODDS_API_KEY env var set; consensus across US books)
+      3. Bovada free JSON (game lines + player props, single book)
+      4. Manual JSON file
     """
-    # 1. Odds API
+    # 1. odds-api.io (Fanatics + Polymarket sharp reference)
+    try:
+        from . import odds_api_io
+        g, p, s = odds_api_io.fetch_mlb()
+        if g:
+            return g, p, s
+    except Exception:
+        pass
+
+    # 2. The Odds API
     try:
         raw = fetch_mlb_lines()
         if raw:
@@ -178,7 +201,7 @@ def load_lines_with_fallback() -> tuple[list[dict], list[dict], str]:
     except Exception:
         pass
 
-    # 2. Bovada
+    # 3. Bovada
     try:
         from . import bovada
         b = bovada.parse_mlb_lines()
@@ -187,7 +210,7 @@ def load_lines_with_fallback() -> tuple[list[dict], list[dict], str]:
     except Exception:
         pass
 
-    # 3. Manual
+    # 4. Manual
     m = load_manual()
     if m.get("games") or m.get("player_props"):
         return m.get("games", []), m.get("player_props", []), "manual"

@@ -214,19 +214,39 @@ def blend_to_market(home_pred: float, away_pred: float, book: dict,
     the market where we disagree both tightens the prediction and kills the
     fake edges that over-confident disagreement manufactures.
 
-    Returns (home_blended, away_blended, market_total). When the book lacks a
-    usable total + moneyline, returns the inputs unchanged and market_total
-    None.
+    When the book carries a `sharp` reference (Polymarket near-vigless no-vig
+    probabilities, attached by odds_api_io), we anchor to THAT instead of
+    de-vigging the bettable book — Polymarket's implied probabilities are the
+    sharpest free estimate of the true line. Falls back to de-vigging the
+    book's own moneyline + total otherwise.
+
+    Returns (home_blended, away_blended, market_total). When no usable market
+    exists, returns the inputs unchanged and market_total None.
     """
-    tot = book.get("total") or {}
-    ml = book.get("moneyline") or {}
-    if "line" not in tot or "home" not in ml or "away" not in ml:
-        return home_pred, away_pred, None
+    sharp = book.get("sharp") or {}
+    market_total = None
+    p_home_nv = None
+    # Prefer the sharp Polymarket reference.
+    if sharp.get("ml_home") is not None and sharp.get("total_line") is not None:
+        try:
+            market_total = float(sharp["total_line"])
+            p_home_nv = float(sharp["ml_home"])
+        except (TypeError, ValueError):
+            market_total = None
+    # Fall back to de-vigging the bettable book.
+    if market_total is None or p_home_nv is None:
+        tot = book.get("total") or {}
+        ml = book.get("moneyline") or {}
+        if "line" not in tot or "home" not in ml or "away" not in ml:
+            return home_pred, away_pred, None
+        try:
+            market_total = float(tot["line"])
+            imp_h = american_to_prob(int(ml["home"]))
+            imp_a = american_to_prob(int(ml["away"]))
+            p_home_nv, _ = devig_two_way(imp_h, imp_a)
+        except (TypeError, ValueError, ZeroDivisionError):
+            return home_pred, away_pred, None
     try:
-        market_total = float(tot["line"])
-        imp_h = american_to_prob(int(ml["home"]))
-        imp_a = american_to_prob(int(ml["away"]))
-        p_home_nv, _ = devig_two_way(imp_h, imp_a)
         mh, ma = market_implied_runs(market_total, p_home_nv)
     except (TypeError, ValueError, ZeroDivisionError):
         return home_pred, away_pred, None

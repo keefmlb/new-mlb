@@ -48,3 +48,7 @@ _streamlit_check.log
 _*.py
 _*.log
 *.refit_backup
+
+# Secrets — never commit API keys
+data/secrets.json
+.secrets

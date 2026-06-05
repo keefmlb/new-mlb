@@ -49,7 +49,8 @@ def _persist_closing_lines(rows: list[dict]) -> None:
     path = ROOT / "data" / "odds" / "closing_lines.csv"
     fields = ["game_pk", "date", "away_team", "home_team", "captured_at",
               "market_total", "ml_home", "ml_away",
-              "rl_line", "rl_home", "rl_away"]
+              "rl_line", "rl_home", "rl_away",
+              "sharp_p_home", "sharp_total", "sharp_p_over"]
     try:
         existing: dict[int, dict] = {}
         if path.exists():
@@ -394,6 +395,7 @@ def predict_slate(target_date: date | str | None = None,
             _ml = bk.get("moneyline") or {}
             _tot = bk.get("total") or {}
             _rl = bk.get("run_line") or {}
+            _sh = bk.get("sharp") or {}
             _closing_rows.append({
                 "game_pk": int(f.game_pk), "date": f.date,
                 "away_team": f.away_team, "home_team": f.home_team,
@@ -402,6 +404,9 @@ def predict_slate(target_date: date | str | None = None,
                 "ml_home": _ml.get("home"), "ml_away": _ml.get("away"),
                 "rl_line": _rl.get("line"), "rl_home": _rl.get("home"),
                 "rl_away": _rl.get("away"),
+                # Polymarket sharp no-vig reference (the gold-standard CLV baseline)
+                "sharp_p_home": _sh.get("ml_home"), "sharp_total": _sh.get("total_line"),
+                "sharp_p_over": _sh.get("p_over"),
             })
 
         p_home_win = value.home_win_prob(home_pred_g, away_pred_g)
