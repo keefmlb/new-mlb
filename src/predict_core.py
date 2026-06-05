@@ -206,6 +206,9 @@ def _vb_to_dict(vb: value.ValueBet) -> dict:
 #   - prop_pitcher_bb R^2 = 0.114   -> need 5% edge (borderline)
 #   - prop_pitcher_hr R^2 = 0.114   -> need 5% edge (borderline)
 # Other markets fall through to the user's slider value.
+# Floors are applied to the POST-market-blend edge (the model prob is pulled
+# halfway to the no-vig market prob before the edge is computed), so a 5% floor
+# here corresponds to roughly a 10% raw model-vs-market disagreement.
 _MARKET_MIN_EDGE_PCT: dict[str, float] = {
     "prop_runs":       7.0,
     "prop_rbi":        7.0,
@@ -214,6 +217,11 @@ _MARKET_MIN_EDGE_PCT: dict[str, float] = {
     "prop_pitcher_er": 6.0,
     "prop_pitcher_bb": 5.0,
     "prop_pitcher_hr": 5.0,
+    # pitcher_k is our highest-volume AND worst-performing prop market: in the
+    # bet log it bled -17% overall and stayed -32% even after market-blending.
+    # It previously had NO floor (fell through to the 3% slider). A 6% post-
+    # blend floor limits it to the strongest disagreements only.
+    "prop_pitcher_k":  6.0,
 }
 
 
@@ -724,24 +732,17 @@ def predict_slate(target_date: date | str | None = None,
                             vbs_all = [vb for vb in vbs_all
                                        if not (" UNDER " in vb.description
                                                and pproj.proj_k > pp["line"] - 1.5)]
-                    # K OVER guard: require a meaningful projection gap AND a
-                    # deep-start expectation. The 0W 5L at high-edge OVERs was
-                    # driven by two failure modes:
-                    #   (a) marginal gap — model proj barely above line, one bad
-                    #       inning flips OVER → UNDER
-                    #   (b) blowup starts — model projects 6 K, pitcher gets
-                    #       yanked in 2nd inning with 1 K (Lowder, Rhett etc.)
-                    # Requirements: proj_k > line + 1.0 (real gap, not noise)
-                    #               AND expected_outs >= 16.5 (~5.5 IP, workhorse)
-                    vbs_all = [vb for vb in vbs_all
-                               if not (" OVER " in vb.description
-                                       and (pproj.proj_k <= pp["line"] + 1.0
-                                            or pproj.expected_outs < 16.5))]
-                    # K OVER block at line <= 3.5: 0W 4L in the bet log.
-                    # Soft starters with low lines get quick-hooked before
-                    # accumulating Ks; the model over-projects their K rate.
-                    if pp["line"] <= 3.5:
-                        vbs_all = [vb for vb in vbs_all if " OVER " not in vb.description]
+                    # K OVER blanket block. A full season of incremental K-OVER
+                    # guards (projection-gap + workhorse requirement, low-line
+                    # blocks, edge caps) still left K OVERs at -76% ROI (1W 7L)
+                    # in the bet log — by far our worst sub-market. The
+                    # mechanism is structural: an OVER needs the starter to beat
+                    # a K line set by people who know the pitch-count plan,
+                    # matchup, and weather; our compression-corrected projections
+                    # overshoot exactly there. No floor level rescued it. Drop
+                    # K OVERs entirely; K UNDERs survive behind the 6% floor and
+                    # the elite-arm guards below.
+                    vbs_all = [vb for vb in vbs_all if " OVER " not in vb.description]
                     # K prop edge cap at 15%: bet log shows edge > 15% on K props
                     # = 1W 8L (11%). A large edge gap on K bets almost always
                     # means the book has information we lack (injury, planned short

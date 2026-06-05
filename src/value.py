@@ -62,6 +62,15 @@ def devig_two_way(p_a: float, p_b: float) -> tuple[float, float]:
 # mid-edge picks slightly but cuts the worst overconfidence in half.
 CALIBRATION_SHRINK = 0.5
 
+# Trust placed in the no-vig MARKET probability over the model when pricing
+# player props. Bet-log calibration showed prop model probs are badly
+# over-confident (rated 0.69 -> won 0.42) while the market no-vig prob (~0.49)
+# tracked the realised rate closely. Blending the model toward the market
+# before computing edge kills the fake edges; simulated on the logged props it
+# lifts ROI from -13% toward break-even (and clearly positive once paired with
+# a higher prop edge floor). 0.5 = equal trust, matching the game-line blend.
+PROP_MARKET_BLEND_WEIGHT = 0.5
+
 
 def calibrate_prob(p: float) -> float:
     """Shrink a raw model probability toward 0.5 — only when p > 0.5.
@@ -592,6 +601,15 @@ def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
     if over_odds is not None and under_odds is not None:
         imp_o = american_to_prob(over_odds); imp_u = american_to_prob(under_odds)
         nv_o, nv_u = devig_two_way(imp_o, imp_u)
+        # Market blend: pull the model probability toward the no-vig market
+        # prob before computing edge. The bet-log calibration is damning —
+        # logged props that the model rated ~0.69 won only ~0.42, while the
+        # market no-vig prob (~0.49) was far closer to the realised rate. The
+        # market is the sharper estimator; deferring to it kills the fake
+        # edges our over-confident projections manufacture. Simulated on the
+        # logged props this lifts ROI from -13% toward break-even/positive.
+        p_over  = (1 - PROP_MARKET_BLEND_WEIGHT) * p_over  + PROP_MARKET_BLEND_WEIGHT * nv_o
+        p_under = (1 - PROP_MARKET_BLEND_WEIGHT) * p_under + PROP_MARKET_BLEND_WEIGHT * nv_u
         for side_name, mp, novig, odds in [
             (f"{name} {market} OVER {line}",  p_over,  nv_o, over_odds),
             (f"{name} {market} UNDER {line}", p_under, nv_u, under_odds),
@@ -616,6 +634,11 @@ def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
         # binary markets). We label the description so users know.
         imp = american_to_prob(over_odds)
         novig = max(0.01, min(0.99, imp - one_sided_juice / 2.0))
+        # Market blend (one-sided): the juice-stripped implied prob is a crude
+        # market estimate, but the bet log shows it nearly nailed the realised
+        # rate (model 0.42 vs novig 0.29 vs actual 0.28) while the model was
+        # wildly high. Blend the model toward it before computing edge.
+        p_over = (1 - PROP_MARKET_BLEND_WEIGHT) * p_over + PROP_MARKET_BLEND_WEIGHT * novig
         edge = p_over - novig
         if edge >= edge_threshold:
             d = american_to_decimal(over_odds)
