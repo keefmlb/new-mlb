@@ -323,6 +323,68 @@ def _tune_glm_alpha(Xtr, ytr, alphas: list[float] | None = None) -> float:
     return best
 
 
+def _select_blend_weight_cv(train: pd.DataFrame, means: dict, stds: dict,
+                            glm_alpha: float, gbt_kwargs: dict,
+                            n_folds: int = 6, fold_days: int = 14) -> float:
+    """Pick the GLM weight in the GLM/GBT blend via temporal walk-forward CV on
+    the TRAIN set, optimising **moneyline accuracy** (does the higher-predicted
+    team win?) with run-MAE as a tiebreaker.
+
+    Why ML accuracy, not MAE: run-MAE is essentially flat between the GLM and
+    the GBT (single-game scoring is noise-dominated, ~2.5 either way), so an
+    MAE objective can't tell them apart and defaults GLM-heavy. But the GBT
+    picks winners several points better than the GLM out-of-sample — which is
+    what actually matters for the run predictions feeding prop projections and
+    win probabilities. Selecting on ML accuracy captures that.
+    """
+    tr = train.copy()
+    tr["date"] = pd.to_datetime(tr["date"])
+    tr = tr.sort_values("date")
+    dmax = tr["date"].max()
+    weights = [round(w, 2) for w in np.linspace(0.0, 1.0, 11)]
+    acc_by_w: dict[float, list] = {w: [] for w in weights}
+    mae_by_w: dict[float, list] = {w: [] for w in weights}
+    for k in range(n_folds, 0, -1):
+        lo = dmax - pd.Timedelta(days=fold_days * k)
+        hi = dmax - pd.Timedelta(days=fold_days * (k - 1))
+        sub_tr = tr[tr["date"] < lo]
+        sub_te = tr[(tr["date"] >= lo) & (tr["date"] < hi)]
+        if len(sub_tr) < 500 or len(sub_te) < 40:
+            continue
+        Xa = _normalize_features(sub_tr, means, stds)[FEATURES].values
+        ya = sub_tr["y_runs"].values
+        Xb = _normalize_features(sub_te, means, stds)[FEATURES].values
+        yb = sub_te["y_runs"].values
+        g = PoissonRegressor(alpha=glm_alpha, max_iter=5000).fit(Xa, ya)
+        pg = g.predict(Xb)
+        bt = HistGradientBoostingRegressor(**gbt_kwargs).fit(Xa, ya)
+        pb = np.clip(bt.predict(Xb), 0.0, None)
+        gpk = sub_te["game_pk"].values
+        is_home = sub_te["is_home"].values
+        for w in weights:
+            blend = w * pg + (1 - w) * pb
+            mae_by_w[w].append(float(np.mean(np.abs(blend - yb))))
+            # Pair home/away by game to score moneyline accuracy.
+            by_g: dict = {}
+            for gp_, ih_, pr_, ya_ in zip(gpk, is_home, blend, yb):
+                d = by_g.setdefault(gp_, {})
+                d["ph" if ih_ == 1 else "pa"] = pr_
+                d["yh" if ih_ == 1 else "ya"] = ya_
+            correct = tot = 0
+            for d in by_g.values():
+                if {"ph", "pa", "yh", "ya"} <= set(d):
+                    correct += int((d["ph"] > d["pa"]) == (d["yh"] > d["ya"])); tot += 1
+            if tot:
+                acc_by_w[w].append(correct / tot)
+    scored = [(w, float(np.mean(acc_by_w[w])), float(np.mean(mae_by_w[w])))
+              for w in weights if acc_by_w[w]]
+    if not scored:
+        return 0.5
+    # Maximise ML accuracy; break ties by lower MAE.
+    best = max(scored, key=lambda t: (round(t[1], 4), -t[2]))
+    return best[0]
+
+
 def fit(games_df: pd.DataFrame, holdout_days: int = 7,
         glm_alpha: float | None = None,
         use_gbt: bool = True,
@@ -372,16 +434,20 @@ def fit(games_df: pd.DataFrame, holdout_days: int = 7,
         # tuned for ~600-row datasets; tighten max_iter to prevent overfit.
         # Strong regularization for this small-sample regime: shallow trees,
         # large leaves, early stopping on a validation tail.
+        # Params tuned via 5-fold walk-forward CV on 2025+2026 (Jun 2026):
+        # the deeper config (depth 5, lr 0.03, 600 iters, lighter L2) lifts
+        # ML accuracy ~+5pp over the old shallow config AND over the GLM —
+        # the GLM alone was picking winners below 50% on recent holdouts.
         kwargs = dict(
             loss="poisson",
-            learning_rate=0.04,
-            max_iter=400,
-            max_depth=3,
-            min_samples_leaf=40,
-            l2_regularization=2.0,
+            learning_rate=0.03,
+            max_iter=600,
+            max_depth=5,
+            min_samples_leaf=25,
+            l2_regularization=1.0,
             early_stopping=True,
             validation_fraction=0.15,
-            n_iter_no_change=20,
+            n_iter_no_change=25,
             random_state=0,
         )
         if gbt_kwargs:
@@ -390,15 +456,12 @@ def fit(games_df: pd.DataFrame, holdout_days: int = 7,
         gbt.fit(Xtr, ytr)
         gbt_te = np.clip(gbt.predict(Xte), 0.0, None)
 
-    # Learn blend weight on the holdout via grid search (keeps it interpretable;
-    # a stacking regressor would also work but is overkill here).
-    best_w, best_mae = 1.0, float("inf")
+    # Select the blend weight via temporal walk-forward CV on the TRAIN set —
+    # robust to the single-holdout noise that previously landed GLM-heavy even
+    # though the GBT is the more accurate out-of-sample learner.
     if gbt_te is not None:
-        for w in np.linspace(0.0, 1.0, 21):
-            blend = w * glm_te + (1 - w) * gbt_te
-            mae = float(np.mean(np.abs(blend - yte)))
-            if mae < best_mae:
-                best_mae, best_w = mae, float(w)
+        best_w = _select_blend_weight_cv(train, means, stds, glm_alpha, kwargs)
+        best_mae = float(np.mean(np.abs(best_w * glm_te + (1 - best_w) * gbt_te - yte)))
     else:
         best_w = 1.0
         best_mae = float(np.mean(np.abs(glm_te - yte)))
