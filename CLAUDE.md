@@ -157,6 +157,19 @@ ML accuracy on the Sep single-split: **52.4%** (n=374). Slight edge over coin fl
   temporal holdout (+0.2% to +5.6% Brier); `pitcher_outs` failed the gate
   (2025→2026 distribution shift) and falls back to the shrink.
   POLICY_VERSION bumped to `2026-06-10-prop-calibration`.
+- **CI-tightening kit (added later same session)** — three levers to shrink
+  confidence intervals on the policy evaluation:
+  (1) `scripts/replay_board.py` replays EVERY Fanatics prop offer in the
+  rolling 14-day odds history (~4k/day, real prices) through the current
+  pipeline and grades survivors against boxscores — hundreds of bets/day of
+  evidence instead of the logged top-10. Re-run any time; sample grows daily.
+  (2) **Shadow logging**: predict_core now logs every floor-clearing bet with
+  `shadow: true` alongside the top-10 primary picks. Shadow picks are graded
+  and CLV-tracked identically but excluded from the headline record
+  (get_track_record filters them; analyze_bets pools them in a separate
+  section). A shadow entry is PROMOTED to primary if a later run ranks it
+  top-10. (3) `bet_tracker.wilson_ci()` — analyze_bets and the replay tools
+  print 95% Wilson CIs on every win rate.
 - **Sharp-value audit + honest UI** — measured over Jun 4-10 snapshots: the
   sharp detector fired ZERO times; best Fanatics-vs-Polymarket side was
   -0.2% EV (mean ≈ -4.4%). Fanatics is efficient vs the sharp. The app now

@@ -269,10 +269,23 @@ def get_clv_summary(days: int = 30) -> dict:
     return out
 
 
+# ---------- Statistics helpers ----------
+
+def wilson_ci(wins: int, n: int, z: float = 1.96) -> tuple[float, float] | None:
+    """95% Wilson score interval for a win rate. Returns (lo, hi) or None."""
+    if n <= 0:
+        return None
+    p = wins / n
+    denom = 1.0 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = (z / denom) * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5)
+    return (max(0.0, centre - half), min(1.0, centre + half))
+
+
 # ---------- Logging ----------
 
-def _is_duplicate(entry: dict, existing: list[dict], date_str: str) -> bool:
-    """Return True if an equivalent bet is already logged for this date.
+def _find_duplicate(entry: dict, existing: list[dict], date_str: str) -> Optional[dict]:
+    """Return the already-logged equivalent of `entry` for this date, if any.
 
     Rules:
     - Same description on same date is always a duplicate.
@@ -291,22 +304,26 @@ def _is_duplicate(entry: dict, existing: list[dict], date_str: str) -> bool:
             continue
         # Always block exact description match
         if e.get("description") == entry.get("description"):
-            return True
+            return e
         # Game-line markets: one side per game per day
         if market in ("moneyline", "total", "run_line") and game_pk is not None:
             if e.get("game_pk") == game_pk and e.get("market") == market:
-                return True
+                return e
         # Player props: one bet per player per market per game per day
         elif pid is not None and game_pk is not None:
             if (e.get("game_pk") == game_pk
                     and e.get("market") == market
                     and e.get("player_id") == pid):
-                return True
-    return False
+                return e
+    return None
+
+
+def _is_duplicate(entry: dict, existing: list[dict], date_str: str) -> bool:
+    return _find_duplicate(entry, existing, date_str) is not None
 
 
 def log_picks(target_date: str | date, bets: list[dict], top_n: int = 10,
-              policy_version: str | None = None) -> None:
+              policy_version: str | None = None, shadow: bool = False) -> None:
     """Save the top_n bets to the log file, IN THE ORDER GIVEN.
 
     `bets` is predict_core's score-ranked leaderboard — the same ordering the
@@ -315,6 +332,14 @@ def log_picks(target_date: str | date, bets: list[dict], top_n: int = 10,
     from the displayed picks — and that biased every constant later tuned
     against it.) `policy_version` tags each entry with the filter/calibration
     policy in force, so the log can be segmented when rules change.
+
+    `shadow=True` marks entries as shadow picks: bets the policy surfaced but
+    that aren't part of the headline top-10 betting record. They exist purely
+    to tighten confidence intervals — outcomes and CLV are evaluated exactly
+    like primary picks, but get_track_record and the headline records exclude
+    them. If a bet was first logged as shadow and later qualifies as primary
+    (e.g. a later slate run ranks it top-10), the existing entry is PROMOTED
+    rather than duplicated.
     """
     LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     existing: list[dict] = _load_log()
@@ -330,6 +355,7 @@ def log_picks(target_date: str | date, bets: list[dict], top_n: int = 10,
             "date":        date_str,
             "logged_at":   datetime.now(timezone.utc).isoformat(),
             "policy_version": policy_version,
+            "shadow":      bool(shadow),
             "description": p.get("description", ""),
             "market":      p.get("market", ""),
             "line":        p.get("line", 0.0),
@@ -344,8 +370,11 @@ def log_picks(target_date: str | date, bets: list[dict], top_n: int = 10,
             "outcome":     None,   # filled by evaluate_outcomes()
             "actual":      None,   # actual stat value or score
         }
-        if not _is_duplicate(entry, existing, date_str):
+        dup = _find_duplicate(entry, existing, date_str)
+        if dup is None:
             existing.append(entry)
+        elif not shadow and dup.get("shadow"):
+            dup["shadow"] = False   # promote shadow -> primary
 
     LOG_PATH.write_text(json.dumps(existing, indent=2, default=str), encoding="utf-8")
 
@@ -537,7 +566,9 @@ def get_track_record(days: int = 30) -> dict:
     """
     entries = _load_log()
     cutoff = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
-    recent = [e for e in entries if e["date"] >= cutoff]
+    # Shadow picks exist to tighten CIs on measurement (CLV, market records in
+    # analyze_bets); they are NOT part of the headline betting record.
+    recent = [e for e in entries if e["date"] >= cutoff and not e.get("shadow")]
 
     total   = len(recent)
     wins    = sum(1 for e in recent if e.get("outcome") == "W")

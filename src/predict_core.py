@@ -965,6 +965,16 @@ def predict_slate(target_date: date | str | None = None,
         if top_value and target == datetime.now(timezone.utc).date():
             bet_tracker.log_picks(target, top_value, top_n=10,
                                   policy_version=POLICY_VERSION)
+            # Shadow-log EVERY floor-clearing bet on the slate (not just the
+            # top-10). Shadow picks are excluded from the headline record but
+            # graded and CLV-tracked identically — they exist to shrink the
+            # confidence intervals on per-market records and CLV ~5-10x
+            # faster than 10 picks/day ever could.
+            _shadow_pool = sorted(all_value_bets,
+                                  key=lambda x: -getattr(x, "score", x.edge_pct))
+            bet_tracker.log_picks(target, [_vb_to_dict(vb) for vb in _shadow_pool],
+                                  top_n=len(_shadow_pool),
+                                  policy_version=POLICY_VERSION, shadow=True)
             bet_tracker.evaluate_outcomes()
     except Exception:
         pass

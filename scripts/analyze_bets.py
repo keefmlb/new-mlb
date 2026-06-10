@@ -63,17 +63,25 @@ def _line(label: str, bets: list[dict]) -> str:
     roi = _roi(bets)
     roi_s = f"{roi:+7.1%}" if roi is not None else "      —"
     push = f" {p}P" if p else ""
-    return f"  {label:38s} {w}W {l}L{push}  {wr}  ROI {roi_s}  (n={dec})"
+    ci = bet_tracker.wilson_ci(w, dec)
+    ci_s = f"  CI[{ci[0]:.0%}-{ci[1]:.0%}]" if ci else ""
+    return f"  {label:38s} {w}W {l}L{push}  {wr}{ci_s}  ROI {roi_s}  (n={dec})"
 
 
 def main():
-    log = bet_tracker._load_log()
-    if not log:
+    full_log = bet_tracker._load_log()
+    if not full_log:
         print("Bet log is empty (data/bets/bet_log.json).")
         return
+    # Shadow picks (every floor-clearing bet, logged since Jun 10 2026 to
+    # tighten CIs) are excluded from the headline record but reported in
+    # their own section below with primary+shadow pooled per market.
+    log = [b for b in full_log if not b.get("shadow")]
+    shadow = [b for b in full_log if b.get("shadow")]
     settled = [b for b in log if b.get("outcome") in ("W", "L", "P")]
     pending = sum(1 for b in log if b.get("outcome") is None)
-    print(f"Logged: {len(log)}  settled: {len(settled)}  pending: {pending}")
+    print(f"Logged: {len(log)}  settled: {len(settled)}  pending: {pending}"
+          + (f"  (+{len(shadow)} shadow picks)" if shadow else ""))
 
     # Flag un-regraded logs: entries graded before the Jun 9 2026 fixes.
     if any(b.get("outcome") in ("W", "L") and b.get("market") == "run_line"
@@ -110,6 +118,22 @@ def main():
         by_date[b.get("date", "?")].append(b)
     for dt in sorted(by_date):
         print(_line(dt, by_date[dt]))
+
+    shadow_settled = [b for b in shadow if b.get("outcome") in ("W", "L", "P")]
+    if shadow_settled:
+        print("\n" + "=" * 72)
+        print("BY MARKET — PRIMARY + SHADOW POOLED  (CI-tightening sample;")
+        print("shadow picks are every floor-clearing bet, not the betting record)")
+        print("=" * 72)
+        pooled = settled + shadow_settled
+        by_key2: dict[str, list] = defaultdict(list)
+        for b in pooled:
+            d = _direction(b)
+            key = f"{b.get('market', 'unknown')}{'_' + d if d else ''}"
+            by_key2[key].append(b)
+        for k, bets in sorted(by_key2.items(), key=lambda x: -len(x[1])):
+            print(_line(k, bets))
+        print(_line("TOTAL (pooled)", pooled))
 
     print("\n" + "=" * 72)
     print("CLOSING LINE VALUE (bets with a captured close)")
