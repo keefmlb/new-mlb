@@ -621,7 +621,13 @@ def predict_slate(target_date: date | str | None = None,
                                         opp_pit_throws=pl["opp_pit_throws"],
                                         bat_split=pl["bat_split"],
                                         is_switch=pl.get("is_switch", False),
-                                        sc_stats=sc_bat_data.get(pid))
+                                        sc_stats=sc_bat_data.get(pid),
+                                        game_ctx={
+                                            "ump_k_mult": f.ump_k_mult,
+                                            "opp_catcher_framing": getattr(
+                                                f, ("away" if side == "home" else "home")
+                                                + "_catcher_framing", None),
+                                        })
                 batters_out.append(asdict(p))
                 order += 1
 
@@ -635,7 +641,14 @@ def predict_slate(target_date: date | str | None = None,
                 ps_recent = pit_recent.get(int(sp_id_self))
                 pp = proj.project_pitcher(ps, tid, opp_off_idx, opp_pred, park, wadj,
                                           recent_stats=ps_recent,
-                                          sc_stats=sc_pit_data.get(int(sp_id_self)))
+                                          sc_stats=sc_pit_data.get(int(sp_id_self)),
+                                          game_ctx={
+                                              "ump_k_mult": f.ump_k_mult,
+                                              "own_catcher_framing": getattr(f, side + "_catcher_framing", None),
+                                              "sp_days_rest": getattr(f, side + "_sp_days_rest", None),
+                                              "bp_ip_72h": getattr(f, side + "_bp_ip_72h", None),
+                                              "bp_top_rest": getattr(f, side + "_bp_top_rest", None),
+                                          })
                 if side == "away":
                     gp.away_starter = asdict(pp)
                 else:
@@ -779,12 +792,20 @@ def predict_slate(target_date: date | str | None = None,
                         _pid, _opp_lineup or [], bat_sides, _pthrows,
                         pit_vs_l, pit_vs_r,
                     ) if _opp_lineup else None
+                    _own = "home" if is_home_pitcher else "away"
                     pproj = proj.project_pitcher(pdata, team_id, opp_off, opp_pred, park,
                                                  {"runs_mult": f.runs_mult, "hr_mult": f.hr_mult},
                                                  recent_stats=pit_recent.get(_pid),
                                                  sc_stats=sc_pit_data.get(_pid),
                                                  split_stats=_split_stats,
-                                                 arsenal=sc_arsenal.get(_pid))
+                                                 arsenal=sc_arsenal.get(_pid),
+                                                 game_ctx={
+                                                     "ump_k_mult": f.ump_k_mult,
+                                                     "own_catcher_framing": getattr(f, _own + "_catcher_framing", None),
+                                                     "sp_days_rest": getattr(f, _own + "_sp_days_rest", None),
+                                                     "bp_ip_72h": getattr(f, _own + "_bp_ip_72h", None),
+                                                     "bp_top_rest": getattr(f, _own + "_bp_top_rest", None),
+                                                 })
                     means = {
                         "pitcher_k": pproj.proj_k, "pitcher_outs": pproj.expected_outs,
                         "pitcher_er": pproj.proj_er, "pitcher_h": pproj.proj_h,
@@ -811,7 +832,13 @@ def predict_slate(target_date: date | str | None = None,
                                                 opp_pit_throws=pl["opp_pit_throws"],
                                                 bat_split=pl["bat_split"],
                                                 is_switch=pl.get("is_switch", False),
-                                                sc_stats=sc_bat_data.get(pid))
+                                                sc_stats=sc_bat_data.get(pid),
+                                                game_ctx={
+                                                    "ump_k_mult": f.ump_k_mult,
+                                                    "opp_catcher_framing": getattr(
+                                                        f, ("away" if is_home_batter else "home")
+                                                        + "_catcher_framing", None),
+                                                })
                     means = {
                         "hr": bproj.proj_hr, "hits": bproj.proj_h, "tb": bproj.proj_tb,
                         "rbi": bproj.proj_rbi, "runs": bproj.proj_runs, "k": bproj.proj_k,

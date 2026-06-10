@@ -18,7 +18,13 @@ from pathlib import Path
 ROOT       = Path(__file__).resolve().parent.parent
 RATES_PATH = ROOT / "data" / "cache" / "umpire_rates.json"
 
-LG_K_PER_GAME = 8.7   # total Ks per team per game (league avg)
+# BOTH-teams strikeouts per game (league avg) — build_dataset accumulates
+# home_k + away_k per umpire, so the league constant must be on the same
+# scale. (Bug found Jun 10 2026: this was 8.7 — the PER-TEAM rate — which
+# centered the "multiplier" at ~1.84 instead of 1.0, made the EB shrink
+# target of 1.0 mean "umpire who halves strikeouts", and made the live
+# fallback of 1.0 a 3.5-sigma outlier vs the trained feature distribution.)
+LG_K_PER_GAME = 17.4
 PRIOR_GAMES   = 30    # EB prior: at 30 games weight = 0.5
 
 

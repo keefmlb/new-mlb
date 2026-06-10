@@ -413,7 +413,15 @@ def fit(games_df: pd.DataFrame, holdout_days: int = 7,
         train, test = long.iloc[:-30], long.iloc[-30:]
 
     means = {c: float(train[c].mean()) for c in FEATURES if c != "is_home"}
-    stds  = {c: float(train[c].std() or 1.0) for c in FEATURES if c != "is_home"}
+    # Near-zero stds (not just exact 0.0) must fall back to 1.0: a column
+    # that is a constant BACKFILL in the training slice (e.g. the _sc
+    # Statcast features in 2023-25 history) carries a float-artifact std of
+    # ~1e-13, and dividing by it makes z-scores of ~1e13 -> exp() overflow ->
+    # inf lambdas. Bit us Jun 10 2026 in fit_winprob_calibration's March
+    # fold (trains on history only); production fits never see it because
+    # 2026 contributes variance.
+    stds  = {c: (s if (s := float(train[c].std() or 0.0)) > 1e-6 else 1.0)
+             for c in FEATURES if c != "is_home"}
 
     Xtr = _normalize_features(train, means, stds)[FEATURES].values
     ytr = train["y_runs"].values

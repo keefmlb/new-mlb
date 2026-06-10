@@ -64,6 +64,13 @@ def _fit_logistic(raw_p: np.ndarray, outcome: np.ndarray) -> dict:
     except ImportError:
         return {"a": 0.0, "b": 1.0, "n": int(len(outcome)),
                 "brier_raw": None, "brier_cal": None}
+    # Drop non-finite probabilities (e.g. degenerate joint-Poisson grids on
+    # extreme lambdas) rather than crashing the whole fit.
+    finite = np.isfinite(raw_p)
+    if (~finite).any():
+        print(f"    dropping {(~finite).sum()} non-finite raw probs of {len(raw_p)}")
+    raw_p = np.asarray(raw_p, dtype=float)[finite]
+    outcome = np.asarray(outcome)[finite]
     X = _logit(raw_p).reshape(-1, 1)
     y = outcome.astype(int)
     if len(np.unique(y)) < 2:

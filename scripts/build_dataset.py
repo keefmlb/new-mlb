@@ -188,8 +188,12 @@ def main():
     n_final = 0
     n_snap_used = 0
 
-    # Umpire accumulation: build K-rate table from boxscores as we go
-    ump_rates: dict[str, dict] = ump.load_rates()   # start from cached rates
+    # Umpire accumulation: build K-rate table from boxscores as we go.
+    # Start FRESH — this loop iterates every final game of the season, so
+    # seeding from the cached file re-counted the same games on every
+    # rebuild, inflating each umpire's games total (and the EB shrink
+    # weight) by one season per run.
+    ump_rates: dict[str, dict] = {}
 
     for i, g in enumerate(games):
         if i % 50 == 0:
@@ -298,10 +302,13 @@ def main():
                     away_k = int((box.get("teams", {}).get("away", {})
                                   .get("teamStats", {}).get("batting", {})
                                   .get("strikeOuts", 0)) or 0)
+                    # Compute the mult BEFORE folding this game's K into the
+                    # umpire's rate — otherwise the feature leaks the game's
+                    # own strikeout total into itself.
+                    feat_row["ump_k_mult"] = ump.get_k_mult(hp_ump, ump_rates)
                     r = ump_rates.setdefault(hp_ump, {"games": 0, "total_k": 0})
                     r["games"] += 1
                     r["total_k"] += home_k + away_k
-                    feat_row["ump_k_mult"] = ump.get_k_mult(hp_ump, ump_rates)
 
                 for side in ("home", "away"):
                     pdata = box.get("teams", {}).get(side, {}).get("players", {})

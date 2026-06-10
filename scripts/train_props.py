@@ -138,6 +138,10 @@ def main():
         pit_throws = {int(k): v for k, v in snap.get("pit_throws", {}).items()} if "pit_throws" in snap else {}
         team_off   = _int_keys(snap.get("team_off", {}))
 
+        def _gv(col: str) -> float | None:
+            v = g.get(col)
+            return float(v) if pd.notna(v) else None
+
         for side in ("home", "away"):
             tid   = int(g["home_team_id"]) if side == "home" else int(g["away_team_id"])
             otid  = int(g["away_team_id"]) if side == "home" else int(g["home_team_id"])
@@ -150,6 +154,23 @@ def main():
             opp_pred  = pred_by_gs.get((gpk, "away" if side == "home" else "home"))
             if team_pred is None or opp_pred is None:
                 continue
+
+            # Game-day context for the prop feature rows (umpire, catcher
+            # framing, starter rest, bullpen workload). Batters face the
+            # OPPOSING catcher; pitchers throw to their OWN catcher.
+            _pre = side                                   # own-side prefix
+            _opp = "away" if side == "home" else "home"   # opposing prefix
+            bat_ctx = {
+                "ump_k_mult":          _gv("ump_k_mult"),
+                "opp_catcher_framing": _gv(f"{_opp}_catcher_framing"),
+            }
+            pit_ctx = {
+                "ump_k_mult":          _gv("ump_k_mult"),
+                "own_catcher_framing": _gv(f"{_pre}_catcher_framing"),
+                "sp_days_rest":        _gv(f"{_pre}_sp_days_rest"),
+                "bp_ip_72h":           _gv(f"{_pre}_bp_ip_72h"),
+                "bp_top_rest":         _gv(f"{_pre}_bp_top_rest"),
+            }
 
             opp_sp_q   = (
                 feats.pitcher_quality_index(pit_stats.get(sp_opp, {}),
@@ -188,7 +209,8 @@ def main():
                     is_switch=pl.get("is_switch", False),
                 )
                 feat_row = prop_models.batter_feature_row(bproj, bs, rs, opp_sp_q, park, wadj, team_pred,
-                                                          sc_stats=sc_bat.get(pid))
+                                                          sc_stats=sc_bat.get(pid),
+                                                          game_ctx=bat_ctx)
                 # batter_feature_row already includes sc fields (xwoba/xba/exit_velo
                 # added May 6 2026); the sc_stats kwarg is the single feed.
                 feat_row.update({
@@ -227,7 +249,8 @@ def main():
                 feat_row = prop_models.pitcher_feature_row(pproj, ps, rs, opp_off_idx, park, wadj, opp_pred,
                                                             sc_stats=sc_pit.get(pid),
                                                             split_stats=_split_stats,
-                                                            arsenal=sc_arsenal.get(pid))
+                                                            arsenal=sc_arsenal.get(pid),
+                                                            game_ctx=pit_ctx)
                 feat_row.update({
                     "game_pk": gpk, "date": gdate, "side": side,
                     "player_id": pid, "name": prow["name"],

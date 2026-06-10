@@ -64,6 +64,20 @@ PITCHER_STATS: list[StatSpec] = [
 
 
 # ---------- Feature builders ----------
+def _ctx_val(ctx: dict | None, key: str, default: float) -> float:
+    """Game-context value with an explicit None check (0.0 is a real value
+    for framing and bullpen-rest features, so `or default` would corrupt it)."""
+    v = (ctx or {}).get(key)
+    if v is None:
+        return float(default)
+    try:
+        import math as _m
+        fv = float(v)
+        return float(default) if _m.isnan(fv) else fv
+    except (TypeError, ValueError):
+        return float(default)
+
+
 def batter_feature_row(
     bproj,                          # BatterProjection
     bat_stats: dict,
@@ -73,6 +87,7 @@ def batter_feature_row(
     weather_adj: dict,
     team_pred_runs: float,
     sc_stats: dict | None = None,   # player-level Statcast (barrel_pct, hard_hit)
+    game_ctx: dict | None = None,   # game-day context (umpire, opposing catcher)
 ) -> dict:
     """One row of features for a batter projection."""
     pa = float(bat_stats.get("plateAppearances") or 0)
@@ -157,6 +172,14 @@ def batter_feature_row(
         "sc_fb_pct":       float((sc_stats or {}).get("fb_pct")       or 25.0),
         "sc_gb_pct":       float((sc_stats or {}).get("gb_pct")       or 45.0),
         "sc_launch_angle": float((sc_stats or {}).get("launch_angle") or 12.0),  # ~12 deg
+
+        # Game-day context (Jun 10 2026 residual screen, props_bat_2026):
+        # the plate umpire's K tendency (r=+0.038 on K residual) and the
+        # OPPOSING catcher's framing (r=+0.041) both shift batter K beyond
+        # what the matchup features capture. Knowable pre-game; defaults
+        # are league-neutral when the context isn't available.
+        "ump_k_mult":          _ctx_val(game_ctx, "ump_k_mult", 1.0),
+        "opp_catcher_framing": _ctx_val(game_ctx, "opp_catcher_framing", 0.0),
     }
 
 
@@ -171,6 +194,7 @@ def pitcher_feature_row(
     sc_stats: dict | None = None,  # player-level Statcast (xera, xwoba, whiff%, k%, csp, ...)
     split_stats: dict | None = None,  # lineup-mix-weighted L/R splits (k_pct, bb_pct, ops, lhb_pct)
     arsenal: dict | None = None,   # pitch-mix profile (num_pitch_types, fb_avg_velo, velo_gap)
+    game_ctx: dict | None = None,  # game-day context (umpire, catcher, rest, bullpen)
 ) -> dict:
     bf = float(pit_stats.get("battersFaced") or 0)
     ip_str = pit_stats.get("inningsPitched", 0)
@@ -302,6 +326,24 @@ def pitcher_feature_row(
         "sc_induce_chase": float((sc.get("induce_chase") or 31.0)),
         "sc_oz_contact":   float((sc.get("oz_contact")   or 60.0)),
         "sc_z_swing":      float((sc.get("z_swing")      or 67.0)),
+
+        # Game-day context (Jun 10 2026 residual screen, props_pit_2026).
+        # All knowable pre-game; defaults are league-neutral medians:
+        # - ump_k_mult: plate umpire K tendency (r=+0.084 on K residual,
+        #   +0.60 K top-vs-bottom quartile)
+        # - own_catcher_framing: the catcher receiving this start
+        #   (r=+0.104 on K residual, +0.53 K quartile gap)
+        # - sp_days_rest: more rest -> deeper starts (r=+0.108 on outs,
+        #   +0.54 outs quartile gap) and slightly more Ks
+        # - bp_ip_72h / bp_top_rest: own bullpen workload/rest interact
+        #   with hook timing (r=-0.058 / -0.084 on outs)
+        # NOTE: explicit None checks — 0.0 is a REAL value for framing,
+        # bp_ip_72h (fresh pen), and bp_top_rest (closer threw yesterday).
+        "ump_k_mult":          _ctx_val(game_ctx, "ump_k_mult", 1.0),
+        "own_catcher_framing": _ctx_val(game_ctx, "own_catcher_framing", 0.0),
+        "sp_days_rest":        _ctx_val(game_ctx, "sp_days_rest", 6.0),
+        "bp_ip_72h":           _ctx_val(game_ctx, "bp_ip_72h", 8.7),
+        "bp_top_rest":         _ctx_val(game_ctx, "bp_top_rest", 3.0),
     }
 
 

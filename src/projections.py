@@ -205,6 +205,7 @@ def _apply_ml_adjustment_batter(
     team_pred_runs: float,
     blend: float | None = None,
     sc_stats: dict | None = None,
+    game_ctx: dict | None = None,
 ) -> "BatterProjection":
     """Blend ML predictions with analytical projection.
 
@@ -217,7 +218,8 @@ def _apply_ml_adjustment_batter(
         return proj
     from . import prop_models as pm
     feat = pm.batter_feature_row(proj, bat_stats, rec_stats, opp_sp_q, park,
-                                 weather_adj, team_pred_runs, sc_stats=sc_stats)
+                                 weather_adj, team_pred_runs, sc_stats=sc_stats,
+                                 game_ctx=game_ctx)
     df = pd.DataFrame([feat])
     new = BatterProjection(**asdict(proj))
     for stat, attr in [("h", "proj_h"), ("hr", "proj_hr"), ("tb", "proj_tb"),
@@ -245,6 +247,7 @@ def _apply_ml_adjustment_pitcher(
     sc_stats: dict | None = None,
     split_stats: dict | None = None,
     arsenal: dict | None = None,
+    game_ctx: dict | None = None,
 ) -> "PitcherProjection":
     models = _get_prop_models().get("pitcher", {})
     if not models:
@@ -252,7 +255,8 @@ def _apply_ml_adjustment_pitcher(
     from . import prop_models as pm
     feat = pm.pitcher_feature_row(proj, pit_stats, rec_stats, opp_off_idx, park,
                                   weather_adj, opp_pred_runs, sc_stats=sc_stats,
-                                  split_stats=split_stats, arsenal=arsenal)
+                                  split_stats=split_stats, arsenal=arsenal,
+                                  game_ctx=game_ctx)
     df = pd.DataFrame([feat])
     new = PitcherProjection(**asdict(proj))
     for stat, attr in [("k", "proj_k"), ("bb", "proj_bb"), ("h", "proj_h"),
@@ -376,6 +380,7 @@ def project_batter(
     bat_split: dict | None = None,
     is_switch: bool = False,
     sc_stats: dict | None = None,
+    game_ctx: dict | None = None,
 ) -> BatterProjection:
     """Empirical-Bayes shrunk rates × expected PA × matchup multipliers.
 
@@ -541,7 +546,7 @@ def project_batter(
         out = _apply_ml_adjustment_batter(out, bat_stats, recent_stats,
                                           opp_sp_q, park, weather_adj,
                                           team_pred_runs, blend=ml_blend,
-                                          sc_stats=sc_stats)
+                                          sc_stats=sc_stats, game_ctx=game_ctx)
     # Per-stat isotonic calibration: bend the projection curve to match
     # observed top/bottom-decile actuals. No-op when calibrators missing.
     from . import projection_cal as _cal
@@ -606,6 +611,7 @@ def project_pitcher(
     sc_stats: dict | None = None,
     split_stats: dict | None = None,
     arsenal: dict | None = None,
+    game_ctx: dict | None = None,
 ) -> PitcherProjection:
     pid = int(pit_stats.get("player_id") or pit_stats.get("id") or 0)
     name = pit_stats.get("name") or pit_stats.get("fullName", "")
@@ -672,7 +678,7 @@ def project_pitcher(
                                            opp_pred_runs, blend=ml_blend,
                                            sc_stats=sc_stats,
                                            split_stats=split_stats,
-                                           arsenal=arsenal)
+                                           arsenal=arsenal, game_ctx=game_ctx)
     # Per-stat isotonic calibration. No-op when calibrators missing.
     from . import projection_cal as _cal
     out.proj_k         = _cal.apply("pitcher_k",    out.proj_k)
