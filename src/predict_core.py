@@ -618,15 +618,13 @@ def predict_slate(target_date: date | str | None = None,
                                   and ((" Over " in vb.description and total_pred < vb.line)
                                        or (" Under " in vb.description and total_pred > vb.line)))]
 
-            # Run-line plus-money restriction: keep only plus-money run-line
-            # bets (no laying juice on "safe" covers). CAUTION: the -36%/+39%
-            # numbers that motivated this rule came from a bet log in which
-            # every AWAY run-line bet was mis-graded (sign bug fixed Jun 9
-            # 2026). Kept for now because it is conservative (blocks bets,
-            # risks nothing) — re-run scripts/analyze_bets.py after
-            # `python -m src.bet_tracker regrade` to revalidate or drop it.
-            game_value = [vb for vb in game_value
-                          if not (vb.market == "run_line" and vb.odds <= 0)]
+            # Run-line plus-money restriction: REMOVED Jun 10 2026 after the
+            # regrade. The rule was built on the corrupted log (away-RL sign
+            # bug): corrected outcomes show plus-money RL 4W-9L (-24%) and
+            # minus-money 20W-13L (-1.4%) — the rule kept exactly the WORSE
+            # side. Corrected RL overall is ~vig-level noise (n=46), so no
+            # directional filter is justified; the calibrate-then-blend
+            # pricing and the sharp veto govern run-line bets now.
 
             gp.all_bets.extend(_vb_to_dict(vb) for vb in game_value_all)
 

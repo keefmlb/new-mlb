@@ -20,94 +20,81 @@ if str(ROOT) not in sys.path:
 
 from src import model as mdl
 
-GAMES_2025 = ROOT / "data" / "games" / "games_2025.csv"
 GAMES_2026 = ROOT / "data" / "games" / "games_2026.csv"
+# Prior seasons to fold in for training, oldest first. Any that don't exist on
+# disk are skipped — pull them with `python -m scripts.build_dataset_history <yr>`.
+PRIOR_SEASONS = [2023, 2024, 2025]
 MODEL_OUT = ROOT / "data" / "models" / "team_runs.joblib"
 
 
+def _align(df_old: pd.DataFrame, df_ref: pd.DataFrame) -> pd.DataFrame:
+    """Fill columns present in the current-schema reference (df_ref = 2026) but
+    missing from a prior-season frame, using leak-/era-safe defaults so the GLM
+    doesn't learn a spurious season contrast from the fills.
+    """
+    missing = sorted(set(df_ref.columns) - set(df_old.columns))
+    for c in missing:
+        # Recent-form gaps -> backfill to the season-equivalent so the
+        # (recent - season) gap is 0 (no era-bias signal).
+        if c.endswith("_recent"):
+            base = c.replace("_recent", "")
+            if base in df_old.columns:
+                df_old[c] = df_old[base]; continue
+        # Roof flags: derive from park_roof (present every season).
+        if c in ("home_park_is_dome", "away_park_is_dome", "park_is_dome"):
+            df_old[c] = (df_old["park_roof"].astype(str).str.lower() == "dome").astype(int); continue
+        if c in ("home_park_is_retractable", "away_park_is_retractable", "park_is_retractable"):
+            df_old[c] = (df_old["park_roof"].astype(str).str.lower() == "retractable").astype(int); continue
+        if c == "park_pf_h":
+            from src import parks as _parks
+            df_old[c] = df_old["venue"].astype(str).map(
+                lambda n: (_parks.PARKS_BY_NAME.get(n).pf_h if _parks.PARKS_BY_NAME.get(n) else 1.0))
+            continue
+        if c.endswith("sp_ppi"):
+            df_old[c] = 15.5; continue
+        if c.endswith("sp_fip_recent") or c.endswith("bp_era_recent"):
+            base = c.replace("_recent", "")
+            if base in df_old.columns:
+                df_old[c] = df_old[base]; continue
+        neutral_defaults = {
+            "off_sb_pg": 0.60, "off_sf_pg": 0.30, "off_gidp_pg": 0.75,
+            "off_sb_net_pg": 0.30, "sp_days_rest": 5.0, "def_oaa": 0.0,
+            "is_day_game": 0, "bp_ip_72h": 2.0, "bp_top_rest": 2.5,
+            "catcher_framing": 0.0, "catcher_id": 0, "sprint_speed": 27.0,
+        }
+        matched = False
+        for suffix, val in neutral_defaults.items():
+            if c.endswith(suffix):
+                df_old[c] = val; matched = True; break
+        if matched:
+            continue
+        df_old[c] = df_ref[c].mean() if df_ref[c].dtype != "O" else df_ref[c].iloc[0]
+    return df_old
+
+
 def load_combined_games() -> pd.DataFrame:
-    """Load 2025 + 2026 games with the 2025 columns aligned/backfilled to the
-    2026 schema (neutral defaults, no era-bias contrasts). Shared with
-    scripts/fit_winprob_calibration.py so the calibration's walk-forward folds
-    train on exactly the same data as the production model."""
-    df25 = pd.read_csv(GAMES_2025)
+    """Load all available prior seasons (PRIOR_SEASONS) + 2026, with prior-
+    season columns aligned/backfilled to the 2026 schema (neutral defaults,
+    no era-bias contrasts). Shared with scripts/fit_winprob_calibration.py so
+    the calibration's walk-forward folds train on exactly the same data as the
+    production model."""
     df26 = pd.read_csv(GAMES_2026)
-    print(f"2025: {len(df25)}  |  2026: {len(df26)}")
+    frames = []
+    for yr in PRIOR_SEASONS:
+        path = ROOT / "data" / "games" / f"games_{yr}.csv"
+        if not path.exists():
+            print(f"  {yr}: (not found, skipping — run build_dataset_history {yr})")
+            continue
+        dfy = pd.read_csv(path)
+        dfy = _align(dfy, df26)
+        print(f"  {yr}: {len(dfy)} games")
+        frames.append(dfy)
+    print(f"  2026: {len(df26)} games")
+    frames.append(df26)
 
-    # Align columns: take only those in both
-    common = sorted(set(df25.columns) & set(df26.columns))
-    missing_in_25 = sorted(set(df26.columns) - set(df25.columns))
-    if missing_in_25:
-        print(f"  Filling missing-in-2025 columns with sensible defaults: {missing_in_25}")
-        for c in missing_in_25:
-            if c.endswith("_recent"):
-                # Fall back to season equivalent. e.g. home_off_rpg_recent -> home_off_rpg
-                base = c.replace("_recent", "")
-                if base in df25.columns:
-                    df25[c] = df25[base]
-                    continue
-            # Roof flags: derive from park_roof (present in 2025) rather than
-            # filling with mean. Otherwise the GLM learns "dome=1 means 2026"
-            # via era bias, not the real roof effect.
-            if c in ("home_park_is_dome", "away_park_is_dome", "park_is_dome"):
-                df25[c] = (df25["park_roof"].astype(str).str.lower() == "dome").astype(int)
-                continue
-            if c in ("home_park_is_retractable", "away_park_is_retractable", "park_is_retractable"):
-                df25[c] = (df25["park_roof"].astype(str).str.lower() == "retractable").astype(int)
-                continue
-            # park_pf_h: look up per-venue from parks registry
-            if c == "park_pf_h":
-                from src import parks as _parks
-                def _pf_h(name: str) -> float:
-                    p = _parks.PARKS_BY_NAME.get(name)
-                    return p.pf_h if p else 1.0
-                df25[c] = df25["venue"].astype(str).map(_pf_h)
-                continue
-            # Sequential offense / days_rest / day_game / OAA — fill with
-            # NEUTRAL league-average defaults rather than 2026 mean (which
-            # would create era contrast). 2025 rows become "neutral baseline"
-            # and only 2026 variation drives the coefficient learning.
-            neutral_defaults = {
-                "off_sb_pg":     0.60, "off_sf_pg":     0.30,
-                "off_gidp_pg":   0.75, "off_sb_net_pg": 0.30,
-                "sp_days_rest":  5.0,  "def_oaa":       0.0,
-                "is_day_game":   0,
-                "bp_ip_72h":     2.0,    # league avg ~2 IP/team/day
-                "bp_top_rest":   2.5,    # avg top-relief rest
-                "catcher_framing": 0.0,  # neutral (league average framing)
-                "catcher_id":      0,
-                "sprint_speed":    27.0,  # league average ft/s
-            }
-            # Recent SP FIP: backfill to season FIP so the recent-gap = 0 for
-            # 2025 rows (i.e. no era-bias signal).
-            if c.endswith("sp_fip_recent"):
-                base = c.replace("_recent", "")
-                if base in df25.columns:
-                    df25[c] = df25[base]
-                    continue
-            # Starter pitches-per-inning: 15.5 league average for 2025
-            if c.endswith("sp_ppi"):
-                df25[c] = 15.5
-                continue
-            # Bullpen recent ERA: backfill to season bp_era so gap=0 (no era contrast)
-            if c.endswith("bp_era_recent"):
-                base = c.replace("_recent", "")
-                if base in df25.columns:
-                    df25[c] = df25[base]
-                    continue
-            matched = False
-            for suffix, val in neutral_defaults.items():
-                if c.endswith(suffix):
-                    df25[c] = val
-                    matched = True
-                    break
-            if matched:
-                continue
-            df25[c] = df26[c].mean() if df26[c].dtype != "O" else df26[c].iloc[0]
-
-    df = pd.concat([df25, df26], ignore_index=True)
+    df = pd.concat(frames, ignore_index=True)
     df = df[df["is_final"] == True].copy()
-    print(f"Combined finals: {len(df)} games")
+    print(f"Combined finals: {len(df)} games across {len(frames)} seasons")
     return df
 
 
