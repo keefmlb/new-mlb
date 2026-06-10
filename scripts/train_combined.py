@@ -25,7 +25,11 @@ GAMES_2026 = ROOT / "data" / "games" / "games_2026.csv"
 MODEL_OUT = ROOT / "data" / "models" / "team_runs.joblib"
 
 
-def main():
+def load_combined_games() -> pd.DataFrame:
+    """Load 2025 + 2026 games with the 2025 columns aligned/backfilled to the
+    2026 schema (neutral defaults, no era-bias contrasts). Shared with
+    scripts/fit_winprob_calibration.py so the calibration's walk-forward folds
+    train on exactly the same data as the production model."""
     df25 = pd.read_csv(GAMES_2025)
     df26 = pd.read_csv(GAMES_2026)
     print(f"2025: {len(df25)}  |  2026: {len(df26)}")
@@ -104,6 +108,11 @@ def main():
     df = pd.concat([df25, df26], ignore_index=True)
     df = df[df["is_final"] == True].copy()
     print(f"Combined finals: {len(df)} games")
+    return df
+
+
+def main():
+    df = load_combined_games()
 
     model, eval_df = mdl.fit(df, holdout_days=7, use_gbt=True)
 

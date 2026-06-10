@@ -558,11 +558,14 @@ def load_temporal_ensemble(model_dir: str | Path) -> list[TeamScoreModel]:
 
 def predict_ensemble(models: list[TeamScoreModel], X: pd.DataFrame,
                      mode: str = "ensemble") -> np.ndarray:
-    """Weighted-average prediction across multiple models.
+    """Equal-weight average prediction across multiple models.
 
-    Weights are proportional to 1/train_mae so better-calibrated models
-    contribute more. Falls back gracefully if list is empty or has one model.
-    Stale models (wrong feature count) are skipped with a warning.
+    Equal weights replaced the old 1/train_mae weighting (Jun 2026):
+    train MAE is an IN-SAMPLE number, so it systematically favoured the most
+    overfit replicates (bootstrap models score their own duplicated rows).
+    The realised weights were near-equal anyway; equal weighting drops the
+    bias without changing behaviour materially. Stale models (wrong feature
+    count) are skipped.
     """
     if not models:
         raise ValueError("predict_ensemble: empty model list")
@@ -583,6 +586,4 @@ def predict_ensemble(models: list[TeamScoreModel], X: pd.DataFrame,
     if len(valid) == 1:
         return valid[0].predict_runs(X, mode=mode)
     preds = np.array([m.predict_runs(X, mode=mode) for m in valid])
-    weights = np.array([1.0 / max(m.train_mae, 0.01) for m in valid])
-    weights /= weights.sum()
-    return (preds * weights[:, None]).sum(axis=0)
+    return preds.mean(axis=0)

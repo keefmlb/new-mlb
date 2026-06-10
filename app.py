@@ -1139,6 +1139,7 @@ with main_tab_track:
                         "Total":   bm["total"],
                         "W":       bm["wins"],
                         "L":       bm["losses"],
+                        "Push":    bm.get("pushes", 0),
                         "Pending": bm["pending"],
                         "Win%":    f"{bm['wins']/dec:.0%}" if dec else "—",
                     })

@@ -24,12 +24,19 @@ ROOT = Path(__file__).resolve().parent.parent
 # How much to trust the betting market over the model when pricing GAME LINES.
 # The closing line is the sharpest single signal (injuries, scratches, weather,
 # sharp money); our team-runs model beats a constant baseline by only ~2.5% on
-# totals. Blending the run prediction toward the market-implied value before
-# pricing tightens predictions and prevents over-confident disagreement from
-# manufacturing fake edges (high-disagreement bets ran -34% ROI in the log).
-# 0.5 = equal trust. Applied to ML / total / run-line ONLY; player projections
-# keep the raw model output.
+# totals. 0.5 = equal trust. Applied to ML / total / run-line ONLY; player
+# projections keep the raw model output.
+#
+# The blend is applied in PROBABILITY space inside value.evaluate_game_lines:
+# raw model prob -> fitted calibration -> blend toward the book's no-vig prob.
+# (The run-prediction lambdas are still blended via blend_to_market, but only
+# for the DISPLAYED per-team runs / totals on the game card — pricing no
+# longer re-derives probabilities from blended lambdas, which double-shrunk.)
 MARKET_BLEND_WEIGHT = 0.50
+
+# Tag stamped onto every logged pick so the bet log can be segmented by the
+# filter/calibration policy in force. Bump when betting rules change.
+POLICY_VERSION = "2026-06-09-calibration-rework"
 # Raw model-vs-market total disagreement (runs) beyond which game-line bets are
 # suppressed entirely — that magnitude of disagreement is model error, not edge.
 MARKET_MAX_TOTAL_DISAGREE = 3.0
@@ -177,11 +184,30 @@ def _team_name_match(needle: str, haystack: str) -> bool:
     return n in h or h in n
 
 
-def _find_book(books: list[dict], home: str, away: str) -> dict | None:
-    for b in books:
-        if _team_name_match(b.get("home_team", ""), home) and _team_name_match(b.get("away_team", ""), away):
-            return b
-    return None
+def _find_book(books: list[dict], home: str, away: str,
+               first_pitch: datetime | None = None) -> dict | None:
+    """Find the book entry for a matchup. When several entries match the same
+    team pair (doubleheaders), pick the one whose commence_time is closest to
+    the game's first pitch — otherwise game 2 silently gets game 1's lines."""
+    matches = [b for b in books
+               if _team_name_match(b.get("home_team", ""), home)
+               and _team_name_match(b.get("away_team", ""), away)]
+    if not matches:
+        return None
+    if len(matches) == 1 or first_pitch is None:
+        return matches[0]
+
+    def _time_gap(b: dict) -> float:
+        try:
+            t = str(b.get("commence_time") or "")
+            dt = datetime.fromisoformat(t.replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return abs((dt - first_pitch).total_seconds())
+        except (TypeError, ValueError):
+            return float("inf")
+
+    return min(matches, key=_time_gap)
 
 
 def _vb_to_dict(vb: value.ValueBet) -> dict:
@@ -380,13 +406,19 @@ def predict_slate(target_date: date | str | None = None,
         home_pred = float(long[long["is_home"] == 1].iloc[0]["pred_runs"])
         away_pred = float(long[long["is_home"] == 0].iloc[0]["pred_runs"])
 
-        # Market blend (game lines only): look up the book now and pull the run
-        # prediction toward the market-implied value. Player projections below
-        # keep the RAW model preds; only the game-line quantities use the
-        # blended values. `bk` is reused for the sportsbook lookup further down.
-        bk = _find_book(book_data, f.home_team, f.away_team) if book_data else None
+        park = parks.get_park(f.venue)
+        utc_dt = mlb_api.parse_game_time(g)
+
+        # Book lookup (first_pitch disambiguates doubleheader twin games).
+        # `bk` is reused for game-line pricing and the sportsbook card below.
+        bk = _find_book(book_data, f.home_team, f.away_team,
+                        first_pitch=utc_dt) if book_data else None
         if bk is None and manual:
-            bk = _find_book(manual.get("games", []), f.home_team, f.away_team)
+            bk = _find_book(manual.get("games", []), f.home_team, f.away_team,
+                            first_pitch=utc_dt)
+        # Display lambdas: blended toward the market-implied runs so the game
+        # card shows our best point estimate. Pricing below uses the RAW
+        # lambdas + probability-space blending instead (see MARKET_BLEND_WEIGHT).
         home_pred_g, away_pred_g, market_total = (home_pred, away_pred, None)
         if bk is not None:
             home_pred_g, away_pred_g, market_total = value.blend_to_market(
@@ -409,13 +441,23 @@ def predict_slate(target_date: date | str | None = None,
                 "sharp_p_over": _sh.get("p_over"),
             })
 
-        p_home_win = value.home_win_prob(home_pred_g, away_pred_g)
+        # Displayed win probability: same quantity the moneyline pricing uses —
+        # calibrated raw-model prob, blended toward the book's no-vig prob.
+        p_home_win = value.calibrate_winprob(
+            value.home_win_prob(home_pred, away_pred), "moneyline")
+        _ml_disp = (bk or {}).get("moneyline") or {}
+        if "home" in _ml_disp and "away" in _ml_disp:
+            try:
+                _nv_h, _ = value.devig_two_way(
+                    value.american_to_prob(int(_ml_disp["home"])),
+                    value.american_to_prob(int(_ml_disp["away"])))
+                p_home_win = ((1 - MARKET_BLEND_WEIGHT) * p_home_win
+                              + MARKET_BLEND_WEIGHT * _nv_h)
+            except (TypeError, ValueError):
+                pass
         p_over_8_5 = value.total_over_prob(home_pred_g, away_pred_g, 8.5)
         total_pred = home_pred_g + away_pred_g
         total_pred_raw = home_pred + away_pred
-
-        park = parks.get_park(f.venue)
-        utc_dt = mlb_api.parse_game_time(g)
 
         # Starters confirmed: a multi-source check.
         # 1. MLB API claims both starters (rejects "TBD"/"?"/empty names).
@@ -535,12 +577,14 @@ def predict_slate(target_date: date | str | None = None,
         if bk is not None:
             gp.book = bk
             gp.book_source = odds_source if (book_data and bk in book_data) else "manual"
-            # Price game lines from the MARKET-BLENDED run predictions so the
-            # edge reflects only our residual disagreement after deferring to
-            # the sharper market signal.
+            # Price game lines from the RAW run predictions; calibration and
+            # the market blend happen in probability space inside
+            # evaluate_game_lines (calibrate first, then blend — avoids the
+            # old double-shrink of calibrating already-blended probabilities).
             game_value_all = value.evaluate_game_lines(
-                f.home_team, f.away_team, home_pred_g, away_pred_g, bk,
+                f.home_team, f.away_team, home_pred, away_pred, bk,
                 edge_threshold=-1.0,
+                market_blend=MARKET_BLEND_WEIGHT,
             )
             for vb in game_value_all:
                 vb.game_pk = int(f.game_pk)
@@ -555,24 +599,11 @@ def predict_slate(target_date: date | str | None = None,
                     and abs(total_pred_raw - market_total) > MARKET_MAX_TOTAL_DISAGREE):
                 game_value = []
 
-            # Elite ace Over filter: when either starter has xFIP < 3.5, the model
-            # over-estimates scoring because ace dominance isn't fully captured.
-            # LAD@HOU May 5: Ohtani xFIP=3.44, model predicted 10.2, actual 3.
-            # Allow through only if the edge is overwhelming (> 15%).
-            _min_xfip = min(f.home_sp_xfip or 99.0, f.away_sp_xfip or 99.0)
-            game_value = [vb for vb in game_value
-                          if not (vb.market == "total"
-                                  and " Over " in vb.description
-                                  and _min_xfip < 3.5
-                                  and vb.edge_pct < 15.0)]
-
-            # Total bet minimum gap: the model prediction must differ from the
-            # book line by >= 1.0 run. A 0.2-run gap (e.g. pred=8.3, line=8.5)
-            # is inside single-inning variance — BOS@DET and SD@SF both had
-            # ~0.2-run Under gaps that exploded to 13 and 15 actual runs.
-            game_value = [vb for vb in game_value
-                          if not (vb.market == "total"
-                                  and abs(total_pred - vb.line) < 1.0)]
+            # NOTE (Jun 9 2026 policy prune): the "elite ace Over" filter and
+            # the "total minimum 1.0-run gap" filter were removed. Both were
+            # fit to 1-2 anecdotes; the calibrated total probabilities + the
+            # market blend + the direction-consistency check below are the
+            # principled versions of what they were patching.
 
             # Total bet direction consistency: the model prediction must agree
             # with the bet direction. An Under bet when model pred > line means
@@ -587,13 +618,13 @@ def predict_slate(target_date: date | str | None = None,
                                   and ((" Over " in vb.description and total_pred < vb.line)
                                        or (" Under " in vb.description and total_pred > vb.line)))]
 
-            # Run-line plus-money restriction. The bet log is unambiguous:
-            # minus-money run-line bets (laying juice on a "safe" +1.5 cover)
-            # ran -36% over 31 bets and the market blend made them worse — a
-            # structural no-edge market, the game-line analog of K OVERs.
-            # Plus-money run-lines (+39% over 7) are the only side where we've
-            # shown anything. Restricting to plus-money flips the whole
-            # game-line book from net-negative to +5.4% (63 bets) in sim.
+            # Run-line plus-money restriction: keep only plus-money run-line
+            # bets (no laying juice on "safe" covers). CAUTION: the -36%/+39%
+            # numbers that motivated this rule came from a bet log in which
+            # every AWAY run-line bet was mis-graded (sign bug fixed Jun 9
+            # 2026). Kept for now because it is conservative (blocks bets,
+            # risks nothing) — re-run scripts/analyze_bets.py after
+            # `python -m src.bet_tracker regrade` to revalidate or drop it.
             game_value = [vb for vb in game_value
                           if not (vb.market == "run_line" and vb.odds <= 0)]
 
@@ -622,17 +653,12 @@ def predict_slate(target_date: date | str | None = None,
         # Player props for this game
         if merged_props:
             by_name = {}
-            # Also build player_id -> lineup order (1-indexed) for lineup position filters.
-            _lineup_order: dict[int, int] = {}
             for _side_batters in (
                 proj.get_likely_batters(f.home_team_id, batter_stats, lineup_ids=home_lineup_ids),
                 proj.get_likely_batters(f.away_team_id, batter_stats, lineup_ids=away_lineup_ids),
             ):
-                for _pos, bs in enumerate(_side_batters, start=1):
+                for bs in _side_batters:
                     by_name[bs.get("name", "")] = bs
-                    _pid_order = int(bs.get("player_id") or 0)
-                    if _pid_order:
-                        _lineup_order[_pid_order] = _pos
             for sp_id in (f.home_sp_id, f.away_sp_id):
                 if sp_id and pitcher_stats.get(sp_id):
                     by_name[pitcher_stats[sp_id].get("name", "")] = pitcher_stats[sp_id]
@@ -728,65 +754,36 @@ def predict_slate(target_date: date | str | None = None,
                 # a quick pull. UNDERs are unaffected (a short start helps them).
                 if is_pitcher and vbs_all and pproj.expected_outs < 14.5:
                     vbs_all = [vb for vb in vbs_all if " OVER " not in vb.description]
-                # Pitcher K UNDER guard: high-line UNDERs (>= 6.0) and elite-K
-                # pitchers are systematically losing bets in the log. Apr 30 -
-                # May 2 record:
-                #   - UNDER 6.5: 0W 3L (Skenes 9 K, Ragans 8 K, Misiorowski 8 K)
-                #   - whiff% >= 30%: 0W 2L
-                #   - McCullers Jr (whiff 27.9, k_pct 24.8) UNDER 4.5 -> 9 K
-                # The book's high lines on elite arms reflect their true K rate;
-                # our projection is biased low (compression) so we lean UNDER
-                # and lose. Thresholds tightened (whiff 28 -> 27, k_pct 26 -> 25)
-                # to catch borderline-elite arms — verified no historical UNDER
-                # wins fall in the new band (max winning K% was 22.7 Flaherty,
-                # max winning whiff 25.0).
-                # Also skip very-low-conviction UNDERs (edge < 5%): the 0-5%
-                # bucket is too thin a margin to justify model noise.
+                # Pitcher K guards. Jun 9 2026 policy prune: only the rules
+                # with a structural mechanism survive. Removed: the edge<5%
+                # UNDER filter, the line<=2.5 and line<=4.5 low-line UNDER
+                # guards, and the model_prob>=0.60 floor — all were tuned on
+                # single-digit samples from the (then mis-graded) bet log.
+                # The per-market 6% edge floor in _MARKET_MIN_EDGE_PCT and the
+                # now-coherent probability calibration are the principled
+                # replacements.
                 if (is_pitcher and pp["market"] == "pitcher_k" and vbs_all):
+                    # Elite-arm / high-line UNDER guard. Mechanism: the prop
+                    # projections are compressed toward the mean (documented in
+                    # prop_models.py), so we systematically under-project elite
+                    # strikeout arms, lean UNDER on their high lines, and lose.
                     _whiff = (sc_pit_data.get(_pid) or {}).get("whiff_pct") or 0.0
                     _kpct  = (sc_pit_data.get(_pid) or {}).get("k_pct")    or 0.0
                     _high_line  = pp["line"] >= 6.0
                     _elite_arm  = _whiff >= 27.0 or _kpct >= 25.0
                     if _high_line or _elite_arm:
                         vbs_all = [vb for vb in vbs_all if " UNDER " not in vb.description]
-                    else:
-                        # Filter low-conviction UNDERs (edge < 5%) — too thin
-                        # to overcome 1-K variance on the line.
-                        vbs_all = [vb for vb in vbs_all
-                                   if not (" UNDER " in vb.description and vb.edge_pct < 5.0)]
-                        # K UNDER block at line <= 2.5: too close to zero;
-                        # one extra K beats the line. 0W 1L in the log.
-                        if pp["line"] <= 2.5:
-                            vbs_all = [vb for vb in vbs_all if " UNDER " not in vb.description]
-                        # Low-line K UNDER guard: for lines <= 4.5, require a
-                        # meaningful projection gap. Raised to line-1.5 after
-                        # May 5 analysis (Leahy/Junk losses at ~0.3 gap).
-                        if pp["line"] <= 4.5:
-                            vbs_all = [vb for vb in vbs_all
-                                       if not (" UNDER " in vb.description
-                                               and pproj.proj_k > pp["line"] - 1.5)]
-                    # K OVER blanket block. A full season of incremental K-OVER
-                    # guards (projection-gap + workhorse requirement, low-line
-                    # blocks, edge caps) still left K OVERs at -76% ROI (1W 7L)
-                    # in the bet log — by far our worst sub-market. The
-                    # mechanism is structural: an OVER needs the starter to beat
-                    # a K line set by people who know the pitch-count plan,
-                    # matchup, and weather; our compression-corrected projections
-                    # overshoot exactly there. No floor level rescued it. Drop
-                    # K OVERs entirely; K UNDERs survive behind the 6% floor and
-                    # the elite-arm guards below.
+                    # K OVER blanket block. Mechanism: an OVER needs the starter
+                    # to beat a K line set by people who know the pitch-count
+                    # plan, matchup, and weather; our compression-corrected
+                    # projections overshoot exactly there (-76% ROI, no guard
+                    # level rescued it).
                     vbs_all = [vb for vb in vbs_all if " OVER " not in vb.description]
-                    # K prop edge cap at 15%: bet log shows edge > 15% on K props
-                    # = 1W 8L (11%). A large edge gap on K bets almost always
-                    # means the book has information we lack (injury, planned short
-                    # start, pitch count). Sweet spot is 5-15%: 25W 21L (54%).
+                    # K prop edge cap at 15%. Mechanism: adverse selection — a
+                    # huge model-vs-book gap on a K line almost always means the
+                    # book knows something we don't (injury, planned short
+                    # start, pitch count).
                     vbs_all = [vb for vb in vbs_all if vb.edge_pct <= 15.0]
-                    # K prop model_prob floor at 0.60: low-confidence K bets
-                    # (prob < 0.60) are effectively coin flips — 10W 11L (48%)
-                    # in the bet log. High-confidence K bets (prob >= 0.60)
-                    # go 14W 7L (67%). Filtering the low-confidence ones focuses
-                    # the leaderboard on K bets the model actually trusts.
-                    vbs_all = [vb for vb in vbs_all if vb.model_prob >= 0.60]
                 # Pitcher OUTS workhorse UNDER guard (mirror to short-start):
                 # 21-day backtest top-decile pitcher outs under-projects by
                 # 1.18 outs (proj 17.0, actual 18.2). Top arms exceed our
@@ -799,16 +796,9 @@ def predict_slate(target_date: date | str | None = None,
                     _workhorse = pproj.expected_outs >= 16.5
                     if _high_outs_line or _workhorse:
                         vbs_all = [vb for vb in vbs_all if " UNDER " not in vb.description]
-                # Runs OVER lineup position filter: bottom-of-order batters
-                # (spots 6-9) rarely score enough to justify runs OVER 0.5 at
-                # the inflated plus-money odds Bovada posts. Bet log: Yastrzemski
-                # (spot 8) and Dubon (spot 7) both 0W at +210 on May 4.
-                # Only surface runs OVERs for top-5 lineup spots where run
-                # frequency is meaningfully higher.
-                if (not is_pitcher and pp["market"] == "runs" and vbs_all):
-                    _order = _lineup_order.get(_pid, 5)
-                    if _order > 4:
-                        vbs_all = [vb for vb in vbs_all if " OVER " not in vb.description]
+                # (Jun 9 2026 policy prune: the runs-OVER lineup-spot filter was
+                # removed — n=2 anecdotes, and lineup order is already an input
+                # to the runs projection itself.)
                 # Batter TB UNDER guard: top-decile TB projections under-shoot
                 # by 0.67 TB (proj 1.84, actual 2.51) — elite power hitters
                 # drive way more bases than projected. Drop TB UNDERs when
@@ -878,10 +868,13 @@ def predict_slate(target_date: date | str | None = None,
                         f"They share one underlying signal — treat as ~1 position, not {top_n_bets}."
                     )
 
-    # Log top confidence picks for outcome tracking (fire-and-forget)
+    # Log the top of the DISPLAYED (score-ranked) leaderboard for outcome
+    # tracking — the log must record the same picks the user sees, or every
+    # constant later tuned against it inherits a selection bias.
     try:
         if top_value and target == datetime.now(timezone.utc).date():
-            bet_tracker.log_picks(target, top_value, top_n=10)
+            bet_tracker.log_picks(target, top_value, top_n=10,
+                                  policy_version=POLICY_VERSION)
             bet_tracker.evaluate_outcomes()
     except Exception:
         pass

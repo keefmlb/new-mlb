@@ -17,9 +17,17 @@ env/
 # Generated data — large, rebuilt by pipeline scripts
 data/cache/
 data/games/
-data/odds/
-data/bets/
 data/weather/
+
+# Odds + bets: mostly regenerable EXCEPT the bet log and the closing-line
+# history — those are small, append-only, and irreplaceable (every tuned
+# constant traces back to them). Keep them in version control: after pulling
+# this change, run `git add data/bets/bet_log.json data/odds/closing_lines.csv`
+# on the machine that has them.
+data/odds/*
+!data/odds/closing_lines.csv
+data/bets/*
+!data/bets/bet_log.json
 
 # Trained model binaries — rebuilt by train_combined.py / train_props.py
 data/models/*.joblib

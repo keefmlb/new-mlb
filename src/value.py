@@ -53,14 +53,27 @@ def devig_two_way(p_a: float, p_b: float) -> tuple[float, float]:
     return p_a / s, p_b / s
 
 
-# Shrinkage applied to raw model probabilities before computing edge. The
-# logged bet outcomes from the first two slates showed picks rated >=.65 won
-# only 33% — strong overconfidence at the high end. Shrinking toward 0.5
-# closes the gap between displayed model probability and realised win rate.
-# Bumped 0.6 -> 0.5 after May 2026 holdout: 60-70% bucket claimed 64.5% but
-# won 45%; 70-80% bucket claimed 75% but won 50%. The wider shrink hurts
-# mid-edge picks slightly but cuts the worst overconfidence in half.
-CALIBRATION_SHRINK = 0.5
+# Default logit-space shrink slope for model probabilities that have no
+# FITTED calibration entry (player props always; totals until a "total"
+# entry is fitted by scripts/fit_winprob_calibration.py). Slope < 1 pulls
+# probabilities toward 0.5 in log-odds space.
+#
+# Why logit shrink replaced the old "linear shrink only when p > 0.5":
+#   - The old form was incoherent across the two sides of a market. An Over
+#     rated 0.65 was shrunk to 0.575, but an Under rated 0.65 (raw over-prob
+#     0.35, untouched) kept the full 0.65. High-confidence UNDERs escaped
+#     calibration entirely, structurally tilting the leaderboard toward
+#     Unders — which we then patched with one-off UNDER guards downstream.
+#   - Logit shrink treats both sides identically: calibrate(p) and
+#     calibrate(1-p) always sum to 1.
+#   - It is tail-safe where the old symmetric LINEAR shrink was not: a raw
+#     6% longshot becomes ~13% under logit shrink, not the 28% that linear
+#     shrink toward 0.5 would produce (the original reason the asymmetric
+#     hack existed).
+#   - The slope 0.70 matches the empirically FITTED game-line calibrations
+#     (moneyline b=0.70, run line b=0.63 over 950 games) — the best
+#     available estimate of how overconfident the model's probabilities are.
+CALIBRATION_LOGIT_B = 0.70
 
 # Trust placed in the no-vig MARKET probability over the model when pricing
 # player props. Bet-log calibration showed prop model probs are badly
@@ -73,32 +86,28 @@ PROP_MARKET_BLEND_WEIGHT = 0.5
 
 
 def calibrate_prob(p: float) -> float:
-    """Shrink a raw model probability toward 0.5 — only when p > 0.5.
+    """Coherent logit-space shrink toward 0.5: p_cal = sigmoid(B * logit(p)).
 
-    p_cal = 0.5 + CALIBRATION_SHRINK * (p - 0.5)  if p > 0.5
-          = p                                      otherwise
-
-    The shrinkage was calibrated against overconfidence at the HIGH end
-    (picks rated >=.65 winning only 33%). Applying it symmetrically to
-    low-prob tails inflates them — a raw 6% becomes a "calibrated" 24%,
-    manufacturing fake edges on +1200 longshots. Asymmetric shrink fixes
-    the overconfidence without touching the tails.
+    Treats both sides of a market identically (calibrate(p) + calibrate(1-p)
+    == 1) and shrinks the tails gently rather than inflating them. Used as
+    the default calibration for prop probabilities and as the fallback for
+    game-line markets without a fitted entry in winprob_calibration.json.
     """
-    if p <= 0.5:
-        return p
-    return 0.5 + CALIBRATION_SHRINK * (p - 0.5)
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    z = CALIBRATION_LOGIT_B * math.log(p / (1 - p))
+    return 1.0 / (1.0 + math.exp(-z))
 
 
 # ---- Data-driven game-line win-probability calibration ----
-# Fitted by scripts/fit_winprob_calibration.py on actual game outcomes:
+# Fitted by scripts/fit_winprob_calibration.py (walk-forward, out-of-sample)
+# on actual game outcomes:
 #   logit(p_cal) = a + b * logit(p_raw)   (b < 1 shrinks toward 0.5)
-# This is the COHERENT two-sided calibration for ML and run-line (both sides
-# sum to 1), replacing the asymmetric calibrate_prob for those two markets.
+# Coherent two-sided calibration for 'moneyline', 'run_line', and 'total'.
 # The June 2026 backtest showed the raw joint-Poisson win probs are
 # over-dispersed: predicted 0.30 -> actual 0.42, predicted 0.60 -> actual 0.54.
 # Over-confidence inflates fake edges on the bets the model is most wrong
-# about. Totals and props keep calibrate_prob (totals are already well
-# calibrated; props need the asymmetric no-longshot-inflation behaviour).
+# about. Props use the default logit shrink in calibrate_prob (no fitted
+# per-market prop calibration yet).
 _WINPROB_CAL: dict | None = None
 _WINPROB_CAL_PATH = (
     Path(__file__).resolve().parent.parent / "data" / "models" / "winprob_calibration.json"
@@ -123,8 +132,15 @@ def reload_winprob_cal() -> None:
 
 def calibrate_winprob(p: float, market: str) -> float:
     """Apply the fitted logistic recalibration for a game-line market
-    ('moneyline' or 'run_line'). Falls back to the asymmetric calibrate_prob
-    when no fitted parameters exist (safe default before first fit)."""
+    ('moneyline', 'run_line', or 'total'). Falls back to the default logit
+    shrink (calibrate_prob) when no fitted parameters exist — safe default
+    before scripts/fit_winprob_calibration.py has been run.
+
+    IMPORTANT: the fit is performed on RAW model probabilities (walk-forward,
+    out-of-sample), so this must only ever be applied to probabilities
+    computed from the model's own unblended run predictions — never to
+    market-blended ones (that double-shrinks and manufactures fake underdog
+    edges)."""
     cal = _load_winprob_cal().get(market)
     if not cal or "a" not in cal or "b" not in cal:
         return calibrate_prob(p)
@@ -440,13 +456,11 @@ def write_stat_reliability(weights: dict[str, float] | None = None, path: Path |
 def _shrunk_edge_for_ranking(edge_pct: float) -> float:
     if edge_pct <= 5.0:
         return float(edge_pct)
-    import math
     return 5.0 + math.sqrt(max(0.0, edge_pct - 5.0) * 5.0)
 
 
 def annotate(vb: ValueBet) -> ValueBet:
     """Populate confidence + score on a ValueBet. Returns the same object."""
-    import math
     rel = _get_stat_reliability().get(vb.market, 0.40)
     p = max(0.01, min(0.99, vb.model_prob))
     # confidence: display metric for outcome uncertainty — peaks at p=0.5
@@ -468,14 +482,13 @@ def score_bet(vb: ValueBet) -> float:
     `_shrunk_edge_for_ranking` so the model's extreme-projection bias is
     discounted (15% edges win less than 5-10% edges in our bet log).
     """
-    import math
     rel = _get_stat_reliability().get(vb.market, 0.40)
     p = max(0.01, min(0.99, vb.model_prob))
     return _shrunk_edge_for_ranking(vb.edge_pct) * rel / math.sqrt(p * (1.0 - p))
 
 
 def evaluate_sharp_value(home_team: str, away_team: str, book: dict,
-                         min_ev: float = 0.02) -> list[ValueBet]:
+                         min_ev: float = 0.03) -> list[ValueBet]:
     """Find genuine +EV bets where the bettable book's PRICE beats the SHARP
     true probability (Polymarket no-vig, via odds_api_io's `sharp` reference).
 
@@ -486,8 +499,11 @@ def evaluate_sharp_value(home_team: str, away_team: str, book: dict,
     measured kind — and it's exactly what CLV will validate.
 
     Only fires when the bettable book and the sharp reference quote the SAME
-    line (so the comparison is apples-to-apples). Returns ValueBets tagged with
-    market 'sharp_*' and edge_pct = EV%.
+    line (so the comparison is apples-to-apples). The +EV gate is on EV per
+    dollar (min_ev — default 3%, since Polymarket prices carry bid-ask spread
+    and a couple points of noise), but `edge_pct` is stored in PROBABILITY
+    POINTS (p_sharp - book no-vig) so sharp bets rank in the same units as
+    every other ValueBet on the leaderboard.
     """
     sharp = book.get("sharp") or {}
     out: list[ValueBet] = []
@@ -501,7 +517,7 @@ def evaluate_sharp_value(home_team: str, away_team: str, book: dict,
             market=market, description=desc, line=0.0,
             odds=int(odds), decimal_odds=d,
             model_prob=p_sharp, novig_prob=p_book_novig,
-            edge_pct=ev * 100.0,                 # rank by expected ROI %
+            edge_pct=(p_sharp - p_book_novig) * 100.0,
             ev_per_dollar=ev, kelly=kelly_fraction(p_sharp, d),
         )))
 
@@ -545,16 +561,33 @@ def evaluate_game_lines(
     lam_home: float, lam_away: float,
     book: dict,                # {"moneyline": {...}, "total": {...}, "run_line": {...}}
     edge_threshold: float = 0.03,
+    market_blend: float = 0.0,
 ) -> list[ValueBet]:
+    """Price ML / total / run line from the model's RAW run expectations.
+
+    `lam_home` / `lam_away` must be the model's own UNBLENDED run predictions.
+    Each market's raw probability is calibrated first (fitted logit
+    calibration, falling back to the default logit shrink), then pulled
+    toward the book's no-vig probability with weight `market_blend` — the
+    same pattern the prop pipeline uses (PROP_MARKET_BLEND_WEIGHT).
+
+    Blending in PROBABILITY space, after calibration, replaces the old path
+    (price from market-blended run totals, then re-calibrate) which
+    double-shrunk toward 0.5: the calibration was fitted on raw model
+    probabilities but applied to already-half-market ones, manufacturing
+    fake edges on underdogs whenever no sharp reference was available.
+    """
+    w = min(max(float(market_blend), 0.0), 1.0)
     out: list[ValueBet] = []
     # Moneyline
     ml = book.get("moneyline") or {}
     if "home" in ml and "away" in ml:
-        p_home = calibrate_winprob(home_win_prob(lam_home, lam_away), "moneyline")
-        p_away = 1.0 - p_home
         imp_home = american_to_prob(ml["home"])
         imp_away = american_to_prob(ml["away"])
         nv_h, nv_a = devig_two_way(imp_home, imp_away)
+        p_home_cal = calibrate_winprob(home_win_prob(lam_home, lam_away), "moneyline")
+        p_home = (1.0 - w) * p_home_cal + w * nv_h
+        p_away = 1.0 - p_home
         for side, mp, novig, odds in [
             (f"{home_team} ML", p_home, nv_h, ml["home"]),
             (f"{away_team} ML", p_away, nv_a, ml["away"]),
@@ -574,11 +607,12 @@ def evaluate_game_lines(
     tot = book.get("total") or {}
     if "line" in tot:
         line = float(tot["line"])
-        p_over = calibrate_prob(total_over_prob(lam_home, lam_away, line))
-        p_under = 1.0 - p_over
         imp_o = american_to_prob(tot.get("over", -110))
         imp_u = american_to_prob(tot.get("under", -110))
         nv_o, nv_u = devig_two_way(imp_o, imp_u)
+        p_over_cal = calibrate_winprob(total_over_prob(lam_home, lam_away, line), "total")
+        p_over = (1.0 - w) * p_over_cal + w * nv_o
+        p_under = 1.0 - p_over
         for side, mp, novig, odds in [
             (f"{away_team} @ {home_team} Over {line}",  p_over,  nv_o, tot.get("over", -110)),
             (f"{away_team} @ {home_team} Under {line}", p_under, nv_u, tot.get("under", -110)),
@@ -601,11 +635,12 @@ def evaluate_game_lines(
     if "line" in rl:
         home_line = float(rl["line"])
         away_line = -home_line
-        p_home_cover = calibrate_winprob(run_line_cover_prob(lam_home, lam_away, home_line), "run_line")
-        p_away_cover = 1.0 - p_home_cover
         imp_h = american_to_prob(rl.get("home", +160))
         imp_a = american_to_prob(rl.get("away", -185))
         nv_h, nv_a = devig_two_way(imp_h, imp_a)
+        p_cover_cal = calibrate_winprob(run_line_cover_prob(lam_home, lam_away, home_line), "run_line")
+        p_home_cover = (1.0 - w) * p_cover_cal + w * nv_h
+        p_away_cover = 1.0 - p_home_cover
         for side, mp, novig, odds, spread in [
             (f"{home_team} {home_line:+.1f}", p_home_cover, nv_h, rl.get("home", +160), home_line),
             (f"{away_team} {away_line:+.1f}", p_away_cover, nv_a, rl.get("away", -185), away_line),

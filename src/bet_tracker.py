@@ -188,12 +188,16 @@ def _is_duplicate(entry: dict, existing: list[dict], date_str: str) -> bool:
     return False
 
 
-def log_picks(target_date: str | date, bets: list[dict], top_n: int = 10) -> None:
-    """Save the top_n highest-confidence bets to the log file.
+def log_picks(target_date: str | date, bets: list[dict], top_n: int = 10,
+              policy_version: str | None = None) -> None:
+    """Save the top_n bets to the log file, IN THE ORDER GIVEN.
 
-    Bets are already sorted by score/confidence in predict_core before being
-    passed here. We record each bet's model probability, odds, line, and
-    market so we can evaluate outcomes later.
+    `bets` is predict_core's score-ranked leaderboard — the same ordering the
+    user sees in the app. (Previously this re-sorted by `confidence`, which
+    peaks at p=0.5, so the log recorded a systematically different sample
+    from the displayed picks — and that biased every constant later tuned
+    against it.) `policy_version` tags each entry with the filter/calibration
+    policy in force, so the log can be segmented when rules change.
     """
     LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     existing: list[dict] = _load_log()
@@ -202,13 +206,13 @@ def log_picks(target_date: str | date, bets: list[dict], top_n: int = 10) -> Non
     # Skip bets from games where starters haven't been confirmed — the
     # pitcher projections are placeholder values and edges are unreliable.
     eligible = [b for b in bets if b.get("starters_confirmed", True)]
-    # Sort by confidence descending and take top N
-    picks = sorted(eligible, key=lambda x: -(x.get("confidence") or 0))[:top_n]
+    picks = eligible[:top_n]
 
     for p in picks:
         entry = {
             "date":        date_str,
             "logged_at":   datetime.now(timezone.utc).isoformat(),
+            "policy_version": policy_version,
             "description": p.get("description", ""),
             "market":      p.get("market", ""),
             "line":        p.get("line", 0.0),
@@ -239,6 +243,23 @@ def _load_log() -> list[dict]:
 
 
 # ---------- Outcome evaluation ----------
+
+def regrade_outcomes() -> int:
+    """Wipe ALL settled outcomes and re-grade the entire log from boxscores.
+
+    Run this once after pulling a grading fix (e.g. the Jun 2026 away
+    run-line sign bug, push handling) so historical entries reflect the
+    corrected rules:  python -m src.bet_tracker regrade
+    """
+    entries = _load_log()
+    if not entries:
+        return 0
+    for e in entries:
+        e["outcome"] = None
+        e["actual"] = None
+    LOG_PATH.write_text(json.dumps(entries, indent=2, default=str), encoding="utf-8")
+    return evaluate_outcomes()
+
 
 def evaluate_outcomes() -> int:
     """Fill in outcome fields for any logged picks whose games are now final.
@@ -302,6 +323,8 @@ def _resolve_outcome(entry: dict, games, box) -> dict | None:
         if market == "total":
             side = "over" if "over" in desc else "under"
             actual = total
+            if total == line:
+                return {"outcome": "P", "actual": actual}   # push on whole-number lines
             if side == "over":
                 won = total > line
             else:
@@ -317,17 +340,28 @@ def _resolve_outcome(entry: dict, games, box) -> dict | None:
                 return None
             actual = f"{away_s:.0f}-{home_s:.0f}"
         elif market == "run_line":
+            # `line` is the spread of the side we BET (stored per-side by
+            # evaluate_game_lines): home bets carry the home line (e.g. -1.5),
+            # away bets carry the away line (e.g. +1.5). A side covers when
+            # its own margin plus its own spread is positive.
             home_team = str(r.get("home_team", "")).lower()
             away_team = str(r.get("away_team", "")).lower()
             margin = home_s - away_s
             if home_team and home_team in desc:
-                won = (margin + line) > 0
+                cover = margin + line
                 actual = margin
             elif away_team and away_team in desc:
-                won = (-margin + (-line)) > 0
+                # BUG FIX (Jun 2026): this used to be (-margin + (-line)),
+                # which negated the away spread a second time and graded every
+                # away run-line bet as if the sign were flipped. Re-grade the
+                # log after pulling this fix: python -m src.bet_tracker regrade
+                cover = -margin + line
                 actual = -margin
             else:
                 return None
+            if cover == 0:
+                return {"outcome": "P", "actual": actual}
+            won = cover > 0
         else:
             return None
         return {"outcome": "W" if won else "L", "actual": actual}
@@ -366,6 +400,8 @@ def _resolve_outcome(entry: dict, games, box) -> dict | None:
     if col not in r:
         return None
     actual = float(r[col] or 0)
+    if actual == line:
+        return {"outcome": "P", "actual": actual}   # push on whole-number lines
     side = "over" if "over" in desc else "under"
     if side == "over":
         won = actual > line
@@ -389,20 +425,23 @@ def get_track_record(days: int = 30) -> dict:
     total   = len(recent)
     wins    = sum(1 for e in recent if e.get("outcome") == "W")
     losses  = sum(1 for e in recent if e.get("outcome") == "L")
+    pushes  = sum(1 for e in recent if e.get("outcome") == "P")
     pending = sum(1 for e in recent if e.get("outcome") is None)
-    decided = wins + losses
+    decided = wins + losses          # pushes excluded from win rate
 
     by_market: dict[str, dict] = {}
     for e in recent:
         m = e.get("market", "unknown")
         if m not in by_market:
-            by_market[m] = {"total": 0, "wins": 0, "losses": 0, "pending": 0}
+            by_market[m] = {"total": 0, "wins": 0, "losses": 0, "pushes": 0, "pending": 0}
         bm = by_market[m]
         bm["total"] += 1
         if e.get("outcome") == "W":
             bm["wins"] += 1
         elif e.get("outcome") == "L":
             bm["losses"] += 1
+        elif e.get("outcome") == "P":
+            bm["pushes"] += 1
         else:
             bm["pending"] += 1
 
@@ -410,9 +449,20 @@ def get_track_record(days: int = 30) -> dict:
         "total":    total,
         "wins":     wins,
         "losses":   losses,
+        "pushes":   pushes,
         "pending":  pending,
         "win_rate": wins / decided if decided else None,
         "by_market": by_market,
         "clv":      get_clv_summary(days),
         "entries":  sorted(recent, key=lambda x: x["date"], reverse=True),
     }
+
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "regrade":
+        n = regrade_outcomes()
+        print(f"Re-graded log: {n} picks settled.")
+    else:
+        n = evaluate_outcomes()
+        print(f"Evaluated outcomes: {n} picks updated.")

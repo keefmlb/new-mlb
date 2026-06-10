@@ -175,47 +175,43 @@ def _parse_props(markets: list, game_str: str) -> list[dict]:
 
 
 def _sharp_reference(books_raw: dict) -> dict:
-    """Build the sharp no-vig probabilities for a game from Polymarket (and
-    Fanatics as backup). Returns {ml_home, ml_away, total_line, p_over, p_under}
-    where probabilities are de-vigged. Polymarket is preferred for ML (near-zero
-    vig); totals fall back to Fanatics if Polymarket lacks them."""
+    """Build the sharp no-vig probabilities for a game from Polymarket ONLY.
+    Returns {ml_home, ml_away, total_line, p_over, p_under, ...} de-vigged.
+
+    Polymarket-only on purpose (Jun 2026): the old Fanatics fallback made the
+    "sharp" reference the de-vig of the bettable book itself. That could never
+    produce a sharp-value bet (a book can't beat its own no-vig line), but it
+    DID flip predict_core's has_sharp switch, silently suppressing the
+    model's game lines while generating nothing in their place. No Polymarket
+    market -> no sharp entry -> predict_core falls back to model pricing."""
     sharp: dict = {}
     poly = _parse_book_markets(books_raw.get("Polymarket"))
-    fan = _parse_book_markets(books_raw.get("Fanatics"))
 
-    # Moneyline: prefer Polymarket (sharpest), else Fanatics.
-    for src in (poly, fan):
-        ml = src.get("moneyline")
-        if ml:
-            ph = _dec_to_prob(ml["home_dec"]); pa = _dec_to_prob(ml["away_dec"])
-            if ph and pa and (ph + pa) > 0:
-                sharp["ml_home"] = ph / (ph + pa)
-                sharp["ml_away"] = pa / (ph + pa)
-                sharp["ml_source"] = "Polymarket" if src is poly else "Fanatics"
-                break
-    # Totals: prefer whichever has it (Polymarket if present, else Fanatics).
-    for src in (poly, fan):
-        tot = src.get("total")
-        if tot:
-            po = _dec_to_prob(tot["over_dec"]); pu = _dec_to_prob(tot["under_dec"])
-            if po and pu and (po + pu) > 0:
-                sharp["total_line"] = tot["line"]
-                sharp["p_over"] = po / (po + pu)
-                sharp["p_under"] = pu / (po + pu)
-                sharp["total_source"] = "Polymarket" if src is poly else "Fanatics"
-                break
+    ml = poly.get("moneyline")
+    if ml:
+        ph = _dec_to_prob(ml["home_dec"]); pa = _dec_to_prob(ml["away_dec"])
+        if ph and pa and (ph + pa) > 0:
+            sharp["ml_home"] = ph / (ph + pa)
+            sharp["ml_away"] = pa / (ph + pa)
+            sharp["ml_source"] = "Polymarket"
+    tot = poly.get("total")
+    if tot:
+        po = _dec_to_prob(tot["over_dec"]); pu = _dec_to_prob(tot["under_dec"])
+        if po and pu and (po + pu) > 0:
+            sharp["total_line"] = tot["line"]
+            sharp["p_over"] = po / (po + pu)
+            sharp["p_under"] = pu / (po + pu)
+            sharp["total_source"] = "Polymarket"
     # Run line (±1.5): de-vig the home/away decimal at the captured line.
-    for src in (poly, fan):
-        rl = src.get("run_line")
-        if rl:
-            ph = _dec_to_prob(american_to_decimal_local(rl["home"]))
-            pa = _dec_to_prob(american_to_decimal_local(rl["away"]))
-            if ph and pa and (ph + pa) > 0:
-                sharp["rl_line"] = rl["line"]
-                sharp["p_home_cover"] = ph / (ph + pa)
-                sharp["p_away_cover"] = pa / (ph + pa)
-                sharp["rl_source"] = "Polymarket" if src is poly else "Fanatics"
-                break
+    rl = poly.get("run_line")
+    if rl:
+        ph = _dec_to_prob(american_to_decimal_local(rl["home"]))
+        pa = _dec_to_prob(american_to_decimal_local(rl["away"]))
+        if ph and pa and (ph + pa) > 0:
+            sharp["rl_line"] = rl["line"]
+            sharp["p_home_cover"] = ph / (ph + pa)
+            sharp["p_away_cover"] = pa / (ph + pa)
+            sharp["rl_source"] = "Polymarket"
     return sharp
 
 
@@ -257,18 +253,17 @@ def fetch_mlb(bettable: str = "Fanatics", force: bool = False) -> tuple[list[dic
     pending = [e for e in (events or []) if e.get("status") == "pending"
                and e.get("id") and e.get("home") and e.get("away")]
     # The events feed spans many days; a team in a series appears 2-3 times.
-    # Keep only the EARLIEST pending occurrence of each matchup (= the next /
-    # today's game) so downstream team-name matching can't grab a future date.
+    # Keep every pending event on each matchup's EARLIEST calendar day (= the
+    # next / today's games) so future dates can't be matched — but, unlike the
+    # old keep-one-event dedupe, BOTH games of a doubleheader survive.
+    # predict_core._find_book disambiguates twin games by commence_time.
     pending.sort(key=lambda e: e.get("date", ""))
-    seen: set = set()
-    deduped = []
+    first_day: dict = {}
     for e in pending:
         mk = (e["away"], e["home"])
-        if mk in seen:
-            continue
-        seen.add(mk)
-        deduped.append(e)
-    pending = deduped
+        first_day.setdefault(mk, str(e.get("date", ""))[:10])
+    pending = [e for e in pending
+               if str(e.get("date", ""))[:10] == first_day[(e["away"], e["home"])]]
     book_games: list[dict] = []
     props: list[dict] = []
 

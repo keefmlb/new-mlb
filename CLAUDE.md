@@ -143,6 +143,43 @@ ML accuracy on the Sep single-split: **52.4%** (n=374). Slight edge over coin fl
 
 ## Soft spots — please scrutinize
 
+### Fixed (Jun 9 2026 session — calibration rework)
+
+- **Away run-line bets were graded with the spread sign flipped** in
+  `bet_tracker._resolve_outcome` — every away RL outcome in the bet log was
+  wrong. Fixed; whole-number totals/props now grade as pushes ("P") instead of
+  losses. **Action required:** `python -m src.bet_tracker regrade`, then re-run
+  `scripts/analyze_bets.py` and revalidate the run-line plus-money rule.
+- **Double-shrink on game lines** — winprob calibration (fit on raw model
+  probs) was applied to probabilities from market-blended lambdas. Pricing now
+  uses RAW lambdas: calibrate first, then blend toward the book's no-vig prob
+  in probability space (`evaluate_game_lines(market_blend=...)`), mirroring the
+  prop pipeline. Lambda blending remains for the displayed runs only.
+- **Asymmetric `calibrate_prob`** (shrunk only Overs; high-confidence Unders
+  escaped calibration, tilting the leaderboard Under) replaced with a coherent
+  logit shrink (`sigmoid(0.70·logit(p))`). Totals now use a fitted "total"
+  entry in `winprob_calibration.json`.
+- **Winprob calibration refit walk-forward** (out-of-sample monthly folds on
+  2025+2026) instead of in-sample. **Action required:** re-run
+  `python -m scripts.fit_winprob_calibration` (the committed JSON is the old
+  in-sample fit).
+- **Filter-pile prune** — removed the n<10 anecdote guards (elite-ace Over,
+  total min-gap, K UNDER low-line trio, K model_prob floor, runs-OVER lineup
+  spot). Kept the mechanism-backed rules (K OVER block, elite-arm K UNDER,
+  short-start, workhorse-outs, TB-barrel, direction consistency, disagreement
+  guard, plus-money RL pending revalidation). `analyze_bets.py` rewritten as an
+  honest report (the old version hardcoded losing players' names into a guard
+  "simulation"). Bets now log with a `policy_version` tag, in displayed
+  (score-ranked) order rather than re-sorted by confidence.
+- **Doubleheaders** — `odds_api_io` keeps both same-day games; `_find_book`
+  disambiguates by commence time vs first pitch.
+- **Sharp reference is Polymarket-only** — the old Fanatics fallback suppressed
+  model game lines (has_sharp=True) while producing no sharp bets.
+- **`predict_ensemble` equal weights** (1/train_mae rewarded in-sample fit);
+  sharp `edge_pct` now in prob points (consistent leaderboard units);
+  `bet_log.json` + `closing_lines.csv` un-gitignored — **commit them from the
+  machine that has them**.
+
 ### Fixed (as of Apr 29 2026 session)
 
 - ~~**Feature leakage in 2026 training data**~~ — `build_dataset.py` now pulls weekly Monday snapshots to `data/games/snapshots_2026/`. Historical games use the prior-Monday snapshot; `train_props.py` also uses these per-game snapshots for analytical projections. `snapshot_2026.json` is still current-day for live prediction.
