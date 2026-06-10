@@ -362,6 +362,7 @@ with st.sidebar:
         proj.reload_prop_models()
         from src import value as _value
         _value.reload_winprob_cal()
+        _value.reload_prop_cal()
         st.rerun()
 
     st.caption(
@@ -509,6 +510,47 @@ with main_tab_value:
         st.caption(
             "Ranked by **EV / $** = expected profit per dollar wagered — raw model value "
             "with no penalty for longshots or low-reliability markets."
+        )
+
+    # ===== Sharp value — the lead strategy =====
+    # Model-free +EV (Fanatics price beats the Polymarket no-vig line) is the
+    # only strategy here with a defensible a-priori edge; model-priced bets
+    # are the research program. When nothing fires, say WHY — an empty
+    # section that silently swallows game lines looks like a bug.
+    _sharp_pool = [b for b in (getattr(slate, "all_bets", []) or [])
+                   if str(b.get("market", "")).startswith("sharp_")]
+    _sharp_sum = getattr(slate, "sharp_summary", None) or {}
+    if _sharp_pool:
+        st.subheader(":zap: Sharp value — lead strategy")
+        st.caption(
+            "Fanatics' offered price beats the **Polymarket near-vigless** probability — "
+            "market-measured +EV, no model required. Bet these first; everything below "
+            "is model-priced."
+        )
+        _sdf = pd.DataFrame(_sharp_pool)
+        _scols: dict = {
+            "Bet":     _sdf["description"],
+            "Odds":    _sdf["odds"].apply(_amer),
+            "Sharp%":  (_sdf["model_prob"] * 100).round(1),
+            "No-vig%": (_sdf["novig_prob"] * 100).round(1),
+            "Edge%":   _sdf["edge_pct"].round(1),
+            "EV/$":    _sdf["ev_per_dollar"].round(4),
+            "Kelly%":  (_sdf["kelly"] * 100).round(3),
+        }
+        if bankroll and kelly_frac:
+            _stk = _sdf["kelly"].apply(lambda k: _stake_dollars(k, bankroll, kelly_frac))
+            _scols["Stake"] = _stk.round(0)
+        st.dataframe(pd.DataFrame(_scols).sort_values("EV/$", ascending=False),
+                     use_container_width=True, hide_index=True)
+        st.divider()
+    elif _sharp_sum.get("games_checked"):
+        _bev = _sharp_sum.get("best_ev")
+        st.caption(
+            f":zap: **Sharp check:** {_sharp_sum['games_checked']} games compared against the "
+            f"Polymarket sharp line — nothing +EV today"
+            + (f" (best side {_bev:+.1%} EV/$)" if _bev is not None else "")
+            + ". Fanatics is pricing these games efficiently; model game-line edges on them "
+              "are suppressed by the sharp veto rather than bet into a sharper line."
         )
 
     MARKET_TABS = [
@@ -1110,19 +1152,30 @@ with main_tab_track:
 
             # Closing Line Value — the fastest, most reliable edge signal.
             _clv = _record.get("clv") or {}
-            if _clv.get("n"):
+            _clv_props = _clv.get("props") or {}
+            if _clv.get("n") or _clv_props.get("n"):
                 st.caption(
                     ":dart: **Closing Line Value** — did we bet a better price than the line closed at? "
                     "Beating the close is the gold-standard proof of edge and converges far faster than ROI."
                 )
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Game-line bets w/ CLV", _clv["n"])
-                _pbc = _clv.get("pct_beat_close")
-                c2.metric("Beat the close",
-                          f"{_pbc:.0%}" if _pbc is not None else "—",
-                          delta=f"{(_pbc-0.5)*100:+.0f}pp vs 50%" if _pbc is not None else None)
-                _ac = _clv.get("avg_clv_pct")
-                c3.metric("Avg CLV", f"{_ac:+.2f} pp" if _ac is not None else "—")
+                if _clv.get("n"):
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Game-line bets w/ CLV", _clv["n"])
+                    _pbc = _clv.get("pct_beat_close")
+                    c2.metric("Beat the close",
+                              f"{_pbc:.0%}" if _pbc is not None else "—",
+                              delta=f"{(_pbc-0.5)*100:+.0f}pp vs 50%" if _pbc is not None else None)
+                    _ac = _clv.get("avg_clv_pct")
+                    c3.metric("Avg CLV", f"{_ac:+.2f} pp" if _ac is not None else "—")
+                if _clv_props.get("n"):
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Prop bets w/ CLV", _clv_props["n"])
+                    _pbc = _clv_props.get("pct_beat_close")
+                    c2.metric("Beat the close (props)",
+                              f"{_pbc:.0%}" if _pbc is not None else "—",
+                              delta=f"{(_pbc-0.5)*100:+.0f}pp vs 50%" if _pbc is not None else None)
+                    _ac = _clv_props.get("avg_clv_pct")
+                    c3.metric("Avg CLV (props)", f"{_ac:+.2f} pp" if _ac is not None else "—")
             else:
                 st.caption(
                     ":dart: **Closing Line Value** populates as logged bets and their captured "

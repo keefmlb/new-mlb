@@ -36,10 +36,17 @@ MARKET_BLEND_WEIGHT = 0.50
 
 # Tag stamped onto every logged pick so the bet log can be segmented by the
 # filter/calibration policy in force. Bump when betting rules change.
-POLICY_VERSION = "2026-06-09-calibration-rework"
+# 2026-06-10: fitted per-market prop calibration replaced the blanket 0.70
+# logit shrink (prop_calibration.json) — changes every prop probability and
+# hence the leaderboard, so it's a new policy.
+POLICY_VERSION = "2026-06-10-prop-calibration"
 # Raw model-vs-market total disagreement (runs) beyond which game-line bets are
 # suppressed entirely — that magnitude of disagreement is model error, not edge.
 MARKET_MAX_TOTAL_DISAGREE = 3.0
+# Minimum EV/$ for a sharp-value bet to be surfaced (Polymarket prices carry
+# bid-ask spread and a couple points of noise; 2% is the floor that was
+# previously inlined at the call site).
+SHARP_MIN_EV = 0.02
 
 
 def _persist_closing_lines(rows: list[dict]) -> None:
@@ -79,6 +86,55 @@ def _persist_closing_lines(rows: list[dict]) -> None:
             w.writeheader()
             for gpk in sorted(existing):
                 w.writerow({k: existing[gpk].get(k, "") for k in fields})
+    except Exception:
+        pass
+
+
+def _persist_closing_props(rows: list[dict]) -> None:
+    """Append per-player prop lines to a PERMANENT log at
+    data/odds/closing_props.csv. De-dupes by (game_pk, player_id, market)
+    keeping the LATEST capture (closest to first pitch ≈ closing line).
+    This is the prop counterpart of _persist_closing_lines: it makes CLV
+    computable for logged prop bets, which are most of the leaderboard and
+    where the bet log shows the worst bleed. Best-effort; never raises into
+    the prediction path.
+    """
+    if not rows:
+        return
+    import csv as _csv
+    path = ROOT / "data" / "odds" / "closing_props.csv"
+    fields = ["game_pk", "date", "player", "player_id", "market",
+              "line", "over", "under", "captured_at"]
+
+    def _key(r: dict) -> tuple:
+        pid = r.get("player_id")
+        try:
+            pid = int(pid) if pid not in (None, "", "0", 0) else None
+        except (TypeError, ValueError):
+            pid = None
+        who = pid if pid else (r.get("player") or "").strip().lower()
+        return (int(r["game_pk"]), who, r.get("market") or "")
+
+    try:
+        existing: dict[tuple, dict] = {}
+        if path.exists():
+            with path.open("r", encoding="utf-8", newline="") as fh:
+                for r in _csv.DictReader(fh):
+                    try:
+                        existing[_key(r)] = r
+                    except (TypeError, ValueError, KeyError):
+                        continue
+        for row in rows:
+            k = _key(row)
+            prev = existing.get(k)
+            if prev is None or str(row["captured_at"]) >= str(prev.get("captured_at", "")):
+                existing[k] = {f: row.get(f, prev.get(f) if prev else "") for f in fields}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8", newline="") as fh:
+            w = _csv.DictWriter(fh, fieldnames=fields)
+            w.writeheader()
+            for k in sorted(existing, key=str):
+                w.writerow({f: existing[k].get(f, "") for f in fields})
     except Exception:
         pass
 
@@ -170,6 +226,13 @@ class SlateResult:
     concentration_warning: Optional[str] = None
     # Slate-wide unfiltered bet pool for Pure Confidence ranking.
     all_bets: list[dict] = field(default_factory=list)
+    # Sharp-strategy audit: {"games_checked": int, "n_bets": int,
+    # "best_ev": float|None}. games_checked counts games with a Polymarket
+    # reference AND a comparable Fanatics line; best_ev is the best EV/$ seen
+    # across every comparable side, even when nothing cleared SHARP_MIN_EV —
+    # this is what tells you whether the book was efficient or the detector
+    # is broken.
+    sharp_summary: Optional[dict] = None
 
 
 # ---------- Helpers ----------
@@ -352,6 +415,11 @@ def predict_slate(target_date: date | str | None = None,
     all_value_bets: list[value.ValueBet] = []
     games_out: list[GamePrediction] = []
     _closing_rows: list[dict] = []   # accumulate market lines for permanent log
+    _closing_prop_rows: list[dict] = []   # accumulate prop lines for prop CLV
+    # Sharp-strategy audit counters (reported in SlateResult.sharp_summary)
+    _sharp_games_checked = 0
+    _sharp_best_ev: Optional[float] = None
+    _n_sharp_bets = 0
 
     for g in games_raw:
         st = (g.get("status") or {}).get("codedGameState", "")
@@ -630,11 +698,24 @@ def predict_slate(target_date: date | str | None = None,
 
             # Sharp-value bets: where the bettable book's price beats the
             # Polymarket near-vigless true line (model-free advantage betting).
-            sharp_bets = value.evaluate_sharp_value(
-                f.home_team, f.away_team, bk, min_ev=0.02)
+            # Evaluated with no floor first so the slate can report HOW CLOSE
+            # the book came to +EV even on days nothing fires (the audit
+            # answer to "is the sharp detector broken or is Fanatics just
+            # efficient?" — measured Jun 10 2026: zero fires in a week, best
+            # side -0.2% EV, mean ~-4.4%).
+            sharp_candidates = value.evaluate_sharp_value(
+                f.home_team, f.away_team, bk, min_ev=-1.0)
+            sharp_bets = [vb for vb in sharp_candidates
+                          if vb.ev_per_dollar >= SHARP_MIN_EV]
             for vb in sharp_bets:
                 vb.game_pk = int(f.game_pk)
                 vb.starters_confirmed = starters_confirmed
+            if sharp_candidates:
+                _sharp_games_checked += 1
+                _best = max(vb.ev_per_dollar for vb in sharp_candidates)
+                _sharp_best_ev = (_best if _sharp_best_ev is None
+                                  else max(_sharp_best_ev, _best))
+                _n_sharp_bets += len(sharp_bets)
 
             # When a sharp (Polymarket) reference exists, TRUST IT over the
             # model for game lines: the model cannot beat an efficient sharp
@@ -739,6 +820,16 @@ def predict_slate(target_date: date | str | None = None,
                     mean = means.get(pp["market"])
                 if mean is None:
                     continue
+                # Capture the prop offer into the permanent closing-props log
+                # (latest capture per player/market wins ≈ the closing line).
+                _closing_prop_rows.append({
+                    "game_pk": int(f.game_pk), "date": f.date,
+                    "player": name,
+                    "player_id": int(pdata.get("player_id") or 0),
+                    "market": pp["market"], "line": pp["line"],
+                    "over": pp.get("over"), "under": pp.get("under"),
+                    "captured_at": datetime.now(timezone.utc).isoformat(),
+                })
                 vbs_all = value.evaluate_prop(name, pp["market"], mean, pp["line"],
                                               pp.get("over"), pp.get("under"),
                                               edge_threshold=-1.0)
@@ -828,6 +919,7 @@ def predict_slate(target_date: date | str | None = None,
     # Persist captured market lines (game-linked, permanent) for future
     # market-blend backtesting and line-value features.
     _persist_closing_lines(_closing_rows)
+    _persist_closing_props(_closing_prop_rows)
 
     # Build slate-wide leaderboard. We rank by `score` (variance-adjusted edge)
     # rather than raw edge — this puts reliable, near-50/50 plays ahead of
@@ -891,4 +983,7 @@ def predict_slate(target_date: date | str | None = None,
         top_value=top_value,
         concentration_warning=concentration_warning,
         all_bets=slate_all_bets,
+        sharp_summary={"games_checked": _sharp_games_checked,
+                       "n_bets": _n_sharp_bets,
+                       "best_ev": _sharp_best_ev},
     )

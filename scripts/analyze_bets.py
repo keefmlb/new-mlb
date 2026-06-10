@@ -112,17 +112,27 @@ def main():
         print(_line(dt, by_date[dt]))
 
     print("\n" + "=" * 72)
-    print("CLOSING LINE VALUE (game lines with a captured close)")
+    print("CLOSING LINE VALUE (bets with a captured close)")
     print("=" * 72)
     clv = bet_tracker.get_clv_summary(days=365)
-    if clv.get("n"):
-        pbc = clv.get("pct_beat_close")
-        ac = clv.get("avg_clv_pct")
-        print(f"  n={clv['n']}  beat close: {pbc:.0%}" if pbc is not None else f"  n={clv['n']}")
-        if ac is not None:
-            print(f"  avg CLV: {ac:+.2f} prob-pts (n_priced={clv.get('n_priced')})")
-    else:
-        print("  No CLV data yet (closing-line capture began Jun 4 2026).")
+
+    def _print_clv(label: str, c: dict, empty_note: str) -> None:
+        if c.get("n"):
+            pbc = c.get("pct_beat_close")
+            ac = c.get("avg_clv_pct")
+            line = f"  {label:<12} n={c['n']}"
+            if pbc is not None:
+                line += f"  beat close: {pbc:.0%}"
+            if ac is not None:
+                line += f"  avg CLV: {ac:+.2f} prob-pts (n_priced={c.get('n_priced')})"
+            print(line)
+        else:
+            print(f"  {label:<12} {empty_note}")
+
+    _print_clv("game lines", clv,
+               "No CLV data yet (closing-line capture began Jun 4 2026).")
+    _print_clv("props", clv.get("props", {}),
+               "No CLV data yet (closing-prop capture began Jun 10 2026).")
 
 
 if __name__ == "__main__":

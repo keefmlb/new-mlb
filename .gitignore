@@ -26,6 +26,7 @@ data/weather/
 # on the machine that has them.
 data/odds/*
 !data/odds/closing_lines.csv
+!data/odds/closing_props.csv
 data/bets/*
 !data/bets/bet_log.json
 

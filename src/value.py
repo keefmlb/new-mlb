@@ -106,8 +106,8 @@ def calibrate_prob(p: float) -> float:
 # The June 2026 backtest showed the raw joint-Poisson win probs are
 # over-dispersed: predicted 0.30 -> actual 0.42, predicted 0.60 -> actual 0.54.
 # Over-confidence inflates fake edges on the bets the model is most wrong
-# about. Props use the default logit shrink in calibrate_prob (no fitted
-# per-market prop calibration yet).
+# about. Props get their own fitted per-market calibration below
+# (prop_calibration.json, fitted by scripts/fit_prop_calibration.py).
 _WINPROB_CAL: dict | None = None
 _WINPROB_CAL_PATH = (
     Path(__file__).resolve().parent.parent / "data" / "models" / "winprob_calibration.json"
@@ -128,6 +128,49 @@ def _load_winprob_cal() -> dict:
 def reload_winprob_cal() -> None:
     global _WINPROB_CAL
     _WINPROB_CAL = None
+
+
+# ---- Data-driven prop probability calibration ----
+# Fitted by scripts/fit_prop_calibration.py per prop market (logit a + b
+# recalibration, analytical projections vs actuals on 2025+2026). Same recipe
+# as the game-line calibration above. Markets without a fitted entry fall
+# back to the default 0.70 logit shrink in calibrate_prob.
+_PROP_CAL: dict | None = None
+_PROP_CAL_PATH = (
+    Path(__file__).resolve().parent.parent / "data" / "models" / "prop_calibration.json"
+)
+
+
+def _load_prop_cal() -> dict:
+    global _PROP_CAL
+    if _PROP_CAL is not None:
+        return _PROP_CAL
+    try:
+        _PROP_CAL = json.loads(_PROP_CAL_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        _PROP_CAL = {}
+    return _PROP_CAL
+
+
+def reload_prop_cal() -> None:
+    global _PROP_CAL
+    _PROP_CAL = None
+
+
+def calibrate_prop_prob(p: float, market: str) -> float:
+    """Apply the fitted per-market prop recalibration (market is the RAW key
+    used by evaluate_prop, e.g. 'pitcher_k', 'hits'). Falls back to the
+    default logit shrink when no fitted parameters exist.
+
+    Like calibrate_winprob, this must only be applied to RAW model
+    probabilities — the market blend happens after, in probability space."""
+    cal = _load_prop_cal().get(market)
+    if not cal or "a" not in cal or "b" not in cal:
+        return calibrate_prob(p)
+    a = float(cal["a"]); b = float(cal["b"])
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    z_cal = a + b * math.log(p / (1 - p))
+    return 1.0 / (1.0 + math.exp(-z_cal))
 
 
 def calibrate_winprob(p: float, market: str) -> float:
@@ -720,7 +763,7 @@ def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
     lines like 'Player runs OVER 1.5' from crowding the leaderboard.
     """
     disp = get_dispersion(market, mean_proj)
-    p_over = calibrate_prob(prob_over_count(mean_proj, line, disp))
+    p_over = calibrate_prop_prob(prob_over_count(mean_proj, line, disp), market)
     p_under = 1.0 - p_over
 
     out: list[ValueBet] = []

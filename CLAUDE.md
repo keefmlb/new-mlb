@@ -60,6 +60,7 @@ python -m scripts.train_props           # produces prop_*.joblib (needs snapshot
 python -m scripts.fit_dispersion        # produces dispersion.json
 python -m scripts.build_props_2025      # one-time; generates props_*_2025.csv (~30 s, all cached)
 python -m scripts.calibrate_reliability # updates stat_reliability.json from 2025+2026 holdout correlations
+python -m scripts.fit_prop_calibration  # fits per-market prop probability calibration (prop_calibration.json)
 python -m streamlit run app.py
 ```
 
@@ -92,7 +93,7 @@ Switch hitters: bat side flips opposite the pitcher's throw. L/R splits applied 
 
 - American-odds → implied prob → de-vigged via two-way normalization.
 - Game lines (ML / total / RL) priced from joint independent-Poisson grid.
-- Player props priced from Negative Binomial with **empirically-fit dispersion** per stat (`data/models/dispersion.json`), conditional on projection mean.
+- Player props priced from Negative Binomial with **empirically-fit dispersion** per stat (`data/models/dispersion.json`), conditional on projection mean. The raw tail probability then gets a **fitted per-market logit recalibration** (`data/models/prop_calibration.json`, fitted by `scripts/fit_prop_calibration.py` on 2025+2026 projection-vs-actual rows); markets whose fit loses to the default 0.70 shrink out-of-sample (currently `pitcher_outs`) fall back to the shrink. Calibration is applied to RAW probs, then blended toward the market no-vig prob.
 - One-sided props (Bovada's "Yes" prices on HR/Hits/etc.) compared to implied prob minus 6% juice estimate.
 - Each ValueBet gets `confidence` and `score` populated by `annotate()`:
   - `confidence = stat_reliability × info_factor`
@@ -142,6 +143,27 @@ ML accuracy on the Sep single-split: **52.4%** (n=374). Slight edge over coin fl
 ---
 
 ## Soft spots — please scrutinize
+
+### Added (Jun 10 2026 session — measurement upgrades)
+
+- **Prop CLV capture** — `closing_props.csv` now accumulates every priced
+  prop's line/odds near first pitch; `get_clv_summary()` reports a `props`
+  bucket. This 5-10x's the CLV sample rate vs game lines alone.
+- **Fitted per-market prop calibration** (`prop_calibration.json`) replaced
+  the blanket 0.70 logit shrink. Finding: most prop markets fit b≈0.73-1.17 —
+  the NegBin tails were roughly calibrated already, so the 0.70 shrink was
+  OVER-shrinking most markets (the game-line overconfidence does NOT
+  generalize to props). All saved fits beat the 0.70 shrink on a 2026
+  temporal holdout (+0.2% to +5.6% Brier); `pitcher_outs` failed the gate
+  (2025→2026 distribution shift) and falls back to the shrink.
+  POLICY_VERSION bumped to `2026-06-10-prop-calibration`.
+- **Sharp-value audit + honest UI** — measured over Jun 4-10 snapshots: the
+  sharp detector fired ZERO times; best Fanatics-vs-Polymarket side was
+  -0.2% EV (mean ≈ -4.4%). Fanatics is efficient vs the sharp. The app now
+  shows a "Sharp value — lead strategy" section when bets fire and an
+  explicit "checked N games, best EV x%, nothing +EV" caption when they
+  don't (previously game lines just silently vanished under the sharp veto).
+  `SlateResult.sharp_summary` carries the audit numbers.
 
 ### Fixed (Jun 9 2026 session — calibration rework)
 
@@ -234,6 +256,8 @@ ML accuracy on the Sep single-split: **52.4%** (n=374). Slight edge over coin fl
 | `src/statcast.py` | Baseball Savant CSV fetcher. `get_team_batting(year, player_team_map)` and `get_pitcher_stats(year)`. Disk-cached, 6-hr TTL for current season. |
 | `src/bet_tracker.py` | Logs top-10 confidence picks to `data/bets/bet_log.json`. `evaluate_outcomes()` fills W/L from boxscores. `get_track_record(days)` returns summary. |
 | `data/bets/bet_log.json` | Running log of top-confidence picks with outcomes. Auto-populated by `predict_core.py` on live-date slate runs. |
+| `data/odds/closing_props.csv` | Per-player prop lines captured near first pitch (latest capture per game/player/market wins). Prop counterpart of `closing_lines.csv`; feeds prop CLV in `bet_tracker.get_clv_summary()["props"]`. Committed to git. |
+| `data/models/prop_calibration.json` | Fitted per-market prop probability calibration (logit a+b). Refit with `scripts/fit_prop_calibration.py` after rebuilding props CSVs. |
 
 ---
 

@@ -20,6 +20,7 @@ LOG_PATH = ROOT / "data" / "bets" / "bet_log.json"
 GAMES_CSV = ROOT / "data" / "games" / "games_2026.csv"
 BOX_CSV   = ROOT / "data" / "games" / "box_2026.csv"
 CLOSING_CSV = ROOT / "data" / "odds" / "closing_lines.csv"
+CLOSING_PROPS_CSV = ROOT / "data" / "odds" / "closing_props.csv"
 
 
 # ---------- Closing Line Value (CLV) ----------
@@ -30,7 +31,9 @@ CLOSING_CSV = ROOT / "data" / "odds" / "closing_lines.csv"
 # separate skill from variance). Closing lines are captured per-game by
 # predict_core into data/odds/closing_lines.csv as the slate is run near first
 # pitch; CLV becomes computable for any logged game-line bet once its closing
-# line has been captured. (Props are not yet captured at close — future work.)
+# line has been captured. Props are captured the same way (closing_props.csv,
+# one row per game/player/market, latest capture wins) so prop bets — most of
+# the leaderboard — get CLV too.
 
 def _load_closing_map() -> dict[int, dict]:
     """{game_pk: closing-line row} from data/odds/closing_lines.csv."""
@@ -45,6 +48,36 @@ def _load_closing_map() -> dict[int, dict]:
                     out[int(r["game_pk"])] = r
                 except (TypeError, ValueError, KeyError):
                     continue
+    except Exception:
+        pass
+    return out
+
+
+def _load_closing_props_map() -> dict[tuple, dict]:
+    """{(game_pk, player_id, raw_market): closing-prop row} from
+    data/odds/closing_props.csv. Rows without a player_id are also keyed by
+    (game_pk, lowercased player name, raw_market) as a fallback."""
+    import csv as _csv
+    out: dict[tuple, dict] = {}
+    if not CLOSING_PROPS_CSV.exists():
+        return out
+    try:
+        with CLOSING_PROPS_CSV.open("r", encoding="utf-8", newline="") as fh:
+            for r in _csv.DictReader(fh):
+                try:
+                    gpk = int(r["game_pk"])
+                except (TypeError, ValueError, KeyError):
+                    continue
+                mkt = (r.get("market") or "").strip()
+                try:
+                    pid = int(r.get("player_id") or 0)
+                except (TypeError, ValueError):
+                    pid = 0
+                if pid:
+                    out[(gpk, pid, mkt)] = r
+                name = (r.get("player") or "").strip().lower()
+                if name:
+                    out.setdefault((gpk, name, mkt), r)
     except Exception:
         pass
     return out
@@ -124,22 +157,60 @@ def clv_for_entry(entry: dict, closing: dict) -> Optional[dict]:
     return None
 
 
-def get_clv_summary(days: int = 30) -> dict:
-    """Aggregate CLV over recently logged game-line bets that have a captured
-    closing line. Returns counts, % that beat the close, and average CLV."""
-    entries = _load_log()
-    closing = _load_closing_map()
-    cutoff = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
-    rows = []
-    for e in entries:
-        if e.get("date", "") < cutoff:
-            continue
-        cl = closing.get(int(e["game_pk"])) if e.get("game_pk") else None
-        if not cl:
-            continue
-        r = clv_for_entry(e, cl)
-        if r:
-            rows.append(r)
+# Mirror of value.evaluate_prop's one-sided juice estimate (0.08 overround,
+# half attributed to each side). Used to no-vig a one-sided closing price the
+# same way the bet-time novig_prob was estimated, so the two are comparable.
+_ONE_SIDED_JUICE = 0.08
+
+
+def clv_for_prop_entry(entry: dict, closing: dict) -> Optional[dict]:
+    """Compute CLV for a logged player-prop bet against its captured closing
+    prop offer.
+
+    Same line at close → price CLV: (closing no-vig prob of OUR side) -
+    (bet-time no-vig prob), in percentage points. Line moved → favourable
+    line movement in stat units (clv_units), like totals' clv_runs: an OVER
+    bettor beats the close when the line closes HIGHER than they locked,
+    an UNDER bettor when it closes lower. Returns None when the bet can't
+    be priced (missing closing odds, unknown side).
+    """
+    desc = entry.get("description") or ""
+    if " OVER " in desc:
+        is_over = True
+    elif " UNDER " in desc:
+        is_over = False
+    else:
+        return None
+    try:
+        bet_line = float(entry.get("line"))
+        close_line = float(closing.get("line"))
+    except (TypeError, ValueError):
+        return None
+
+    if abs(close_line - bet_line) > 1e-9:
+        move = (close_line - bet_line) if is_over else (bet_line - close_line)
+        return {"clv_units": move, "beat_close": move > 0}
+
+    bettime_nv = entry.get("novig_prob")
+    if bettime_nv is None:
+        return None
+    p_o = _amer_to_prob(closing.get("over"))
+    p_u = _amer_to_prob(closing.get("under"))
+    if p_o is not None and p_u is not None:
+        close_nv = _devig(p_o, p_u) if is_over else _devig(p_u, p_o)
+    elif p_o is not None and is_over:
+        # One-sided "Yes" price at close: strip the same juice estimate the
+        # bet-time pricing used so the comparison is apples-to-apples.
+        close_nv = max(0.01, min(0.99, p_o - _ONE_SIDED_JUICE / 2.0))
+    else:
+        return None
+    if close_nv is None:
+        return None
+    return {"clv_prob_pct": (close_nv - bettime_nv) * 100.0,
+            "beat_close": close_nv > bettime_nv}
+
+
+def _summarize_clv_rows(rows: list[dict]) -> dict:
     n = len(rows)
     beat = sum(1 for r in rows if r.get("beat_close"))
     prob_vals = [r["clv_prob_pct"] for r in rows if "clv_prob_pct" in r]
@@ -150,6 +221,52 @@ def get_clv_summary(days: int = 30) -> dict:
         "avg_clv_pct": (sum(prob_vals) / len(prob_vals)) if prob_vals else None,
         "n_priced": len(prob_vals),
     }
+
+
+def get_clv_summary(days: int = 30) -> dict:
+    """Aggregate CLV over recently logged bets that have a captured close.
+
+    Top-level keys cover game lines (ML / RL / total) — unchanged contract.
+    A "props" sub-dict carries the same aggregate for player props, which
+    are matched to closing_props.csv by (game_pk, player_id, market).
+    """
+    entries = _load_log()
+    closing = _load_closing_map()
+    closing_props = _load_closing_props_map()
+    cutoff = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
+    game_rows: list[dict] = []
+    prop_rows: list[dict] = []
+    for e in entries:
+        if e.get("date", "") < cutoff:
+            continue
+        if not e.get("game_pk"):
+            continue
+        gpk = int(e["game_pk"])
+        mkt = e.get("market", "")
+        if mkt.startswith("prop_"):
+            raw_mkt = mkt[len("prop_"):]
+            try:
+                pid = int(e.get("player_id") or 0)
+            except (TypeError, ValueError):
+                pid = 0
+            cl = closing_props.get((gpk, pid, raw_mkt)) if pid else None
+            if not cl:
+                # name fallback: description starts with the player name but
+                # isn't cleanly separable; only the pid key is reliable.
+                continue
+            r = clv_for_prop_entry(e, cl)
+            if r:
+                prop_rows.append(r)
+        else:
+            cl = closing.get(gpk)
+            if not cl:
+                continue
+            r = clv_for_entry(e, cl)
+            if r:
+                game_rows.append(r)
+    out = _summarize_clv_rows(game_rows)
+    out["props"] = _summarize_clv_rows(prop_rows)
+    return out
 
 
 # ---------- Logging ----------
