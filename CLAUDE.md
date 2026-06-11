@@ -170,6 +170,18 @@ ML accuracy on the Sep single-split: **52.4%** (n=374). Slight edge over coin fl
   section). A shadow entry is PROMOTED to primary if a later run ranks it
   top-10. (3) `bet_tracker.wilson_ci()` — analyze_bets and the replay tools
   print 95% Wilson CIs on every win rate.
+- **Alt-line fix + market-anchor experiment (Jun 11)** — closing_props.csv
+  now keys by (game, player, market, LINE): the feed carries alt lines
+  ("TB 5.5 +1500") and the old dedupe let an alt masquerade as the close,
+  corrupting line-move CLV (the first "78% beat close" read has an
+  asterisk). CLV matching: exact-line → price CLV; otherwise nearest
+  TWO-SIDED line for movement (one-sided alts never used as reference).
+  `scripts/fit_market_anchor.py` fits per-market α for
+  `line + α·(proj − line)` from accumulating two-sided closes, gated
+  (n≥150 AND beats line alone OOS) before writing market_anchor.json.
+  NOT consumed by live pricing yet — wiring it is a deliberate policy
+  change once a market passes. Benchmark that motivated it: book pitcher-K
+  line MAE 2.07 vs our 2.27 (n=49); disagreement corr +0.115.
 - **Sharp-value audit + honest UI** — measured over Jun 4-10 snapshots: the
   sharp detector fired ZERO times; best Fanatics-vs-Polymarket side was
   -0.2% EV (mean ≈ -4.4%). Fanatics is efficient vs the sharp. The app now

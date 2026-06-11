@@ -92,8 +92,11 @@ def _persist_closing_lines(rows: list[dict]) -> None:
 
 def _persist_closing_props(rows: list[dict]) -> None:
     """Append per-player prop lines to a PERMANENT log at
-    data/odds/closing_props.csv. De-dupes by (game_pk, player_id, market)
-    keeping the LATEST capture (closest to first pitch ≈ closing line).
+    data/odds/closing_props.csv. De-dupes by (game_pk, player_id, market,
+    LINE) keeping the LATEST capture (closest to first pitch ≈ closing line).
+    The line is part of the key because the feed carries ALT lines ("TB 5.5
+    +1500") alongside the main line — collapsing them (the original bug)
+    made an alt line masquerade as the close and corrupted line-move CLV.
     This is the prop counterpart of _persist_closing_lines: it makes CLV
     computable for logged prop bets, which are most of the leaderboard and
     where the bet log shows the worst bleed. Best-effort; never raises into
@@ -113,7 +116,11 @@ def _persist_closing_props(rows: list[dict]) -> None:
         except (TypeError, ValueError):
             pid = None
         who = pid if pid else (r.get("player") or "").strip().lower()
-        return (int(r["game_pk"]), who, r.get("market") or "")
+        try:
+            line = f"{float(r.get('line') or 0):g}"
+        except (TypeError, ValueError):
+            line = "0"
+        return (int(r["game_pk"]), who, r.get("market") or "", line)
 
     try:
         existing: dict[tuple, dict] = {}

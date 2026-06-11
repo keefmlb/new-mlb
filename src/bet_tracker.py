@@ -54,9 +54,11 @@ def _load_closing_map() -> dict[int, dict]:
 
 
 def _load_closing_props_map() -> dict[tuple, dict]:
-    """{(game_pk, player_id, raw_market): closing-prop row} from
-    data/odds/closing_props.csv. Rows without a player_id are also keyed by
-    (game_pk, lowercased player name, raw_market) as a fallback."""
+    """{(game_pk, player_id, raw_market): {line_float: closing-prop row}}
+    from data/odds/closing_props.csv. One row per LINE — the feed carries
+    alt lines alongside the main line, and CLV must compare like with like.
+    Rows are also keyed by (game_pk, lowercased player name, raw_market)
+    as a fallback for missing player_ids."""
     import csv as _csv
     out: dict[tuple, dict] = {}
     if not CLOSING_PROPS_CSV.exists():
@@ -66,6 +68,7 @@ def _load_closing_props_map() -> dict[tuple, dict]:
             for r in _csv.DictReader(fh):
                 try:
                     gpk = int(r["game_pk"])
+                    line = float(r.get("line") or 0)
                 except (TypeError, ValueError, KeyError):
                     continue
                 mkt = (r.get("market") or "").strip()
@@ -74,10 +77,10 @@ def _load_closing_props_map() -> dict[tuple, dict]:
                 except (TypeError, ValueError):
                     pid = 0
                 if pid:
-                    out[(gpk, pid, mkt)] = r
+                    out.setdefault((gpk, pid, mkt), {})[line] = r
                 name = (r.get("player") or "").strip().lower()
                 if name:
-                    out.setdefault((gpk, name, mkt), r)
+                    out.setdefault((gpk, name, mkt), {}).setdefault(line, r)
     except Exception:
         pass
     return out
@@ -163,16 +166,19 @@ def clv_for_entry(entry: dict, closing: dict) -> Optional[dict]:
 _ONE_SIDED_JUICE = 0.08
 
 
-def clv_for_prop_entry(entry: dict, closing: dict) -> Optional[dict]:
+def clv_for_prop_entry(entry: dict, closing_lines: dict) -> Optional[dict]:
     """Compute CLV for a logged player-prop bet against its captured closing
-    prop offer.
+    prop offers. `closing_lines` is {line_float: row} — ALL captured lines
+    for this (game, player, market), because the feed carries alt lines.
 
-    Same line at close → price CLV: (closing no-vig prob of OUR side) -
-    (bet-time no-vig prob), in percentage points. Line moved → favourable
-    line movement in stat units (clv_units), like totals' clv_runs: an OVER
-    bettor beats the close when the line closes HIGHER than they locked,
-    an UNDER bettor when it closes lower. Returns None when the bet can't
-    be priced (missing closing odds, unknown side).
+    Exact-line close exists → price CLV: (closing no-vig prob of OUR side) -
+    (bet-time no-vig prob), in percentage points. Exact line gone → the main
+    market moved: compare against the closest TWO-SIDED closing line and
+    report favourable line movement in stat units (clv_units) — an OVER
+    bettor beats the close when the line closes higher than they locked.
+    One-sided alt lines are never used as a movement reference (the original
+    alt-line bug: "TB 5.5 +1500" is a price point, not the market's median).
+    Returns None when the bet can't be priced.
     """
     desc = entry.get("description") or ""
     if " OVER " in desc:
@@ -183,31 +189,45 @@ def clv_for_prop_entry(entry: dict, closing: dict) -> Optional[dict]:
         return None
     try:
         bet_line = float(entry.get("line"))
-        close_line = float(closing.get("line"))
     except (TypeError, ValueError):
         return None
+    if not closing_lines:
+        return None
 
-    if abs(close_line - bet_line) > 1e-9:
-        move = (close_line - bet_line) if is_over else (bet_line - close_line)
-        return {"clv_units": move, "beat_close": move > 0}
+    def _price_clv(row: dict) -> Optional[dict]:
+        bettime_nv = entry.get("novig_prob")
+        if bettime_nv is None:
+            return None
+        p_o = _amer_to_prob(row.get("over"))
+        p_u = _amer_to_prob(row.get("under"))
+        if p_o is not None and p_u is not None:
+            close_nv = _devig(p_o, p_u) if is_over else _devig(p_u, p_o)
+        elif p_o is not None and is_over:
+            # One-sided "Yes" price at close: strip the same juice estimate
+            # bet-time pricing used so the comparison is apples-to-apples.
+            close_nv = max(0.01, min(0.99, p_o - _ONE_SIDED_JUICE / 2.0))
+        else:
+            return None
+        if close_nv is None:
+            return None
+        return {"clv_prob_pct": (close_nv - bettime_nv) * 100.0,
+                "beat_close": close_nv > bettime_nv}
 
-    bettime_nv = entry.get("novig_prob")
-    if bettime_nv is None:
+    exact = next((row for ln, row in closing_lines.items()
+                  if abs(ln - bet_line) < 1e-9), None)
+    if exact is not None:
+        return _price_clv(exact)
+
+    # Line moved (or only alts captured): use the closest TWO-SIDED line as
+    # the market's closing median.
+    two_sided = {ln: row for ln, row in closing_lines.items()
+                 if _amer_to_prob(row.get("over")) is not None
+                 and _amer_to_prob(row.get("under")) is not None}
+    if not two_sided:
         return None
-    p_o = _amer_to_prob(closing.get("over"))
-    p_u = _amer_to_prob(closing.get("under"))
-    if p_o is not None and p_u is not None:
-        close_nv = _devig(p_o, p_u) if is_over else _devig(p_u, p_o)
-    elif p_o is not None and is_over:
-        # One-sided "Yes" price at close: strip the same juice estimate the
-        # bet-time pricing used so the comparison is apples-to-apples.
-        close_nv = max(0.01, min(0.99, p_o - _ONE_SIDED_JUICE / 2.0))
-    else:
-        return None
-    if close_nv is None:
-        return None
-    return {"clv_prob_pct": (close_nv - bettime_nv) * 100.0,
-            "beat_close": close_nv > bettime_nv}
+    close_line = min(two_sided, key=lambda ln: abs(ln - bet_line))
+    move = (close_line - bet_line) if is_over else (bet_line - close_line)
+    return {"clv_units": move, "beat_close": move > 0}
 
 
 def _summarize_clv_rows(rows: list[dict]) -> dict:
