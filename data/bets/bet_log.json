@@ -4519,8 +4519,8 @@
     "score": 4.736,
     "game_pk": 823856,
     "player_id": 669194,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 2.0
   },
   {
     "date": "2026-06-10",
@@ -4537,8 +4537,8 @@
     "score": 2.123,
     "game_pk": 823287,
     "player_id": 664034,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 0.0
   },
   {
     "date": "2026-06-10",
@@ -4555,8 +4555,8 @@
     "score": 2.083,
     "game_pk": 823287,
     "player_id": 663993,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 1.0
   },
   {
     "date": "2026-06-10",
@@ -4573,8 +4573,8 @@
     "score": 2.011,
     "game_pk": 823287,
     "player_id": 668715,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 4.0
   },
   {
     "date": "2026-06-10",
@@ -4591,8 +4591,8 @@
     "score": 2.004,
     "game_pk": 823287,
     "player_id": 668709,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 4.0
   },
   {
     "date": "2026-06-10",
@@ -4609,8 +4609,8 @@
     "score": 1.971,
     "game_pk": 823287,
     "player_id": 657757,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 2.0
   },
   {
     "date": "2026-06-10",
@@ -4627,8 +4627,8 @@
     "score": 1.94,
     "game_pk": 824831,
     "player_id": 670042,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 0.0
   },
   {
     "date": "2026-06-10",
@@ -4645,8 +4645,8 @@
     "score": 1.923,
     "game_pk": 824103,
     "player_id": 677649,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 1.0
   },
   {
     "date": "2026-06-10",
@@ -4663,8 +4663,8 @@
     "score": 1.907,
     "game_pk": 822970,
     "player_id": 666018,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 1.0
   },
   {
     "date": "2026-06-10",
@@ -4681,8 +4681,8 @@
     "score": 1.886,
     "game_pk": 822804,
     "player_id": 656941,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 5.0
   },
   {
     "date": "2026-06-10",
@@ -4699,8 +4699,8 @@
     "score": 4.614,
     "game_pk": 823287,
     "player_id": 663903,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 5.0
   },
   {
     "date": "2026-06-10",
@@ -4717,7 +4717,121 @@
     "score": 2.023,
     "game_pk": 824831,
     "player_id": 670042,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 0.0
+  },
+  {
+    "date": "2026-06-10",
+    "logged_at": "2026-06-10T14:24:00.015918+00:00",
+    "policy_version": "2026-06-10-prop-calibration",
+    "shadow": false,
+    "description": "Jake Bennett pitcher_k UNDER 2.5",
+    "market": "prop_pitcher_k",
+    "line": 2.5,
+    "odds": 125,
+    "model_prob": 0.5262,
+    "novig_prob": 0.4171,
+    "edge_pct": 10.91,
+    "confidence": 0.3107,
+    "score": 6.513,
+    "game_pk": 822970,
+    "player_id": 687562,
+    "outcome": "L",
+    "actual": 4.0
+  },
+  {
+    "date": "2026-06-10",
+    "logged_at": "2026-06-10T14:24:00.024996+00:00",
+    "policy_version": "2026-06-10-prop-calibration",
+    "shadow": true,
+    "description": "Jac Caglianone tb OVER 0.5 [1-sided, ~8% juice est.]",
+    "market": "prop_tb",
+    "line": 0.5,
+    "odds": -169,
+    "model_prob": 0.6569,
+    "novig_prob": 0.5883,
+    "edge_pct": 6.86,
+    "confidence": 0.0941,
+    "score": 1.769,
+    "game_pk": 824103,
+    "player_id": 695506,
+    "outcome": "W",
+    "actual": 5.0
+  },
+  {
+    "date": "2026-06-10",
+    "logged_at": "2026-06-10T14:24:00.025049+00:00",
+    "policy_version": "2026-06-10-prop-calibration",
+    "shadow": true,
+    "description": "Bryce Harper tb OVER 2.5 [1-sided, ~8% juice est.]",
+    "market": "prop_tb",
+    "line": 2.5,
+    "odds": 215,
+    "model_prob": 0.3438,
+    "novig_prob": 0.2775,
+    "edge_pct": 6.64,
+    "confidence": 0.0941,
+    "score": 1.727,
+    "game_pk": 822804,
+    "player_id": 547180,
+    "outcome": "W",
+    "actual": 6.0
+  },
+  {
+    "date": "2026-06-10",
+    "logged_at": "2026-06-10T14:24:00.025117+00:00",
+    "policy_version": "2026-06-10-prop-calibration",
+    "shadow": true,
+    "description": "Dominic Canzone tb OVER 0.5 [1-sided, ~8% juice est.]",
+    "market": "prop_tb",
+    "line": 0.5,
+    "odds": -200,
+    "model_prob": 0.6876,
+    "novig_prob": 0.6267,
+    "edge_pct": 6.09,
+    "confidence": 0.0896,
+    "score": 1.652,
+    "game_pk": 824831,
+    "player_id": 686527,
+    "outcome": "W",
+    "actual": 1.0
+  },
+  {
+    "date": "2026-06-10",
+    "logged_at": "2026-06-10T14:24:00.025170+00:00",
+    "policy_version": "2026-06-10-prop-calibration",
+    "shadow": true,
+    "description": "Hunter Goodman hr OVER 0.5 [1-sided, ~8% juice est.]",
+    "market": "prop_hr",
+    "line": 0.5,
+    "odds": 230,
+    "model_prob": 0.3192,
+    "novig_prob": 0.263,
+    "edge_pct": 5.61,
+    "confidence": 0.0853,
+    "score": 1.421,
+    "game_pk": 824348,
+    "player_id": 696100,
+    "outcome": "L",
+    "actual": 0.0
+  },
+  {
+    "date": "2026-06-10",
+    "logged_at": "2026-06-10T14:24:00.025189+00:00",
+    "policy_version": "2026-06-10-prop-calibration",
+    "shadow": true,
+    "description": "Kyle Schwarber hr OVER 0.5 [1-sided, ~8% juice est.]",
+    "market": "prop_hr",
+    "line": 0.5,
+    "odds": 170,
+    "model_prob": 0.3821,
+    "novig_prob": 0.3304,
+    "edge_pct": 5.17,
+    "confidence": 0.0927,
+    "score": 1.197,
+    "game_pk": 822804,
+    "player_id": 656941,
+    "outcome": "W",
+    "actual": 1.0
   }
 ]

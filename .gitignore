@@ -27,6 +27,7 @@ data/weather/
 data/odds/*
 !data/odds/closing_lines.csv
 !data/odds/closing_props.csv
+!data/odds/replay_archive.csv
 data/bets/*
 !data/bets/bet_log.json
 

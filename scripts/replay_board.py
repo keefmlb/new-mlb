@@ -55,6 +55,14 @@ from src import name_match, value
 from src.predict_core import _effective_edge_threshold_pct
 
 HIST = ROOT / "data" / "odds" / "odds_history.json"
+# Permanent archive of graded full-board replay bets. odds_history.json is a
+# ROLLING 14-day window — without this, every replayed day ages out of the
+# sample two weeks later and the CIs stop tightening. Days are re-replayed
+# from the live window when present (policy may have changed) and the
+# archive supplies the days that have rolled off.
+ARCHIVE = ROOT / "data" / "odds" / "replay_archive.csv"
+ARCHIVE_FIELDS = ["date", "market", "description", "line", "odds",
+                  "edge_pct", "score", "outcome", "policy_version"]
 SLIDER_PCT = 3.0
 ET_OFFSET = timedelta(hours=-4)          # EDT (June)
 MIN_PROPS_SNAPSHOT = 1000
@@ -237,6 +245,40 @@ def main():
             pending_days.append(day)   # e.g. today's games not yet final
         print(f"  {day}: offers={len(props)}  bets={len(day_bets)}  "
               f"(no-game={n_nogame}, no-player/DNP={n_noplayer}, other-mkt={n_skipmkt})")
+
+    # Merge with the permanent archive: freshly replayed days REPLACE their
+    # archived versions (policy may have changed); archived days that have
+    # rolled out of the 14-day odds history are added back.
+    import csv as _csv
+    from src.predict_core import POLICY_VERSION
+    archived: list[dict] = []
+    if ARCHIVE.exists():
+        with ARCHIVE.open("r", encoding="utf-8", newline="") as fh:
+            archived = list(_csv.DictReader(fh))
+    fresh_days = {b["date"] for b in all_bets}
+    carried = [dict(b, line=float(b["line"]), odds=int(b["odds"]),
+                    edge_pct=float(b["edge_pct"]),
+                    score=float(b["score"]) if b.get("score") else 0.0)
+               for b in archived if b.get("date") not in fresh_days]
+    if carried:
+        print(f"\n  + {len(carried)} archived bets from "
+              f"{len({b['date'] for b in carried})} rolled-off day(s)")
+    all_bets = sorted(all_bets, key=lambda b: b["date"])
+    merged = sorted(carried + all_bets, key=lambda b: b["date"])
+
+    try:
+        with ARCHIVE.open("w", encoding="utf-8", newline="") as fh:
+            w = _csv.DictWriter(fh, fieldnames=ARCHIVE_FIELDS)
+            w.writeheader()
+            for b in merged:
+                row = {k: b.get(k, "") for k in ARCHIVE_FIELDS}
+                if not row.get("policy_version"):
+                    row["policy_version"] = POLICY_VERSION
+                w.writerow(row)
+        print(f"  archive -> {ARCHIVE.name} ({len(merged)} bets)")
+    except Exception as e:
+        print(f"  archive write failed: {e}")
+    all_bets = merged
 
     if not all_bets:
         print("No gradable bets.")
