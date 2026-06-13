@@ -492,11 +492,12 @@ _n_games  = slate.n_games
 _n_ci     = len(getattr(slate, "model_ci_bets", []) or [])
 _n_parlay = len(getattr(slate, "parlays", []) or [])
 
-(main_tab_value, main_tab_ci, main_tab_parlay, main_tab_intervals,
+(main_tab_value, main_tab_ci, main_tab_parlay, main_tab_sim, main_tab_intervals,
  main_tab_p1, main_tab_games, main_tab_track) = st.tabs([
     f":moneybag: Value Bets ({_n_value})",
     f":dart: Model CI ({_n_ci})",
     f":game_die: Parlays ({_n_parlay})",
+    f":crystal_ball: Simulation ({_n_games})",
     ":bar_chart: Intervals",
     ":dart: P(≥1) Confidence",
     f":baseball: Games ({_n_games})",
@@ -583,6 +584,126 @@ with main_tab_parlay:
                 c3.metric("EV/$ (model)", f"{_ev:+.3f}",
                           delta=f"mkt {p.get('ev_market', 0):+.3f}")
                 c4.metric("$1 pays", f"${p.get('payout_per_dollar', 0):.2f}")
+
+
+# ===== Simulation — play-by-play Monte Carlo box scores =====
+def _gp_sim_dict(gp) -> dict:
+    return {
+        "game_pk": gp.game_pk, "away_team": gp.away_team, "home_team": gp.home_team,
+        "pred_away_runs": gp.pred_away_runs, "pred_home_runs": gp.pred_home_runs,
+        "away_batters": gp.away_batters, "home_batters": gp.home_batters,
+        "away_starter": gp.away_starter, "home_starter": gp.home_starter,
+    }
+
+
+@st.cache_data(show_spinner="Simulating…")
+def _sim_cached(game_pk: int, n: int, date: str, _gp: dict):
+    from src import game_sim
+    try:
+        return game_sim.simulate_game(_gp, n=n, seed=game_pk)
+    except Exception as e:
+        return str(e)
+
+
+with main_tab_sim:
+    st.caption(
+        ":crystal_ball: **Game Simulation** — a play-by-play Monte Carlo that bats "
+        "each lineup through 9 innings (base-runners, outs, starter→bullpen hook) "
+        "so runs and RBI EMERGE from the same game instead of independent marginals. "
+        "Run it many times to see what the model actually favors. Team runs are "
+        "**anchored** to the model's projection (the bottom-up total is shown too)."
+    )
+    _sim_games = [g for g in slate.games
+                  if len(g.away_batters) >= 9 and len(g.home_batters) >= 9]
+    if not _sim_games:
+        st.info("No games have full 9-batter lineups projected yet (lineups post "
+                "closer to first pitch).")
+    else:
+        # ---- Slate overview (low N, cached) ----
+        st.markdown("##### Slate overview")
+        st.caption("Quick scan — 400 sims/game, anchored. Drill into a game below "
+                   "for a full box score at higher resolution.")
+        _ov_rows = []
+        for g in _sim_games:
+            r = _sim_cached(g.game_pk, 400, slate.target_date, _gp_sim_dict(g))
+            if isinstance(r, str) or r is False:
+                continue
+            _ov_rows.append({
+                "Game": f"{g.away_team} @ {g.home_team}",
+                "Sim score (H–A)": f"{r.anchored_home:.1f}–{r.anchored_away:.1f}",
+                "P(home win)": round(r.p_home_win, 3),
+                "Mean total": r.mean_total,
+                "Bottom-up H/A": f"{r.free_home:.1f}/{r.free_away:.1f}",
+                "Model H/A": f"{r.glm_home:.1f}/{r.glm_away:.1f}",
+            })
+        if _ov_rows:
+            st.dataframe(pd.DataFrame(_ov_rows), use_container_width=True, hide_index=True)
+
+        st.divider()
+        # ---- Per-game drill-down (high N) ----
+        st.markdown("##### Drill-down")
+        _labels = [f"{g.away_team} @ {g.home_team}" for g in _sim_games]
+        c1, c2 = st.columns([3, 1])
+        _pick = c1.selectbox("Game", range(len(_sim_games)),
+                             format_func=lambda i: _labels[i], key="sim_game")
+        _nsim = c2.select_slider("Sims", options=[1000, 2000, 5000, 10000],
+                                 value=5000, key="sim_n")
+        g = _sim_games[_pick]
+        res = _sim_cached(g.game_pk, _nsim, slate.target_date, _gp_sim_dict(g))
+        if isinstance(res, str):
+            st.error(f"Simulation failed: {res}")
+        elif res is False:
+            st.warning("Could not simulate this game.")
+        else:
+            # Team totals — anchored vs bottom-up vs model
+            st.markdown(f"**{res.away_team} @ {res.home_team}** · {res.n:,} sims")
+            t1, t2, t3, t4 = st.columns(4)
+            t1.metric(f"Sim score ({res.home_team})", f"{res.anchored_home:.2f}",
+                      delta=f"bottom-up {res.free_home:.2f}")
+            t2.metric(f"Sim score ({res.away_team})", f"{res.anchored_away:.2f}",
+                      delta=f"bottom-up {res.free_away:.2f}")
+            t3.metric("P(home win)", f"{res.p_home_win:.1%}")
+            t4.metric("Mean total", f"{res.mean_total:.2f}")
+            st.caption(
+                f"Anchored to model ({res.glm_home:.1f}–{res.glm_away:.1f}); "
+                f"anchor factors H×{res.anchor_f_home} / A×{res.anchor_f_away}. "
+                f"Bottom-up = the lineups' own rates, free of the anchor — where it "
+                f"diverges from the model, the two disagree. Most common finals: "
+                + ", ".join(f"{k}×{v}" for k, v in list(res.score_dist.items())[:4])
+            )
+
+            def _box_df(box):
+                return pd.DataFrame([{
+                    "Batter": b["name"], "PA": b["pa"], "H": b["h"], "HR": b["hr"],
+                    "TB": b["tb"], "RBI": b["rbi"], "R": b["r"], "K": b["k"],
+                    "BB": b["bb"], "P(hit)": b["p_hit"], "P(HR)": b["p_hr"],
+                } for b in box])
+
+            cc1, cc2 = st.columns(2)
+            with cc1:
+                st.markdown(f"**{res.away_team} batters** (mean per sim)")
+                st.dataframe(_box_df(res.box_away), use_container_width=True, hide_index=True)
+                st.markdown(f"**Starter — {res.pit_away['name']}**")
+                st.dataframe(pd.DataFrame([res.pit_away]).rename(
+                    columns={"ip": "IP", "k": "K", "bb": "BB", "h": "H",
+                             "hr": "HR", "er": "ER"}).drop(columns=["name"]),
+                    use_container_width=True, hide_index=True)
+            with cc2:
+                st.markdown(f"**{res.home_team} batters** (mean per sim)")
+                st.dataframe(_box_df(res.box_home), use_container_width=True, hide_index=True)
+                st.markdown(f"**Starter — {res.pit_home['name']}**")
+                st.dataframe(pd.DataFrame([res.pit_home]).rename(
+                    columns={"ip": "IP", "k": "K", "bb": "BB", "h": "H",
+                             "hr": "HR", "er": "ER"}).drop(columns=["name"]),
+                    use_container_width=True, hide_index=True)
+            st.caption(
+                "P(hit)/P(HR) = share of sims the player recorded ≥1 — the "
+                "'how often did it hold true' read. Box columns are means across "
+                "all sims. Coherence: each side's batter runs and RBI sum to the "
+                "team total because they come from one simulated game, not separate "
+                "marginals. Caveats: coarse base-running (no steals/DP/errors), ER "
+                "charges all runs to the pitcher on the mound."
+            )
 
 
 # ===== TAB 1 — Value Bets leaderboard =====
