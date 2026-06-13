@@ -160,15 +160,18 @@ def _record(bets: list[dict]) -> tuple[int, int, int, float | None]:
 
 
 def _fmt(label: str, bets: list[dict]) -> str:
-    from src.bet_tracker import wilson_ci
+    from src.bet_tracker import wilson_ci, roi_ci, bet_profit
     w, l, p, roi = _record(bets)
     dec = w + l
     wr = f"{w/dec:5.0%}" if dec else "    —"
     ci = wilson_ci(w, dec)
     ci_s = f" CI[{ci[0]:.0%}-{ci[1]:.0%}]" if ci else ""
     roi_s = f"{roi:+7.1%}" if roi is not None else "      —"
+    profs = [bp for b in bets if (bp := bet_profit(b.get("odds"), b["outcome"])) is not None]
+    rci = roi_ci(profs)
+    rci_s = f" roiCI[{rci[0]:+.0%},{rci[1]:+.0%}]" if rci else ""
     push = f" {p}P" if p else ""
-    return f"  {label:34s} {w}W {l}L{push}  {wr}{ci_s}  ROI {roi_s}  (n={dec})"
+    return f"  {label:34s} {w}W {l}L{push}  {wr}{ci_s}  ROI {roi_s}{rci_s}  (n={dec})"
 
 
 def main():

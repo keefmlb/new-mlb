@@ -26,7 +26,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src import bet_tracker
-from src.value import american_to_decimal
 
 
 def _direction(b: dict) -> str:
@@ -38,20 +37,20 @@ def _direction(b: dict) -> str:
     return ""
 
 
+def _profits(bets: list[dict]) -> list[float]:
+    """Per-$1 profit vector over settled bets (W/L only)."""
+    out = []
+    for b in bets:
+        p = bet_tracker.bet_profit(b.get("odds"), b.get("outcome"))
+        if p is not None:
+            out.append(p)
+    return out
+
+
 def _roi(bets: list[dict]) -> float | None:
     """Realised ROI per $1 flat-staked across settled bets (pushes = $0)."""
-    staked = profit = 0.0
-    for b in bets:
-        o = b.get("outcome")
-        if o not in ("W", "L"):
-            continue
-        try:
-            d = american_to_decimal(int(b.get("odds") or -110))
-        except (TypeError, ValueError):
-            continue
-        staked += 1.0
-        profit += (d - 1.0) if o == "W" else -1.0
-    return (profit / staked) if staked else None
+    profs = _profits(bets)
+    return (sum(profs) / len(profs)) if profs else None
 
 
 def _line(label: str, bets: list[dict]) -> str:
@@ -60,12 +59,15 @@ def _line(label: str, bets: list[dict]) -> str:
     p = sum(1 for b in bets if b.get("outcome") == "P")
     dec = w + l
     wr = f"{w / dec:5.0%}" if dec else "    —"
-    roi = _roi(bets)
+    profs = _profits(bets)
+    roi = (sum(profs) / len(profs)) if profs else None
     roi_s = f"{roi:+7.1%}" if roi is not None else "      —"
     push = f" {p}P" if p else ""
     ci = bet_tracker.wilson_ci(w, dec)
     ci_s = f"  CI[{ci[0]:.0%}-{ci[1]:.0%}]" if ci else ""
-    return f"  {label:38s} {w}W {l}L{push}  {wr}{ci_s}  ROI {roi_s}  (n={dec})"
+    rci = bet_tracker.roi_ci(profs)
+    rci_s = f"  roiCI[{rci[0]:+.0%},{rci[1]:+.0%}]" if rci else ""
+    return f"  {label:38s} {w}W {l}L{push}  {wr}{ci_s}  ROI {roi_s}{rci_s}  (n={dec})"
 
 
 def main():

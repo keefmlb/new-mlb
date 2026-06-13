@@ -302,6 +302,53 @@ def wilson_ci(wins: int, n: int, z: float = 1.96) -> tuple[float, float] | None:
     return (max(0.0, centre - half), min(1.0, centre + half))
 
 
+def roi_ci(profits, n_boot: int = 4000, level: float = 0.95,
+           seed: int = 0) -> tuple[float, float] | None:
+    """Bootstrap percentile CI for flat-stake ROI per $1.
+
+    `profits` is one entry per SETTLED (W/L) bet: (decimal_odds - 1.0) for a
+    win, -1.0 for a loss. ROI = mean(profits). The win-rate Wilson CI is NOT
+    a proxy for the ROI CI on a plus-money book — two bet sets with the same
+    win rate but different odds have different ROI variance, and a win at +250
+    swings the mean four times as hard as a win at -150. This resamples the
+    actual profit vector so the reported ROI interval reflects the real odds
+    mix. Returns (lo, hi) or None when there are too few settled bets.
+    """
+    import numpy as np
+    arr = np.asarray([p for p in profits if p is not None], dtype=float)
+    n = arr.size
+    if n < 10:
+        return None
+    rng = np.random.default_rng(seed)
+    # Chunk the resampling so a large pooled set can't blow up memory
+    # (n_boot * n floats). 4000 * n stays well under ~50MB for n <= 1500.
+    means = np.empty(n_boot, dtype=float)
+    chunk = max(1, 2_000_000 // max(n, 1))
+    done = 0
+    while done < n_boot:
+        k = min(chunk, n_boot - done)
+        idx = rng.integers(0, n, size=(k, n))
+        means[done:done + k] = arr[idx].mean(axis=1)
+        done += k
+    lo = float(np.quantile(means, (1 - level) / 2))
+    hi = float(np.quantile(means, (1 + level) / 2))
+    return (lo, hi)
+
+
+def bet_profit(odds, outcome) -> float | None:
+    """Per-$1 flat-stake profit for a settled bet: (decimal-1) on W, -1 on L,
+    None for pushes/pending/unparseable. Shared by the CI reporters so the
+    profit vector behind roi_ci matches the ROI point estimate exactly."""
+    if outcome not in ("W", "L"):
+        return None
+    try:
+        from .value import american_to_decimal
+        d = american_to_decimal(int(odds if odds not in (None, "") else -110))
+    except (TypeError, ValueError):
+        return None
+    return (d - 1.0) if outcome == "W" else -1.0
+
+
 # ---------- Logging ----------
 
 def _find_duplicate(entry: dict, existing: list[dict], date_str: str) -> Optional[dict]:
