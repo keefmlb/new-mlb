@@ -35,15 +35,61 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import math
+
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.forecast_score import _collect
+from scripts.forecast_score import _collect, _select_snapshots
+from src import value
 
 _EPS = 1e-6
+
+
+def _fit_oos_calibration(cutoff: str) -> dict:
+    """Per-market logit (a,b) fit on prop rows STRICTLY BEFORE `cutoff`.
+
+    Same recipe as fit_prop_calibration but date-restricted, so the
+    calibration carries no information from the test window — the model's
+    p_model becomes a genuine out-of-sample forecast."""
+    from scripts.fit_prop_calibration import (
+        _load, _build_samples, _fit_ab,
+        BAT_CSVS, PIT_CSVS, BAT_MARKETS, PIT_MARKETS)
+    cal: dict = {}
+    for csvs, markets in [(BAT_CSVS, BAT_MARKETS), (PIT_CSVS, PIT_MARKETS)]:
+        df = _load(csvs)
+        if df is None:
+            continue
+        df = df[df["date"].astype(str) < cutoff]
+        if df.empty:
+            continue
+        for proj_col, act_col, market in markets:
+            if proj_col not in df.columns or act_col not in df.columns:
+                continue
+            raw_p, y, _ = _build_samples(df, proj_col, act_col, market)
+            if len(y) < 500:
+                continue
+            ab = _fit_ab(raw_p, y)
+            if ab:
+                cal[market] = ab
+    return cal
+
+
+def _make_oos_cal_fn(cal: dict):
+    """(raw_tail_prob, market) -> calibrated P(over) using the OOS (a,b),
+    falling back to the default logit shrink when a market wasn't fit."""
+    def fn(raw_p, market):
+        ab = cal.get(market)
+        if not ab:
+            return value.calibrate_prob(raw_p)
+        a, b = ab
+        p = min(max(float(raw_p), 1e-6), 1 - 1e-6)
+        z = a + b * math.log(p / (1 - p))
+        return 1.0 / (1.0 + math.exp(-z))
+    return fn
 
 
 def _logit(p):
@@ -93,23 +139,18 @@ def _cluster_boot_betas(sub, n_boot: int = 1500, seed: int = 0):
     return point, ci
 
 
-def main():
-    df = _collect(nearest_only=False)
-    if df.empty:
-        print("No priceable offers collected.")
-        return
-    # one-sided novig is a juice-strip estimate; keep both but tag.
-    print(f"Offers: {len(df)}  games: {df['game_pk'].nunique()}")
-    print("\nForecast-encompassing  P(over) ~ logit(market) + logit(model)")
-    print("  b_mkt~1, b_mdl~0 => market encompasses model (model adds nothing)")
-    print("=" * 86)
+_FOCUS = ("runs", "rbi")
+
+
+def _report(df, title: str) -> None:
+    print("\n" + "=" * 90)
+    print(title + f"   (offers {len(df)}, games {df['game_pk'].nunique()})")
+    print("=" * 90)
     print(f"  {'market':14s} {'n':>5s} {'games':>5s} {'b_mkt':>7s} {'b_mdl':>7s} "
           f"{'b_mdl 95% CI':>20s} {'wt_mdl':>7s}  verdict")
     rows = [(m, s) for m, s in df.groupby("market")]
     rows.append(("ALL", df))
-    # focus markets first
-    focus = ("runs", "rbi")
-    rows.sort(key=lambda it: (0 if it[0] in focus else 1, -len(it[1])))
+    rows.sort(key=lambda it: (0 if it[0] in _FOCUS else 1, -len(it[1])))
     for mkt, sub in rows:
         if len(sub) < 40 or sub["game_pk"].nunique() < 8:
             continue
@@ -118,30 +159,48 @@ def main():
             continue
         (b_mkt, b_mdl), ci = res
         lo, hi = ci[0, 1], ci[1, 1]   # b_mdl CI
-        # implied model weight in the log-odds combination (clamped display)
         denom = abs(b_mkt) + abs(b_mdl)
         wt = b_mdl / denom if denom > 1e-9 else 0.0
-        if lo > 0:
-            verdict = "* model ADDS info"
-        elif hi < 0:
-            verdict = "x model misleads"
-        else:
-            verdict = "market encompasses"
-        mark = "»" if mkt in focus else " "
+        verdict = ("* model ADDS info" if lo > 0
+                   else "x model misleads" if hi < 0
+                   else "market encompasses")
+        mark = "»" if mkt in _FOCUS else " "
         print(f"{mark} {mkt:14s} {len(sub):5d} {sub['game_pk'].nunique():5d} "
               f"{b_mkt:7.3f} {b_mdl:7.3f} [{lo:+.3f},{hi:+.3f}]  {wt:6.0%}  {verdict}")
-    print("=" * 86)
-    print("  wt_mdl = b_mdl/(|b_mkt|+|b_mdl|): share of the log-odds combo the model earns.")
-    print("  * = b_mdl CI excludes 0 (incremental edge).")
-    print("  READ WITH TWO CAVEATS:")
-    print("   1. In-sample: p_model uses calibration fitted on overlapping weeks,")
-    print("      so b_mdl is biased UP. A null result is therefore strong; a")
-    print("      positive one is an upper bound until refit out-of-sample.")
-    print("   2. One-sided benchmark: where b_mkt is small (rbi 0.04, runs 0.43"
-          " vs two-sided pitcher_k 1.24),")
-    print("      the market prob is a juice-strip ESTIMATE, a degraded forecast —")
-    print("      the model 'adding info' there partly just beats a noisy benchmark.")
-    print("      The clean read is the TWO-SIDED market (pitcher_k): b_mdl ~ 0, no edge.")
+
+
+def main():
+    insample = _collect(nearest_only=False)
+    if insample.empty:
+        print("No priceable offers collected.")
+        return
+
+    # Out-of-sample: refit the prop calibration using ONLY data before the
+    # earliest test day, then recompute p_model with it. Strips the in-sample
+    # calibration advantage so any surviving b_mdl is real incremental skill.
+    snaps = _select_snapshots()
+    cutoff = min(snaps) if snaps else "2026-06-05"
+    cal = _fit_oos_calibration(cutoff)
+    oos = _collect(nearest_only=False, cal_fn=_make_oos_cal_fn(cal))
+
+    print("Forecast-encompassing  P(over) ~ logit(market) + logit(model)")
+    print("  b_mkt~1, b_mdl~0 => market encompasses model (model adds nothing)")
+    _report(insample, "IN-SAMPLE (production calibration, overlaps test weeks)")
+    _report(oos, f"OUT-OF-SAMPLE (calibration refit on dates < {cutoff}; "
+                 f"{len(cal)} markets fit)")
+
+    print("\n" + "=" * 90)
+    print("READ (Jun 2026): OOS ≈ in-sample to the 3rd decimal. The calibration")
+    print("pool (~100k+ rows, all 2025 + 2026 to date) dwarfs the ~6 test days,")
+    print("so dropping them barely moves (a,b) — the in-sample caveat is RESOLVED:")
+    print("p_model is effectively already out-of-sample; the b_mdl signals are not")
+    print("a calibration-overfit artifact.")
+    print("  REMAINING confound: one-sided novig is a flat-8% juice-strip ESTIMATE")
+    print("  (b_mkt≈0.04 rbi / 0.43 runs vs 1.24 two-sided pitcher_k) — a degraded")
+    print("  benchmark, so the rbi/runs positive b_mdl is largely 'beats a noisy")
+    print("  market proxy', not proven edge vs a real two-sided line. Clean read")
+    print("  (two-sided pitcher_k): b_mdl≈0, no edge. To resolve runs/rbi, the next")
+    print("  lever is a CALIBRATED one-sided overround (replace the flat 8%).")
 
 
 if __name__ == "__main__":

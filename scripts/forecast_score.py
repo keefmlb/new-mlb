@@ -81,8 +81,12 @@ def _cluster_boot_ci(skills: list[float], games: list[int],
             float(np.quantile(means, (1 + level) / 2)))
 
 
-def _score_offer(pp, proj, act, market, gpk) -> dict | None:
-    """One Brier record for a single (player, market, LINE) offer, or None."""
+def _score_offer(pp, proj, act, market, gpk, cal_fn=None) -> dict | None:
+    """One Brier record for a single (player, market, LINE) offer, or None.
+
+    cal_fn(raw_tail_prob, market) -> calibrated P(over). Defaults to the
+    production calibrate_prop_prob; an out-of-sample variant can be injected
+    to remove the in-sample calibration advantage."""
     try:
         line = float(pp.get("line") or 0)
     except (TypeError, ValueError):
@@ -91,7 +95,8 @@ def _score_offer(pp, proj, act, market, gpk) -> dict | None:
         return None  # push
     over = 1.0 if act > line else 0.0
     disp = value.get_dispersion(market, proj)
-    p_model = value.calibrate_prop_prob(value.prob_over_count(proj, line, disp), market)
+    _cal = cal_fn or value.calibrate_prop_prob
+    p_model = _cal(value.prob_over_count(proj, line, disp), market)
     o_odds, u_odds = pp.get("over"), pp.get("under")
     if o_odds is not None and u_odds is not None:
         nv_o, _ = value.devig_two_way(value.american_to_prob(int(o_odds)),
@@ -112,7 +117,7 @@ def _score_offer(pp, proj, act, market, gpk) -> dict | None:
 
 
 def _collect(nearest_only: bool = True,
-             band: tuple = (0.15, 0.85)) -> pd.DataFrame:
+             band: tuple = (0.15, 0.85), cal_fn=None) -> pd.DataFrame:
     """Build Brier records.
 
     nearest_only=True : one record per (game, player, market) — the line
@@ -123,6 +128,8 @@ def _collect(nearest_only: bool = True,
         so they're excluded. Game-clustered bootstrap keeps the CI honest:
         all lines of all players in a game resample together, so the extra
         within-game correlation does NOT fake-narrow the interval.
+    cal_fn: optional (raw_tail_prob, market)->P(over) to override the
+        production calibration (used for the out-of-sample variant).
     """
     snaps = _select_snapshots()
     games_by_date, by_game = _build_indexes()
@@ -146,7 +153,8 @@ def _collect(nearest_only: bool = True,
             act = getattr(row, acol, None)
             if proj is None or act is None or pd.isna(proj) or pd.isna(act) or float(proj) <= 0:
                 continue
-            rec = _score_offer(pp, float(proj), float(act), market, int(g.game_pk))
+            rec = _score_offer(pp, float(proj), float(act), market, int(g.game_pk),
+                               cal_fn=cal_fn)
             if rec is None:
                 continue
             bucket[(int(g.game_pk), resolved, market)].append(rec)
