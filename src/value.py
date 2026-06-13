@@ -395,6 +395,12 @@ class ValueBet:
     # See `score_bet` for the formula.
     confidence: float = 1.0
     score: float = 0.0
+    # The model's OWN side probability, before the market blend — i.e. how far
+    # into the tail of the model's predictive distribution the line sits. This
+    # is the quantity for "is this bet inside the model's CI" filtering; the
+    # blended `model_prob` is pulled toward the market and understates model
+    # conviction. Defaults to model_prob for markets without a separate raw.
+    model_prob_raw: float = 0.0
     # For bet tracking — populated by predict_core after creation
     game_pk: Optional[int] = None
     player_id: Optional[int] = None
@@ -765,6 +771,9 @@ def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
     disp = get_dispersion(market, mean_proj)
     p_over = calibrate_prop_prob(prob_over_count(mean_proj, line, disp), market)
     p_under = 1.0 - p_over
+    # Raw (pre-blend) model side probabilities — the model's own conviction,
+    # used by the "model CI" leaderboard and skill-backed parlays.
+    raw_over, raw_under = p_over, p_under
 
     out: list[ValueBet] = []
 
@@ -780,9 +789,9 @@ def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
         # logged props this lifts ROI from -13% toward break-even/positive.
         p_over  = (1 - PROP_MARKET_BLEND_WEIGHT) * p_over  + PROP_MARKET_BLEND_WEIGHT * nv_o
         p_under = (1 - PROP_MARKET_BLEND_WEIGHT) * p_under + PROP_MARKET_BLEND_WEIGHT * nv_u
-        for side_name, mp, novig, odds in [
-            (f"{name} {market} OVER {line}",  p_over,  nv_o, over_odds),
-            (f"{name} {market} UNDER {line}", p_under, nv_u, under_odds),
+        for side_name, mp, raw, novig, odds in [
+            (f"{name} {market} OVER {line}",  p_over,  raw_over,  nv_o, over_odds),
+            (f"{name} {market} UNDER {line}", p_under, raw_under, nv_u, under_odds),
         ]:
             edge = mp - novig
             if edge >= edge_threshold:
@@ -793,6 +802,7 @@ def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
                     edge_pct=edge * 100,
                     ev_per_dollar=expected_value(mp, odds),
                     kelly=kelly_fraction(mp, d),
+                    model_prob_raw=raw,
                 )))
     elif over_odds is not None:
         # Cap longshots: at +400 or worse, Bovada's juice estimate breaks down
@@ -820,6 +830,7 @@ def evaluate_prop(name: str, market: str, mean_proj: float, line: float,
                 edge_pct=edge * 100,
                 ev_per_dollar=expected_value(p_over, over_odds),
                 kelly=kelly_fraction(p_over, d),
+                model_prob_raw=raw_over,
             )))
 
     return out

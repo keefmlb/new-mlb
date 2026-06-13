@@ -489,14 +489,100 @@ for _gp in slate.games:
 # Tab labels with badge counts
 _n_value  = len(slate.top_value)
 _n_games  = slate.n_games
+_n_ci     = len(getattr(slate, "model_ci_bets", []) or [])
+_n_parlay = len(getattr(slate, "parlays", []) or [])
 
-main_tab_value, main_tab_intervals, main_tab_p1, main_tab_games, main_tab_track = st.tabs([
+(main_tab_value, main_tab_ci, main_tab_parlay, main_tab_intervals,
+ main_tab_p1, main_tab_games, main_tab_track) = st.tabs([
     f":moneybag: Value Bets ({_n_value})",
+    f":dart: Model CI ({_n_ci})",
+    f":game_die: Parlays ({_n_parlay})",
     ":bar_chart: Intervals",
     ":dart: P(≥1) Confidence",
     f":baseball: Games ({_n_games})",
     ":trophy: Track Record",
 ])
+
+
+# ===== Model CI — bets inside the model's confidence region =====
+with main_tab_ci:
+    st.caption(
+        ":dart: **Model CI** — alt-line bets where the line sits at/beyond the edge "
+        "of the model's own predictive distribution (raw model side probability "
+        "≥ 60%, before any market blend). These are the spots the model is most "
+        "confident in a direction; one best-EV line per pick."
+    )
+    _ci_bets = getattr(slate, "model_ci_bets", []) or []
+    if not _ci_bets:
+        st.info("No bets currently inside the model's 60% confidence region.")
+    else:
+        import pandas as _pd
+        _amerf = lambda o: (f"+{int(o)}" if o > 0 else f"{int(o)}")
+        _ci_df = _pd.DataFrame([{
+            "Bet": (b.get("description", "") if b.get("starters_confirmed", True)
+                    else "⚠️ " + b.get("description", "")),
+            "Market": b.get("market", "").replace("prop_", ""),
+            "Odds": _amerf(b.get("odds", -110)),
+            "Model%": round(b.get("model_prob_raw", 0) * 100, 1),
+            "Blended%": round(b.get("model_prob", 0) * 100, 1),
+            "No-vig%": round(b.get("novig_prob", 0) * 100, 1),
+            "Edge%": round(b.get("edge_pct", 0), 1),
+            "EV/$": round(b.get("ev_per_dollar", 0), 3),
+        } for b in _ci_bets]).sort_values("Model%", ascending=False)
+        st.dataframe(_ci_df, use_container_width=True, hide_index=True)
+        st.caption(
+            "Model% = raw model conviction (the CI criterion). Blended% = "
+            "calibrated probability after the market blend (what pricing/EV use). "
+            "A big Model%−Blended% gap means the model strongly disagrees with the "
+            "market — historically that disagreement has NOT been reliably right, "
+            "so treat high-Model%/low-Edge% rows with caution."
+        )
+
+
+# ===== Parlays — skill-backed daily 3- & 4-leg =====
+with main_tab_parlay:
+    st.caption(
+        ":game_die: **Parlays** — daily 3- and 4-leg parlays built ONLY from "
+        "markets with measured forecasting skill (runs / rbi), high model "
+        "conviction, one leg per game. Shown with EV under our calibrated "
+        "estimate AND under the market's implied probability."
+    )
+    _parlays = getattr(slate, "parlays", []) or []
+    if not _parlays:
+        st.info("No skill-backed parlays today (need ≥3 high-confidence runs/rbi "
+                "legs across different games).")
+    else:
+        st.warning(
+            "Reality check: parlays multiply the book's hold, and the model's "
+            "edge on these markets is weak/unproven. **EV/$ (model)** is usually "
+            "below 0 and **EV/$ (market)** ≈ the negative hold. This tab exists "
+            "to TRACK whether high-conviction skill-backed parlays beat their EV, "
+            "not to assert they win.",
+            icon="⚠️",
+        )
+        for p in _parlays:
+            _ev = p.get("ev_per_dollar", 0)
+            _badge = "🟢" if _ev > 0 else "🔴"
+            with st.expander(
+                f"{_badge} {p['label']}  ·  {p['american_odds']:+d}  ·  "
+                f"hit {p.get('model_prob', 0):.1%}  ·  EV/$ {_ev:+.3f}",
+                expanded=False,
+            ):
+                import pandas as _pd
+                _lg = _pd.DataFrame([{
+                    "Leg": (l.get("description", "") if l.get("starters_confirmed", True)
+                            else "⚠️ " + l.get("description", "")),
+                    "Odds": (f"+{l['odds']}" if l["odds"] > 0 else f"{l['odds']}"),
+                    "Model%": round(l.get("model_prob", 0) * 100, 1),
+                    "Conviction%": round(l.get("model_prob_raw", 0) * 100, 1),
+                } for l in p.get("legs", [])])
+                st.dataframe(_lg, use_container_width=True, hide_index=True)
+                c1, c2, c3, c4 = st.columns(4)
+                c1.metric("Parlay odds", f"{p['american_odds']:+d}")
+                c2.metric("Model hit %", f"{p.get('model_prob', 0):.1%}")
+                c3.metric("EV/$ (model)", f"{_ev:+.3f}",
+                          delta=f"mkt {p.get('ev_market', 0):+.3f}")
+                c4.metric("$1 pays", f"${p.get('payout_per_dollar', 0):.2f}")
 
 
 # ===== TAB 1 — Value Bets leaderboard =====

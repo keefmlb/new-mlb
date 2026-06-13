@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from . import mlb_api, parks, weather, features as feats, statcast as sc
-from . import model as mdl, projections as proj, odds, value, name_match, bet_tracker, umpire as ump
+from . import model as mdl, projections as proj, odds, value, name_match, bet_tracker, umpire as ump, parlays
 from . import lineup_features as lf
 
 
@@ -240,6 +240,15 @@ class SlateResult:
     # this is what tells you whether the book was efficient or the detector
     # is broken.
     sharp_summary: Optional[dict] = None
+    # Bets where the line sits inside the MODEL's confidence region (raw model
+    # side prob ≥ MODEL_CI_THRESHOLD), deduped to the best line per pick.
+    model_ci_bets: list[dict] = field(default_factory=list)
+    # Daily skill-backed parlays (runs/rbi legs, high conviction, one/game).
+    parlays: list[dict] = field(default_factory=list)
+
+
+# Raw model side-probability at/above which a bet is "inside the model's CI".
+MODEL_CI_THRESHOLD = 0.60
 
 
 # ---------- Helpers ----------
@@ -290,6 +299,7 @@ def _vb_to_dict(vb: value.ValueBet) -> dict:
     d["kelly"] = round(d["kelly"], 4)
     d["confidence"] = round(d.get("confidence", 0.0), 4)
     d["score"] = round(d.get("score", 0.0), 3)
+    d["model_prob_raw"] = round(d.get("model_prob_raw") or d["model_prob"], 4)
     return d
 
 
@@ -1017,6 +1027,10 @@ def predict_slate(target_date: date | str | None = None,
     for gp in games_out:
         slate_all_bets.extend(gp.all_bets)
 
+    # Model-CI leaderboard + skill-backed parlays, from the full alt-line pool.
+    model_ci_bets = parlays.model_confident_bets(slate_all_bets, MODEL_CI_THRESHOLD)
+    parlay_list = parlays.build_parlays(slate_all_bets)
+
     return SlateResult(
         target_date=target.isoformat(),
         odds_source=odds_source,
@@ -1030,4 +1044,6 @@ def predict_slate(target_date: date | str | None = None,
         sharp_summary={"games_checked": _sharp_games_checked,
                        "n_bets": _n_sharp_bets,
                        "best_ev": _sharp_best_ev},
+        model_ci_bets=model_ci_bets,
+        parlays=parlay_list,
     )
