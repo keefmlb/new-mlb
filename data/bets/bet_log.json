@@ -4964,8 +4964,8 @@
     "score": 13.303,
     "game_pk": 823694,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": "9-6"
   },
   {
     "date": "2026-06-13",
@@ -4983,8 +4983,8 @@
     "score": 12.634,
     "game_pk": 822802,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 2.0
   },
   {
     "date": "2026-06-13",
@@ -5002,8 +5002,8 @@
     "score": 12.19,
     "game_pk": 824587,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 6.0
   },
   {
     "date": "2026-06-13",
@@ -5021,8 +5021,8 @@
     "score": 12.073,
     "game_pk": 823776,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": -1.0
   },
   {
     "date": "2026-06-13",
@@ -5040,8 +5040,8 @@
     "score": 11.762,
     "game_pk": 823213,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 5.0
   },
   {
     "date": "2026-06-13",
@@ -5059,8 +5059,8 @@
     "score": 11.588,
     "game_pk": 824019,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": -8.0
   },
   {
     "date": "2026-06-13",
@@ -5078,8 +5078,8 @@
     "score": 11.532,
     "game_pk": 824828,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": -6.0
   },
   {
     "date": "2026-06-13",
@@ -5097,8 +5097,8 @@
     "score": 11.316,
     "game_pk": 824426,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": -2.0
   },
   {
     "date": "2026-06-13",
@@ -5116,8 +5116,8 @@
     "score": 11.159,
     "game_pk": 824100,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": -1.0
   },
   {
     "date": "2026-06-13",
@@ -5135,8 +5135,8 @@
     "score": 10.986,
     "game_pk": 824508,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": -1.0
   },
   {
     "date": "2026-06-13",
@@ -5154,8 +5154,8 @@
     "score": 10.352,
     "game_pk": 823369,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 1.0
   },
   {
     "date": "2026-06-13",
@@ -5173,8 +5173,8 @@
     "score": 8.457,
     "game_pk": 823694,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": -3.0
   },
   {
     "date": "2026-06-13",
@@ -5192,8 +5192,8 @@
     "score": 4.879,
     "game_pk": 824587,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": "7-1"
   },
   {
     "date": "2026-06-13",
@@ -5211,8 +5211,8 @@
     "score": 4.754,
     "game_pk": 822725,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 5.0
   },
   {
     "date": "2026-06-13",
@@ -5230,8 +5230,8 @@
     "score": 4.314,
     "game_pk": 822725,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 11.0
   },
   {
     "date": "2026-06-13",
@@ -5249,8 +5249,8 @@
     "score": 4.129,
     "game_pk": 824587,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 8.0
   },
   {
     "date": "2026-06-13",
@@ -5268,8 +5268,8 @@
     "score": 3.751,
     "game_pk": 824749,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 9.0
   },
   {
     "date": "2026-06-13",
@@ -5287,8 +5287,8 @@
     "score": 2.102,
     "game_pk": 824100,
     "player_id": null,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 15.0
   },
   {
     "date": "2026-06-13",
@@ -5306,8 +5306,8 @@
     "score": 1.679,
     "game_pk": 824828,
     "player_id": 694212,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 1.0
   },
   {
     "date": "2026-06-13",
@@ -5325,8 +5325,8 @@
     "score": 1.652,
     "game_pk": 823776,
     "player_id": 669003,
-    "outcome": null,
-    "actual": null
+    "outcome": "W",
+    "actual": 5.0
   },
   {
     "date": "2026-06-13",
@@ -5344,7 +5344,26 @@
     "score": 1.572,
     "game_pk": 823776,
     "player_id": 668930,
-    "outcome": null,
-    "actual": null
+    "outcome": "L",
+    "actual": 0.0
+  },
+  {
+    "date": "2026-06-13",
+    "logged_at": "2026-06-13T20:44:31.506032+00:00",
+    "policy_version": "2026-06-10-prop-calibration",
+    "shadow": false,
+    "description": "Kyle Schwarber tb OVER 0.5 [1-sided, ~8% juice est.]",
+    "market": "prop_tb",
+    "line": 0.5,
+    "odds": -164,
+    "model_prob": 0.6494,
+    "novig_prob": 0.5812,
+    "edge_pct": 6.82,
+    "confidence": 0.0978,
+    "score": 1.805,
+    "game_pk": 823776,
+    "player_id": 656941,
+    "outcome": "W",
+    "actual": 3.0
   }
 ]
