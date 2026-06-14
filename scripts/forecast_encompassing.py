@@ -139,6 +139,8 @@ def _cluster_boot_betas(sub, n_boot: int = 1500, seed: int = 0):
     return point, ci
 
 
+# Currently skill-backed markets (CI excludes 0). Used only as a visual
+# highlight — the report runs over every market with enough data.
 _FOCUS = ("runs", "rbi")
 
 

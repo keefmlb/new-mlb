@@ -207,7 +207,9 @@ def main():
         print("No priceable offers collected.")
         return
 
-    FOCUS = ("runs", "rbi")
+    # Skill-backed = encompassing CI excludes 0; these markets get a »
+    # highlight everywhere. The scorecard itself runs on ALL markets.
+    SKILL_BACKED = ("runs", "rbi")
     for df, label in [(single, "SINGLE nearest-line (1 forecast/game)"),
                       (multi, "MULTI-LINE full implied-distribution (every informative line)")]:
         print("\n" + "#" * 88)
@@ -217,17 +219,19 @@ def main():
         print("#" * 88)
         ts = df[df["two_sided"]]
         if len(ts) >= 10:
-            _report(ts, "TWO-SIDED (honest de-vig)", focus=FOCUS)
+            _report(ts, "TWO-SIDED (honest de-vig)", focus=SKILL_BACKED)
         os_ = df[~df["two_sided"]]
         if len(os_) >= 10:
-            _report(os_, "ONE-SIDED (8% juice-strip estimate)", focus=FOCUS)
+            _report(os_, "ONE-SIDED (8% juice-strip estimate)", focus=SKILL_BACKED)
 
-    # Demonstrate the CI tightening on the focus markets head-to-head.
+    # CI tightening head-to-head across ALL prop markets (was runs/rbi only).
     print("\n" + "=" * 88)
-    print("CI TIGHTENING — focus markets (runs, rbi): single-line vs multi-line")
+    print("CI TIGHTENING — single-line vs multi-line (all markets, one-sided)")
     print("=" * 88)
-    print(f"  {'market':10s} {'view':>6s} {'n':>6s} {'skill':>9s} {'CI half-width':>14s}")
-    for mkt in FOCUS:
+    print(f"  {'market':12s} {'view':>6s} {'n':>6s} {'skill':>9s} {'CI half-width':>14s}  »")
+    _all_mkts = sorted(set(multi["market"]).union(single["market"]))
+    for mkt in _all_mkts:
+        flag = "»" if mkt in SKILL_BACKED else " "
         for df, tag in [(single, "single"), (multi, "multi")]:
             sub = df[(df["market"] == mkt) & (~df["two_sided"])]
             if len(sub) < 10:
@@ -235,23 +239,21 @@ def main():
             sk = sub["skill"].mean()
             ci = _cluster_boot_ci(sub["skill"].tolist(), sub["game_pk"].tolist())
             hw = (ci[1] - ci[0]) / 2 if ci else float("nan")
-            print(f"  {mkt:10s} {tag:>6s} {len(sub):6d} {sk:+9.4f} {hw:14.4f}")
+            print(f"  {mkt:12s} {tag:>6s} {len(sub):6d} {sk:+9.4f} {hw:14.4f}  {flag}")
 
-    # Anchor pointed at runs/rbi: the betting-relevant "how much to trust the
-    # model vs the market" is the Brier-optimal blend weight w in
-    #   p = w·p_model + (1−w)·p_market   (current live default: 0.5).
-    # Fit on the earlier 70% of game-days, evaluate on the last 30%. This is
-    # the probability-space anchor (the count-anchor needs a two-sided central
-    # line runs/rbi don't have). Read-only: we do NOT wire a market's weight
-    # until its skill CI clears 0 — fitting on a signal whose CI still spans
-    # zero would just chase noise (the trap we've avoided all along).
+    # Per-market Brier-optimal blend weight w* in p = w·p_model + (1−w)·p_market.
+    # Fit on the earlier 70% of game-days, evaluate on the last 30%. Now run
+    # for EVERY market with enough data (TB, HR, hits, K, etc.), not just
+    # runs/rbi — so we see directionally how much each market wants to lean
+    # on the model. DISCIPLINE PRESERVED: we still do NOT wire a market's w*
+    # into live pricing until that market's skill CI clears 0.
     print("\n" + "=" * 88)
-    print("ANCHOR @ runs/rbi — Brier-optimal model-vs-market blend weight (read-only)")
+    print("ANCHOR — Brier-optimal blend weight per market (read-only, all markets)")
     print("=" * 88)
-    print(f"  {'market':10s} {'n':>6s} {'w*':>5s} {'Brier@0.5':>10s} "
-          f"{'Brier@w*':>9s} {'gain':>7s}  note")
+    print(f"  {'market':12s} {'n':>6s} {'w*':>5s} {'Brier@0.5':>10s} "
+          f"{'Brier@w*':>9s} {'gain':>7s}  status")
     ws = np.linspace(0.0, 1.0, 21)
-    for mkt in FOCUS:
+    for mkt in _all_mkts:
         sub = multi[(multi["market"] == mkt) & (~multi["two_sided"])].copy()
         if len(sub) < 50:
             continue
@@ -275,11 +277,14 @@ def main():
         gain = b_half - b_star
         skill_ci = _cluster_boot_ci(sub["skill"].tolist(), sub["game_pk"].tolist())
         actionable = skill_ci and skill_ci[0] > 0
-        note = "ACTIONABLE (skill CI>0)" if actionable else "hold (skill CI spans 0)"
-        print(f"  {mkt:10s} {len(sub):6d} {w_star:5.2f} {b_half:10.4f} "
-              f"{b_star:9.4f} {gain:+7.4f}  {note}")
+        status = ("ACTIONABLE (skill CI>0)" if actionable
+                  else "hold (skill CI spans 0)")
+        mark = "»" if mkt in SKILL_BACKED else " "
+        print(f"  {mkt:12s} {len(sub):6d} {w_star:5.2f} {b_half:10.4f} "
+              f"{b_star:9.4f} {gain:+7.4f}  {mark} {status}")
     print("  w*>0.5 ⇒ trust model more than the live 0.5 default; w*<0.5 ⇒ less.")
-    print("  Held until skill CI clears 0 so we tune on signal, not noise.")
+    print("  Per-market w* shown for every market; we still wire NONE until that")
+    print("  market's skill CI clears 0 — tune on signal, not noise.")
 
     print("\n  NEW LEVER: scoring every informative line (not just one) uses the")
     print("  market's full implied distribution as the benchmark and the model's")

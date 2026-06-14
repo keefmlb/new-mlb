@@ -113,6 +113,17 @@ def main():
     sb = df[df["market"].isin(["prop_runs", "prop_rbi"])]
     if len(sb) >= 20:
         _run(sb, "SKILL-BACKED only (runs/rbi)")
+
+    # Per-market round robin: do the singles-vs-RR conclusions hold up the
+    # same way for every prop market? Skipped when n<30 (too noisy).
+    print("\n" + "=" * 72)
+    print("PER-MARKET — round robin breakdown for every market with n>=30")
+    print("=" * 72)
+    for mkt, sub in df.groupby("market"):
+        if len(sub) < 30 or sub["date"].nunique() < 3:
+            continue
+        _run(sub, f"  {mkt}")
+
     print("\n  Round robin does not create edge: if singles are −EV, every")
     print("  k-leg combination of them is more −EV (and higher variance).")
     print("  It only helps when the legs are genuinely +EV and you want to")

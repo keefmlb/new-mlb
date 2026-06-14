@@ -540,25 +540,65 @@ with main_tab_ci:
         )
 
 
-# ===== Parlays — skill-backed daily 3- & 4-leg =====
+# ===== Parlays — daily 3- & 4-leg, all-markets by default =====
 with main_tab_parlay:
+    from src import parlays as _parlays_mod
     st.caption(
-        ":game_die: **Parlays** — daily 3- and 4-leg parlays built ONLY from "
-        "markets with measured forecasting skill (runs / rbi), high model "
-        "conviction, one leg per game. Shown with EV under our calibrated "
-        "estimate AND under the market's implied probability."
+        ":game_die: **Parlays** — daily 3- and 4-leg parlays built from any "
+        "prop market by default (TB, HR, hits, RBI, runs, K, walks, plus "
+        "pitcher props). One leg per game so legs are from independent games. "
+        "Shown with EV under our calibrated estimate AND under the market's "
+        "implied probability."
     )
-    _parlays = getattr(slate, "parlays", []) or []
+    _MARKET_LABELS = {
+        "prop_hits": "Hits", "prop_hr": "HR", "prop_tb": "TB",
+        "prop_rbi": "RBI", "prop_runs": "Runs", "prop_k": "Batter K",
+        "prop_bb": "Walks",
+        "prop_pitcher_k": "Pitcher K", "prop_pitcher_bb": "Pitcher BB",
+        "prop_pitcher_h": "Pitcher H", "prop_pitcher_er": "Pitcher ER",
+        "prop_pitcher_hr": "Pitcher HR", "prop_pitcher_outs": "Pitcher Outs",
+    }
+    _c1, _c2 = st.columns([3, 1])
+    _picked_labels = _c1.multiselect(
+        "Markets eligible for parlay legs",
+        options=list(_MARKET_LABELS.values()),
+        default=list(_MARKET_LABELS.values()),
+        help="Uncheck a market to exclude its legs. Skill-backed evidence: "
+             "Runs & RBI are the only markets with a CI that excludes 0 on the "
+             "encompassing test; TB/HR/hits/K show no measured edge yet.",
+        key="parlay_markets",
+    )
+    _skill_only = _c2.toggle(
+        "Skill-backed only",
+        value=False,
+        help="Restrict legs to markets with measured forecasting skill "
+             "(runs/rbi). When ON, overrides the multi-select.",
+        key="parlay_skill_only",
+    )
+    _label_to_market = {v: k for k, v in _MARKET_LABELS.items()}
+    if _skill_only:
+        _allow = _parlays_mod.SKILL_MARKETS
+    else:
+        _allow = tuple(_label_to_market[l] for l in _picked_labels) \
+                  or _parlays_mod.ALL_PROP_MARKETS
+
+    # Rebuild parlays under the current selection (cheap — same all_bets pool).
+    _all_pool = getattr(slate, "all_bets", []) or []
+    _parlays = _parlays_mod.build_parlays(_all_pool, skill_markets=_allow)
+
     if not _parlays:
-        st.info("No skill-backed parlays today (need ≥3 high-confidence runs/rbi "
-                "legs across different games).")
+        st.info(
+            "No parlays match the current selection (need ≥3 legs at "
+            "raw model prob ≥ 0.55 across different games). Try widening the "
+            "market selection or wait for more odds to post."
+        )
     else:
         st.warning(
-            "Reality check: parlays multiply the book's hold, and the model's "
-            "edge on these markets is weak/unproven. **EV/$ (model)** is usually "
-            "below 0 and **EV/$ (market)** ≈ the negative hold. This tab exists "
-            "to TRACK whether high-conviction skill-backed parlays beat their EV, "
-            "not to assert they win.",
+            "Reality check: parlays multiply the book's hold. Most markets "
+            "show no measured forecasting edge yet (only runs/rbi clear the "
+            "CI bar). **EV/$ (model)** is usually below 0 and **EV/$ (market)** "
+            "≈ the negative hold. This tab exists to TRACK whether high-"
+            "conviction parlays beat their EV, not to assert they win.",
             icon="⚠️",
         )
         for p in _parlays:

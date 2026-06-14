@@ -22,9 +22,23 @@ they're winners.
 from __future__ import annotations
 from itertools import combinations
 
-# Markets with demonstrated forecasting skill (scorecard, Jun 2026). Update as
-# forecast_score.py promotes/demotes markets.
+# Markets with DEMONSTRATED forecasting skill in the scorecard (currently
+# runs/rbi, CI excludes 0 on the encompassing test). Kept as a named subset
+# the app can offer as a "skill-backed only" filter — but parlay eligibility
+# defaults to ALL_PROP_MARKETS now, so legs can come from any prop market
+# (TB, HR, hits, K, etc.). Update as forecast_score.py promotes/demotes.
 SKILL_MARKETS = ("prop_runs", "prop_rbi")
+
+# Every main prop market we model. Parlay legs and the model-CI leaderboard
+# both surface bets from any of these by default. The Model CI threshold and
+# the per-parlay min_conf still gate which lines actually qualify, so this is
+# eligibility — not an endorsement of every market.
+ALL_PROP_MARKETS = (
+    "prop_hits", "prop_hr", "prop_tb", "prop_rbi", "prop_runs",
+    "prop_k", "prop_bb",
+    "prop_pitcher_k", "prop_pitcher_bb", "prop_pitcher_h",
+    "prop_pitcher_er", "prop_pitcher_hr", "prop_pitcher_outs",
+)
 
 
 def _side(desc: str) -> str:
@@ -114,24 +128,28 @@ def _parlay(legs: list[dict], label: str) -> dict:
 
 
 def build_parlays(bets: list[dict], sizes: tuple = (3, 4),
-                  skill_markets: tuple = SKILL_MARKETS,
+                  skill_markets: tuple | None = None,
                   min_conf: float = 0.55, pool: int = 6) -> list[dict]:
-    """Build high-conviction parlays from skill-backed markets only.
+    """Build high-conviction parlays.
+
+    `skill_markets`: which prop markets legs may come from. Pass None (default)
+    for ALL_PROP_MARKETS — TB, HR, hits, K, runs, rbi, walks, plus all
+    pitcher props. Pass `parlays.SKILL_MARKETS` to restrict to demonstrably
+    skill-backed markets only (runs/rbi).
 
     Legs: raw model prob ≥ min_conf, one (highest-conf) leg per game so legs
     are from independent games. For each size we surface two parlays from the
     top `pool` legs: the highest combined (calibrated) probability ("Safest")
-    and the highest combined EV ("Best value").
+    and the highest combined EV ("Best value"). Combined hit prob and EV are
+    shown alongside the market-implied EV so the claimed edge is visible.
 
-    Note on min_conf=0.55: runs/rbi are inherently low-probability one-sided
-    OVERS (scoring/driving in a run is a ~30-50% event), so a 0.60 floor — the
-    Model-CI threshold for singles — leaves almost no eligible legs. 0.55
-    surfaces the strongest available skill-backed leans; the combined hit
-    probability and EV are shown honestly so a low-probability/high-payout
-    parlay isn't mistaken for a lock.
+    Note on min_conf=0.55: many one-sided overs (runs/rbi most of all) are
+    inherently low-probability events, so 0.55 keeps the eligible pool
+    populated; the parlay payout/odds reflect the conviction honestly.
     """
+    allow = skill_markets if skill_markets is not None else ALL_PROP_MARKETS
     legs = [b for b in bets
-            if b.get("market") in skill_markets
+            if b.get("market") in allow
             and _raw(b) >= min_conf
             and _side(b.get("description", "")) in ("OVER", "UNDER")]
     # one best leg per game (highest raw conviction)
