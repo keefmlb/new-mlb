@@ -514,26 +514,35 @@ def annotate(vb: ValueBet) -> ValueBet:
     p = max(0.01, min(0.99, vb.model_prob))
     # confidence: display metric for outcome uncertainty — peaks at p=0.5
     vb.confidence = float(rel * 4.0 * p * (1.0 - p))
-    # score uses a shrunk edge so big "fake" edges don't crowd out genuine
-    # mid-edge picks. Display edge_pct stays raw; only ranking changes.
-    eff_edge = _shrunk_edge_for_ranking(vb.edge_pct)
-    vb.score = float(eff_edge * rel / math.sqrt(p * (1.0 - p)))
+    # score = post-blend edge_pct (Jun 2026 rework). See score_bet() for why
+    # the previous Sharpe-like formula was replaced.
+    vb.score = score_bet(vb)
     return vb
 
 
 def score_bet(vb: ValueBet) -> float:
-    """Sharpe-like ranking score for a value bet.
+    """Ranking score for a value bet.
 
-    score = (shrunk_edge / sqrt(p*(1-p))) × stat_reliability
+    score = vb.edge_pct  (post-blend edge in percentage points)
 
-    Dividing by the Bernoulli standard deviation normalises edge by outcome
-    uncertainty, analogous to a Sharpe ratio. The edge_pct is passed through
-    `_shrunk_edge_for_ranking` so the model's extreme-projection bias is
-    discounted (15% edges win less than 5-10% edges in our bet log).
+    REWORK NOTE (Jun 15 2026): the previous formula was
+        (shrunk_edge / sqrt(p*(1-p))) × stat_reliability
+    a Sharpe-like construction that divided by Bernoulli standard deviation
+    to "normalise edge by outcome uncertainty." On the replay archive
+    (n=290, 13 candidate formulas tested), its daily top-10 subset returned
+    -19.2% ROI vs the full board's +6.5% — DEAD LAST of 13 candidates and
+    25+ percentage points worse than raw `edge_pct` (+6.6%), Kelly (+6.9%),
+    or any of the alternatives. Diagnosis: `1/sqrt(p(1-p))` rewards extreme
+    model probabilities, but the encompassing/calibration tests show the
+    model is overconfident at extremes — the variance term amplified
+    exactly the bets the model is most likely to be wrong about. The
+    stat_reliability weights also hurt empirically (likely because they
+    were tuned on the same overconfident model output).
+
+    Replacement is the simplest thing that consistently beats the prior on
+    the replay grid: rank by post-blend edge. Top-N stable across N=5/10/20.
     """
-    rel = _get_stat_reliability().get(vb.market, 0.40)
-    p = max(0.01, min(0.99, vb.model_prob))
-    return _shrunk_edge_for_ranking(vb.edge_pct) * rel / math.sqrt(p * (1.0 - p))
+    return float(vb.edge_pct)
 
 
 def evaluate_sharp_value(home_team: str, away_team: str, book: dict,

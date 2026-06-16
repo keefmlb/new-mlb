@@ -62,7 +62,12 @@ HIST = ROOT / "data" / "odds" / "odds_history.json"
 # archive supplies the days that have rolled off.
 ARCHIVE = ROOT / "data" / "odds" / "replay_archive.csv"
 ARCHIVE_FIELDS = ["date", "market", "description", "line", "odds",
-                  "edge_pct", "score", "outcome", "policy_version"]
+                  "edge_pct", "score", "outcome", "policy_version",
+                  # Extended fields for score-formula search (Jun 2026):
+                  # every input the current Score uses, plus alternatives.
+                  # Old rows lack these and are skipped by the search script.
+                  "model_prob", "model_prob_raw", "novig_prob",
+                  "ev_per_dollar", "kelly", "decimal_odds", "confidence"]
 SLIDER_PCT = 3.0
 ET_OFFSET = timedelta(hours=-4)          # EDT (June)
 MIN_PROPS_SNAPSHOT = 1000
@@ -241,6 +246,11 @@ def main():
                     "date": day, "market": vb.market, "description": desc,
                     "line": line, "odds": vb.odds, "edge_pct": vb.edge_pct,
                     "score": vb.score, "outcome": _grade(desc, line, float(actual)),
+                    "model_prob": vb.model_prob, "novig_prob": vb.novig_prob,
+                    "model_prob_raw": getattr(vb, "model_prob_raw", vb.model_prob),
+                    "ev_per_dollar": vb.ev_per_dollar, "kelly": vb.kelly,
+                    "decimal_odds": vb.decimal_odds,
+                    "confidence": getattr(vb, "confidence", 0.0),
                 })
         if day_bets:
             all_bets.extend(day_bets)

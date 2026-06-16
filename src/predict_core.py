@@ -39,7 +39,7 @@ MARKET_BLEND_WEIGHT = 0.50
 # 2026-06-10: fitted per-market prop calibration replaced the blanket 0.70
 # logit shrink (prop_calibration.json) — changes every prop probability and
 # hence the leaderboard, so it's a new policy.
-POLICY_VERSION = "2026-06-10-prop-calibration"
+POLICY_VERSION = "2026-06-15-score-rework"
 # Raw model-vs-market total disagreement (runs) beyond which game-line bets are
 # suppressed entirely — that magnitude of disagreement is model error, not edge.
 MARKET_MAX_TOTAL_DISAGREE = 3.0
