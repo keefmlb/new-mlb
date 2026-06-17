@@ -245,6 +245,10 @@ class SlateResult:
     model_ci_bets: list[dict] = field(default_factory=list)
     # Daily skill-backed parlays (runs/rbi legs, high conviction, one/game).
     parlays: list[dict] = field(default_factory=list)
+    # Daily HR-specific parlays (2- and 3-leg OVER 0.5 HR, one player/game,
+    # ranked purely by the model's HR conviction since HR is inherently a
+    # low-probability event with no useful min_conf threshold).
+    hr_parlays: list[dict] = field(default_factory=list)
 
 
 # Raw model side-probability at/above which a bet is "inside the model's CI".
@@ -1030,6 +1034,13 @@ def predict_slate(target_date: date | str | None = None,
     # Model-CI leaderboard + skill-backed parlays, from the full alt-line pool.
     model_ci_bets = parlays.model_confident_bets(slate_all_bets, MODEL_CI_THRESHOLD)
     parlay_list = parlays.build_parlays(slate_all_bets)
+    # HR-specific 2- and 3-leg parlays — one player per game, ranked purely
+    # by the model's HR conviction (no min_conf floor; HR overs are
+    # inherently ~10-15% per game so a threshold isn't useful).
+    hr_parlay_list = parlays.build_parlays(
+        slate_all_bets, sizes=(2, 3),
+        skill_markets=("prop_hr",), min_conf=0.0,
+        sides=("OVER",), name_prefix="HR")
 
     return SlateResult(
         target_date=target.isoformat(),
@@ -1046,4 +1057,5 @@ def predict_slate(target_date: date | str | None = None,
                        "best_ev": _sharp_best_ev},
         model_ci_bets=model_ci_bets,
         parlays=parlay_list,
+        hr_parlays=hr_parlay_list,
     )

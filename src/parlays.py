@@ -129,7 +129,9 @@ def _parlay(legs: list[dict], label: str) -> dict:
 
 def build_parlays(bets: list[dict], sizes: tuple = (3, 4),
                   skill_markets: tuple | None = None,
-                  min_conf: float = 0.55, pool: int = 6) -> list[dict]:
+                  min_conf: float = 0.55, pool: int = 6,
+                  sides: tuple = ("OVER", "UNDER"),
+                  name_prefix: str = "") -> list[dict]:
     """Build high-conviction parlays.
 
     `skill_markets`: which prop markets legs may come from. Pass None (default)
@@ -137,21 +139,30 @@ def build_parlays(bets: list[dict], sizes: tuple = (3, 4),
     pitcher props. Pass `parlays.SKILL_MARKETS` to restrict to demonstrably
     skill-backed markets only (runs/rbi).
 
+    `sides`: which bet directions are eligible. Default both — use ("OVER",)
+    for one-sided markets like HR where UNDER 0.5 isn't a real offer.
+
+    `name_prefix`: prepended to each parlay's label, e.g. "HR" produces
+    "HR 2-leg Safest". Lets the app surface multiple parlay flavours
+    distinctly in the same tab.
+
     Legs: raw model prob ≥ min_conf, one (highest-conf) leg per game so legs
     are from independent games. For each size we surface two parlays from the
     top `pool` legs: the highest combined (calibrated) probability ("Safest")
     and the highest combined EV ("Best value"). Combined hit prob and EV are
     shown alongside the market-implied EV so the claimed edge is visible.
 
-    Note on min_conf=0.55: many one-sided overs (runs/rbi most of all) are
-    inherently low-probability events, so 0.55 keeps the eligible pool
-    populated; the parlay payout/odds reflect the conviction honestly.
+    Note on min_conf=0.55 default: many one-sided overs (runs/rbi most of all)
+    are inherently low-probability events, so 0.55 keeps the eligible pool
+    populated; the parlay payout/odds reflect the conviction honestly. For
+    HR specifically use min_conf=0.0 — every batter is a low-probability
+    HR candidate and we rank purely by the model's conviction.
     """
     allow = skill_markets if skill_markets is not None else ALL_PROP_MARKETS
     legs = [b for b in bets
             if b.get("market") in allow
             and _raw(b) >= min_conf
-            and _side(b.get("description", "")) in ("OVER", "UNDER")]
+            and _side(b.get("description", "")) in sides]
     # one best leg per game (highest raw conviction)
     by_game: dict = {}
     for b in sorted(legs, key=lambda x: -_raw(x)):
@@ -180,7 +191,8 @@ def build_parlays(bets: list[dict], sizes: tuple = (3, 4),
             if sig in seen:
                 continue
             seen.add(sig)
-            out.append(_parlay(list(best), f"{size}-leg {vlabel}"))
+            label = f"{name_prefix} {size}-leg {vlabel}".strip()
+            out.append(_parlay(list(best), label))
     return out
 
 

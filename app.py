@@ -625,6 +625,53 @@ with main_tab_parlay:
                           delta=f"mkt {p.get('ev_market', 0):+.3f}")
                 c4.metric("$1 pays", f"${p.get('payout_per_dollar', 0):.2f}")
 
+    # ----- HR-specific 2- and 3-leg parlays -----
+    st.divider()
+    st.subheader(":boom: Home Run Parlays")
+    st.caption(
+        "Dedicated 2- and 3-leg HR parlays — one player per game, ranked by "
+        "the model's HR conviction (no min-conviction floor since HR overs "
+        "are inherently ~10-15% per game). Payouts are big, EV is honest."
+    )
+    _hr_parlays = getattr(slate, "hr_parlays", []) or []
+    if not _hr_parlays:
+        st.info(
+            "No HR parlays today (need ≥2 HR-prop offers across different games "
+            "from the live feed)."
+        )
+    else:
+        st.warning(
+            "Reality check: HR is one-sided pricing with an 8% juice estimate "
+            "and the model has no demonstrated edge on HR markets. The combined "
+            "hit probability is small (a 2-leg ~1-3%, a 3-leg <1%); the "
+            "displayed EV/$ will usually be negative. These are high-payout "
+            "lotto tickets, not value plays.",
+            icon="⚠️",
+        )
+        for p in _hr_parlays:
+            _ev = p.get("ev_per_dollar", 0)
+            _badge = "🟢" if _ev > 0 else "🔴"
+            with st.expander(
+                f"{_badge} {p['label']}  ·  {p['american_odds']:+d}  ·  "
+                f"hit {p.get('model_prob', 0):.2%}  ·  EV/$ {_ev:+.3f}",
+                expanded=False,
+            ):
+                import pandas as _pd
+                _lg = _pd.DataFrame([{
+                    "Leg": (l.get("description", "") if l.get("starters_confirmed", True)
+                            else "⚠️ " + l.get("description", "")),
+                    "Odds": (f"+{l['odds']}" if l["odds"] > 0 else f"{l['odds']}"),
+                    "Model% (blended)": round(l.get("model_prob", 0) * 100, 1),
+                    "Conviction% (raw)": round(l.get("model_prob_raw", 0) * 100, 1),
+                } for l in p.get("legs", [])])
+                st.dataframe(_lg, use_container_width=True, hide_index=True)
+                c1, c2, c3, c4 = st.columns(4)
+                c1.metric("Parlay odds", f"{p['american_odds']:+d}")
+                c2.metric("Model hit %", f"{p.get('model_prob', 0):.2%}")
+                c3.metric("EV/$ (model)", f"{_ev:+.3f}",
+                          delta=f"mkt {p.get('ev_market', 0):+.3f}")
+                c4.metric("$1 pays", f"${p.get('payout_per_dollar', 0):.2f}")
+
 
 # ===== Simulation — play-by-play Monte Carlo box scores =====
 def _gp_sim_dict(gp) -> dict:
