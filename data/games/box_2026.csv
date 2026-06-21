@@ -19251,16 +19251,16 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824278,2026-05-16,Comerica Park,home,116,141,693307,Dillon Dingler,DH,5,4,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,home,116,141,690993,Colt Keith,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,home,116,141,672761,Wenceel Pérez,RF,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
-824278,2026-05-16,Comerica Park,away,141,116,672820,Lenyn Sosa,2B,4,4,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,away,141,116,693686,Spencer Miles,P,0,0,0,0,0,0,0,0,0,0,0,0,3.6666666666666665,11,2,0,5,2,0,14,False
 824278,2026-05-16,Comerica Park,away,141,116,667297,Tommy Nance,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+824278,2026-05-16,Comerica Park,away,141,116,672820,Lenyn Sosa,2B,4,4,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,away,141,116,686973,Louis Varland,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,0,2,0,0,8,False
 824278,2026-05-16,Comerica Park,away,141,116,676391,Ernie Clement,SS,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,away,141,116,662139,Daulton Varsho,CF,4,3,2,1,0,0,1,0,1,0,3,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,away,141,116,665926,Andrés Giménez,SS,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,away,141,116,676914,Davis Schneider,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
-824278,2026-05-16,Comerica Park,away,141,116,543807,George Springer,DH,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,away,141,116,682818,Yohendrick Piñango,RF,4,4,2,0,0,1,1,1,0,1,5,0,0.0,0,0,0,0,0,0,0,False
+824278,2026-05-16,Comerica Park,away,141,116,543807,George Springer,DH,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824278,2026-05-16,Comerica Park,away,141,116,689254,Mason Fluharty,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,0,3,0,0,5,True
 824278,2026-05-16,Comerica Park,away,141,116,680755,Braydon Fisher,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,2,0,1,4,False
 824278,2026-05-16,Comerica Park,away,141,116,623168,Tyler Heineman,C,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
@@ -19330,8 +19330,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 822737,2026-05-16,Nationals Park,home,120,110,686894,Joey Wiemer,DH,2,2,0,0,0,0,0,1,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 822737,2026-05-16,Nationals Park,home,120,110,676571,PJ Poulin,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,1,0,4,False
 822737,2026-05-16,Nationals Park,home,120,110,678554,Curtis Mead,1B,2,1,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
-822737,2026-05-16,Nationals Park,home,120,110,677588,José Tena,3B,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822737,2026-05-16,Nationals Park,home,120,110,695734,Daylen Lile,LF,5,5,1,0,0,0,1,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+822737,2026-05-16,Nationals Park,home,120,110,677588,José Tena,3B,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822737,2026-05-16,Nationals Park,home,120,110,695578,James Wood,RF,5,3,1,1,0,0,0,2,1,0,2,0,0.0,0,0,0,0,0,0,0,False
 822737,2026-05-16,Nationals Park,home,120,110,676917,Cade Cavalli,P,0,0,0,0,0,0,0,0,0,0,0,0,6.333333333333333,19,8,3,8,0,2,26,True
 822737,2026-05-16,Nationals Park,home,120,110,696285,Jacob Young,CF,4,4,2,0,0,1,3,1,0,1,5,0,0.0,0,0,0,0,0,0,0,False
@@ -19351,8 +19351,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 822737,2026-05-16,Nationals Park,away,110,120,677020,Josh Walker,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,1,1,1,6,False
 822737,2026-05-16,Nationals Park,away,110,120,624413,Pete Alonso,1B,4,4,2,1,0,0,0,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
 822737,2026-05-16,Nationals Park,away,110,120,552640,Andrew Kittredge,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,1,0,0,1,3,False
-822737,2026-05-16,Nationals Park,away,110,120,668974,Maverick Handley,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822737,2026-05-16,Nationals Park,away,110,120,608650,Dietrich Enns,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,0,0,4,False
+822737,2026-05-16,Nationals Park,away,110,120,668974,Maverick Handley,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822737,2026-05-16,Nationals Park,away,110,120,691723,Coby Mayo,3B,4,3,1,0,0,0,0,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
 823382,2026-05-16,PNC Park,home,134,143,694377,Nick Yorke,RF,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823382,2026-05-16,PNC Park,home,134,143,664040,Brandon Lowe,2B,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
@@ -19381,23 +19381,23 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823382,2026-05-16,PNC Park,away,143,134,666969,Adolis García,RF,5,5,1,0,0,0,0,0,0,3,1,0,0.0,0,0,0,0,0,0,0,False
 823382,2026-05-16,PNC Park,away,143,134,607208,Trea Turner,SS,5,4,2,1,0,0,1,2,1,1,3,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,670764,Taylor Walls,SS,4,4,1,0,0,0,0,2,0,0,1,0,0.0,0,0,0,0,0,0,0,False
-822981,2026-05-16,Tropicana Field,home,139,146,680700,Richie Palacios,2B,5,5,2,0,0,0,0,0,0,1,2,1,0.0,0,0,0,0,0,0,0,False
-822981,2026-05-16,Tropicana Field,home,139,146,802415,Chandler Simpson,LF,5,4,1,0,0,0,1,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
-822981,2026-05-16,Tropicana Field,home,139,146,607259,Nick Martinez,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,5,0,4,1,0,23,True
-822981,2026-05-16,Tropicana Field,home,139,146,676356,Jonny DeLuca,RF,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,664076,Garrett Cleavinger,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,2,0,1,4,False
 822981,2026-05-16,Tropicana Field,home,139,146,676439,Hunter Feduccia,C,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,687330,Kevin Kelly,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,3,False
 822981,2026-05-16,Tropicana Field,home,139,146,666018,Jonathan Aranda,1B,5,5,1,1,0,0,1,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,663743,Nick Fortes,C,2,2,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822981,2026-05-16,Tropicana Field,home,139,146,680700,Richie Palacios,2B,5,5,2,0,0,0,0,0,0,1,2,1,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,685801,Hunter Bigge,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,6,7,0,2,0,10,False
 822981,2026-05-16,Tropicana Field,home,139,146,650490,Yandy Díaz,DH,5,5,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822981,2026-05-16,Tropicana Field,home,139,146,802415,Chandler Simpson,LF,5,4,1,0,0,0,1,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,641329,Bryan Baker,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,1,3,0,0,5,False
+822981,2026-05-16,Tropicana Field,home,139,146,607259,Nick Martinez,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,5,0,4,1,0,23,True
+822981,2026-05-16,Tropicana Field,home,139,146,676356,Jonny DeLuca,RF,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,691406,Junior Caminero,3B,5,5,2,1,0,0,2,1,0,0,3,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,home,139,146,656775,Cedric Mullins,CF,5,3,1,0,0,0,0,1,2,2,1,1,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,away,146,139,669199,Lake Bachar,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,0,2,0,7,False
-822981,2026-05-16,Tropicana Field,away,146,139,681715,Heriberto Hernández,LF,2,2,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,away,146,139,664126,Pete Fairbanks,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,1,0,5,False
+822981,2026-05-16,Tropicana Field,away,146,139,681715,Heriberto Hernández,LF,2,2,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,away,146,139,645261,Sandy Alcantara,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,7,0,6,0,0,25,True
 822981,2026-05-16,Tropicana Field,away,146,139,665923,Esteury Ruiz,RF,1,1,1,0,0,0,1,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 822981,2026-05-16,Tropicana Field,away,146,139,805300,Jakob Marsee,CF,5,4,3,0,1,0,0,2,1,1,5,0,0.0,0,0,0,0,0,0,0,False
@@ -19438,8 +19438,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824435,2026-05-16,Progressive Field,away,113,114,666181,Will Benson,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824435,2026-05-16,Progressive Field,away,113,114,694362,Blake Dunn,RF,3,3,2,0,0,0,0,1,0,0,2,1,0.0,0,0,0,0,0,0,0,False
 824435,2026-05-16,Progressive Field,away,113,114,668715,Spencer Steer,LF,4,4,1,1,0,0,2,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
-824435,2026-05-16,Progressive Field,away,113,114,624431,Jose Trevino,C,2,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 824435,2026-05-16,Progressive Field,away,113,114,683175,Connor Phillips,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,2,0,7,False
+824435,2026-05-16,Progressive Field,away,113,114,624431,Jose Trevino,C,2,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 824435,2026-05-16,Progressive Field,away,113,114,663886,Tyler Stephenson,C,2,1,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
 824435,2026-05-16,Progressive Field,away,113,114,594580,Sam Moll,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,1,2,1,0,6,False
 824435,2026-05-16,Progressive Field,away,113,114,668709,JJ Bleday,DH,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
@@ -19478,8 +19478,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824600,2026-05-16,Rate Field,home,145,112,808959,Munetaka Murakami,1B,4,3,2,0,0,2,3,3,1,1,8,0,0.0,0,0,0,0,0,0,0,False
 824600,2026-05-16,Rate Field,home,145,112,805367,Chase Meidroth,2B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 824600,2026-05-16,Rate Field,home,145,112,695657,Colson Montgomery,SS,4,4,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
-824600,2026-05-16,Rate Field,home,145,112,691011,Drew Romo,C,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824600,2026-05-16,Rate Field,home,145,112,670950,Trevor Richards,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,2,2,0,1,8,False
+824600,2026-05-16,Rate Field,home,145,112,691011,Drew Romo,C,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824600,2026-05-16,Rate Field,home,145,112,643217,Andrew Benintendi,DH,3,3,2,1,0,1,1,1,0,0,6,0,0.0,0,0,0,0,0,0,0,False
 824600,2026-05-16,Rate Field,home,145,112,803011,Sam Antonacci,LF,4,4,2,0,0,0,0,2,0,1,2,0,0.0,0,0,0,0,0,0,0,False
 824600,2026-05-16,Rate Field,home,145,112,672284,Jarred Kelenic,RF,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
@@ -19510,8 +19510,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823706,2026-05-16,Target Field,home,142,158,679358,Eric Orze,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,0,1,1,0,9,False
 823706,2026-05-16,Target Field,away,158,142,694477,Chad Patrick,P,0,0,0,0,0,0,0,0,0,0,0,0,4.0,12,1,0,3,0,0,13,False
 823706,2026-05-16,Target Field,away,158,142,650859,Luis Rengifo,3B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
-823706,2026-05-16,Target Field,away,158,142,687401,Joey Ortiz,SS,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823706,2026-05-16,Target Field,away,158,142,701656,Logan Henderson,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,6,1,7,1,1,22,True
+823706,2026-05-16,Target Field,away,158,142,687401,Joey Ortiz,SS,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823706,2026-05-16,Target Field,away,158,142,694192,Jackson Chourio,LF,4,4,2,1,0,1,1,1,0,2,6,0,0.0,0,0,0,0,0,0,0,False
 823706,2026-05-16,Target Field,away,158,142,686217,Sal Frelick,RF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823706,2026-05-16,Target Field,away,158,142,683734,Andrew Vaughn,1B,4,3,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
@@ -19651,8 +19651,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 825007,2026-05-16,Sutter Health Park,away,137,133,683679,Jesus Rodriguez,C,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 825007,2026-05-16,Sutter Health Park,away,137,133,656305,Matt Chapman,3B,5,5,1,1,0,0,1,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
 825007,2026-05-16,Sutter Health Park,away,137,133,668873,Caleb Kilian,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,1,2,0,1,3,False
-825007,2026-05-16,Sutter Health Park,away,137,133,808982,Jung Hoo Lee,RF,5,5,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 825007,2026-05-16,Sutter Health Park,away,137,133,687551,Drew Gilbert,LF,5,5,2,1,1,0,0,0,0,2,5,0,0.0,0,0,0,0,0,0,0,False
+825007,2026-05-16,Sutter Health Park,away,137,133,808982,Jung Hoo Lee,RF,5,5,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 825007,2026-05-16,Sutter Health Park,away,137,133,646240,Rafael Devers,1B,5,5,2,1,0,0,0,1,0,3,3,0,0.0,0,0,0,0,0,0,0,False
 825007,2026-05-16,Sutter Health Park,away,137,133,664056,Harrison Bader,CF,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
 825007,2026-05-16,Sutter Health Park,away,137,133,642715,Willy Adames,SS,5,5,3,1,0,0,2,0,0,0,4,0,0.0,0,0,0,0,0,0,0,False
@@ -19660,18 +19660,18 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 825007,2026-05-16,Sutter Health Park,away,137,133,650333,Luis Arraez,2B,5,3,1,1,0,0,0,2,2,0,2,0,0.0,0,0,0,0,0,0,0,False
 825007,2026-05-16,Sutter Health Park,away,137,133,657424,Matt Gage,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
 822982,2026-05-17,Tropicana Field,home,139,146,670764,Taylor Walls,SS,4,3,1,0,1,0,3,0,1,1,3,0,0.0,0,0,0,0,0,0,0,False
-822982,2026-05-17,Tropicana Field,home,139,146,680700,Richie Palacios,2B,4,3,0,0,0,0,0,0,1,1,0,1,0.0,0,0,0,0,0,0,0,False
-822982,2026-05-17,Tropicana Field,home,139,146,802415,Chandler Simpson,LF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
-822982,2026-05-17,Tropicana Field,home,139,146,676356,Jonny DeLuca,RF,4,4,2,1,0,0,0,1,0,0,3,0,0.0,0,0,0,0,0,0,0,False
-822982,2026-05-17,Tropicana Field,home,139,146,693855,Ian Seymour,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,1,0,0,2,False
 822982,2026-05-17,Tropicana Field,home,139,146,664076,Garrett Cleavinger,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,3,1,1,1,0,5,False
 822982,2026-05-17,Tropicana Field,home,139,146,687330,Kevin Kelly,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,0,0,1,0,0,4,False
 822982,2026-05-17,Tropicana Field,home,139,146,666018,Jonathan Aranda,1B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822982,2026-05-17,Tropicana Field,home,139,146,663743,Nick Fortes,C,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822982,2026-05-17,Tropicana Field,home,139,146,680700,Richie Palacios,2B,4,3,0,0,0,0,0,0,1,1,0,1,0.0,0,0,0,0,0,0,0,False
 822982,2026-05-17,Tropicana Field,home,139,146,650490,Yandy Díaz,DH,4,3,1,0,0,1,1,1,1,0,4,0,0.0,0,0,0,0,0,0,0,False
+822982,2026-05-17,Tropicana Field,home,139,146,802415,Chandler Simpson,LF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822982,2026-05-17,Tropicana Field,home,139,146,641329,Bryan Baker,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,0,0,4,False
+822982,2026-05-17,Tropicana Field,home,139,146,676356,Jonny DeLuca,RF,4,4,2,1,0,0,0,1,0,0,3,0,0.0,0,0,0,0,0,0,0,False
 822982,2026-05-17,Tropicana Field,home,139,146,691406,Junior Caminero,3B,4,2,1,0,0,1,2,1,2,1,4,0,0.0,0,0,0,0,0,0,0,False
 822982,2026-05-17,Tropicana Field,home,139,146,656876,Drew Rasmussen,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,7,2,2,2,0,24,True
+822982,2026-05-17,Tropicana Field,home,139,146,693855,Ian Seymour,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,1,0,0,2,False
 822982,2026-05-17,Tropicana Field,home,139,146,656775,Cedric Mullins,CF,4,3,1,0,0,0,0,2,1,0,1,0,0.0,0,0,0,0,0,0,0,False
 822982,2026-05-17,Tropicana Field,away,146,139,681715,Heriberto Hernández,LF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 822982,2026-05-17,Tropicana Field,away,146,139,666624,Christopher Morel,1B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
@@ -19810,8 +19810,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824279,2026-05-17,Comerica Park,away,141,116,573009,Joe Mantiply,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,1,0,4,False
 824279,2026-05-17,Comerica Park,away,141,116,676391,Ernie Clement,3B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824279,2026-05-17,Comerica Park,away,141,116,662139,Daulton Varsho,CF,4,3,2,1,1,0,1,2,1,0,5,0,0.0,0,0,0,0,0,0,0,False
-824279,2026-05-17,Comerica Park,away,141,116,665926,Andrés Giménez,SS,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 824279,2026-05-17,Comerica Park,away,141,116,592332,Kevin Gausman,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,4,0,5,0,0,22,True
+824279,2026-05-17,Comerica Park,away,141,116,665926,Andrés Giménez,SS,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 824279,2026-05-17,Comerica Park,away,141,116,678218,Brandon Valenzuela,C,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 824279,2026-05-17,Comerica Park,away,141,116,676914,Davis Schneider,2B,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 824279,2026-05-17,Comerica Park,away,141,116,682818,Yohendrick Piñango,RF,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
@@ -20082,8 +20082,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823138,2026-05-17,T-Mobile Park,away,135,136,664034,Ty France,1B,4,4,3,0,0,0,3,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
 823138,2026-05-17,T-Mobile Park,away,135,136,593428,Xander Bogaerts,SS,4,3,0,0,0,0,0,1,1,2,0,2,0.0,0,0,0,0,0,0,0,False
 823138,2026-05-17,T-Mobile Park,away,135,136,608337,Lucas Giolito,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,1,3,3,3,0,20,True
-824277,2026-05-18,Comerica Park,home,116,114,669398,Gage Workman,3B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824277,2026-05-18,Comerica Park,home,116,114,664285,Framber Valdez,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,5,4,3,4,0,23,True
+824277,2026-05-18,Comerica Park,home,116,114,669398,Gage Workman,3B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824277,2026-05-18,Comerica Park,home,116,114,676428,Brant Hurter,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,3,0,2,0,4,False
 824277,2026-05-18,Comerica Park,home,116,114,656716,Zach McKinstry,2B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 824277,2026-05-18,Comerica Park,home,116,114,682985,Riley Greene,LF,4,2,2,1,0,0,1,0,1,0,3,0,0.0,0,0,0,0,0,0,0,False
@@ -20110,8 +20110,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824277,2026-05-18,Comerica Park,away,114,116,656555,Rhys Hoskins,1B,5,4,1,1,0,0,2,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
 822980,2026-05-18,Tropicana Field,home,139,110,670764,Taylor Walls,SS,5,4,2,2,0,0,0,3,1,1,4,0,0.0,0,0,0,0,0,0,0,False
 822980,2026-05-18,Tropicana Field,home,139,110,663556,Shane McClanahan,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,6,4,6,2,1,23,True
-822980,2026-05-18,Tropicana Field,home,139,110,700246,Carson Williams,2B,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822980,2026-05-18,Tropicana Field,home,139,110,680700,Richie Palacios,2B,3,2,2,0,0,0,1,2,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+822980,2026-05-18,Tropicana Field,home,139,110,700246,Carson Williams,2B,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822980,2026-05-18,Tropicana Field,home,139,110,668723,Ryan Vilade,RF,5,3,3,0,1,0,3,1,1,0,5,0,0.0,0,0,0,0,0,0,0,False
 822980,2026-05-18,Tropicana Field,home,139,110,686678,Chase Solesky,P,0,0,0,0,0,0,0,0,0,0,0,0,3.0,9,6,2,4,1,1,17,False
 822980,2026-05-18,Tropicana Field,home,139,110,802415,Chandler Simpson,LF,5,4,1,1,0,0,0,0,1,0,2,0,0.0,0,0,0,0,0,0,0,False
@@ -20159,8 +20159,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823465,2026-05-18,Citizens Bank Park,away,113,143,663647,Ke'Bryan Hayes,3B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823465,2026-05-18,Citizens Bank Park,away,113,143,670770,TJ Friedl,LF,4,3,0,0,0,0,1,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823465,2026-05-18,Citizens Bank Park,away,113,143,668715,Spencer Steer,RF,4,3,1,1,0,0,1,0,1,0,2,1,0.0,0,0,0,0,0,0,0,False
-823465,2026-05-18,Citizens Bank Park,away,113,143,663886,Tyler Stephenson,C,4,4,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 823465,2026-05-18,Citizens Bank Park,away,113,143,668933,Graham Ashcraft,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,2,2,0,0,1,8,False
+823465,2026-05-18,Citizens Bank Park,away,113,143,663886,Tyler Stephenson,C,4,4,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 823465,2026-05-18,Citizens Bank Park,away,113,143,666157,Nick Lodolo,P,0,0,0,0,0,0,0,0,0,0,0,0,5.666666666666667,17,3,3,3,5,1,24,True
 823465,2026-05-18,Citizens Bank Park,away,113,143,668709,JJ Bleday,LF,4,3,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
 823465,2026-05-18,Citizens Bank Park,away,113,143,656271,Brock Burke,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,0,0,1,False
@@ -20170,8 +20170,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823867,2026-05-18,loanDepot park,home,146,144,805300,Jakob Marsee,CF,5,2,0,0,0,0,0,3,2,0,0,0,0.0,0,0,0,0,0,0,0,False
 823867,2026-05-18,loanDepot park,home,146,144,676534,Calvin Faucher,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,1,0,5,False
 823867,2026-05-18,loanDepot park,home,146,144,676974,Max Meyer,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,3,0,6,2,0,22,True
-823867,2026-05-18,loanDepot park,home,146,144,691594,Javier Sanoja,SS,4,4,1,0,0,1,4,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 823867,2026-05-18,loanDepot park,home,146,144,667463,John King,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+823867,2026-05-18,loanDepot park,home,146,144,691594,Javier Sanoja,SS,4,4,1,0,0,1,4,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 823867,2026-05-18,loanDepot park,home,146,144,669364,Xavier Edwards,2B,4,4,2,0,0,1,2,2,0,0,5,0,0.0,0,0,0,0,0,0,0,False
 823867,2026-05-18,loanDepot park,home,146,144,669065,Kyle Stowers,LF,4,2,1,0,0,0,0,2,2,0,1,0,0.0,0,0,0,0,0,0,0,False
 823867,2026-05-18,loanDepot park,home,146,144,689414,Liam Hicks,DH,5,4,2,1,0,0,2,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
@@ -20329,8 +20329,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824680,2026-05-18,Wrigley Field,home,112,158,683737,Michael Busch,1B,4,2,2,2,0,0,1,0,1,0,4,0,0.0,0,0,0,0,0,0,0,False
 824680,2026-05-18,Wrigley Field,home,112,158,608348,Carson Kelly,C,4,4,2,0,0,0,0,1,0,2,2,0,0.0,0,0,0,0,0,0,0,False
 824680,2026-05-18,Wrigley Field,home,112,158,691718,Pete Crow-Armstrong,CF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
-824680,2026-05-18,Wrigley Field,home,112,158,673548,Seiya Suzuki,RF,4,4,2,0,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 824680,2026-05-18,Wrigley Field,home,112,158,621389,Ty Blach,P,0,0,0,0,0,0,0,0,0,0,0,0,3.0,9,1,0,2,0,0,9,False
+824680,2026-05-18,Wrigley Field,home,112,158,673548,Seiya Suzuki,RF,4,4,2,0,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 824680,2026-05-18,Wrigley Field,home,112,158,621020,Dansby Swanson,SS,4,4,1,0,0,1,2,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
 824680,2026-05-18,Wrigley Field,home,112,158,663538,Nico Hoerner,2B,5,3,0,0,0,0,0,1,2,1,0,0,0.0,0,0,0,0,0,0,0,False
 824680,2026-05-18,Wrigley Field,home,112,158,807713,Matt Shaw,DH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
@@ -20449,8 +20449,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 825087,2026-05-18,Chase Field,away,137,109,683679,Jesus Rodriguez,2B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 825087,2026-05-18,Chase Field,away,137,109,656305,Matt Chapman,3B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 825087,2026-05-18,Chase Field,away,137,109,621366,Ryan Borucki,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,0,1,0,0,7,False
-825087,2026-05-18,Chase Field,away,137,109,808982,Jung Hoo Lee,RF,2,2,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 825087,2026-05-18,Chase Field,away,137,109,687551,Drew Gilbert,LF,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+825087,2026-05-18,Chase Field,away,137,109,808982,Jung Hoo Lee,RF,2,2,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 825087,2026-05-18,Chase Field,away,137,109,646240,Rafael Devers,1B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 825087,2026-05-18,Chase Field,away,137,109,664056,Harrison Bader,CF,4,4,2,2,0,0,0,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
 825087,2026-05-18,Chase Field,away,137,109,606992,Eric Haase,C,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
@@ -20461,12 +20461,12 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823137,2026-05-18,T-Mobile Park,home,136,145,647304,Josh Naylor,1B,4,4,3,0,0,0,1,1,0,0,3,2,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,702284,Cole Young,2B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,678606,José A. Ferrer,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,0,1,0,0,5,False
-823137,2026-05-18,T-Mobile Park,home,136,145,641487,J.P. Crawford,SS,4,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,668227,Randy Arozarena,LF,4,4,2,2,0,0,1,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+823137,2026-05-18,T-Mobile Park,home,136,145,641487,J.P. Crawford,SS,4,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,686527,Dominic Canzone,DH,1,0,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,640902,Jhonny Pereda,C,4,3,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
-823137,2026-05-18,T-Mobile Park,home,136,145,608701,Rob Refsnyder,DH,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,656582,Connor Joe,RF,3,3,0,0,0,0,0,0,0,2,0,1,0.0,0,0,0,0,0,0,0,False
+823137,2026-05-18,T-Mobile Park,home,136,145,608701,Rob Refsnyder,DH,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,693433,Bryan Woo,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,3,0,8,2,0,22,True
 823137,2026-05-18,T-Mobile Park,home,136,145,806068,Colt Emerson,3B,4,4,1,0,0,1,3,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,home,136,145,662253,Andrés Muñoz,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
@@ -20480,8 +20480,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823137,2026-05-18,T-Mobile Park,away,145,136,808959,Munetaka Murakami,1B,4,3,2,0,0,0,0,0,1,0,2,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,away,145,136,805367,Chase Meidroth,2B,1,0,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,away,145,136,695657,Colson Montgomery,SS,4,3,0,0,0,0,0,0,1,3,0,0,0.0,0,0,0,0,0,0,0,False
-823137,2026-05-18,T-Mobile Park,away,145,136,691011,Drew Romo,C,4,4,1,0,0,0,0,0,0,1,1,1,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,away,145,136,670950,Trevor Richards,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,3,1,1,1,6,False
+823137,2026-05-18,T-Mobile Park,away,145,136,691011,Drew Romo,C,4,4,1,0,0,0,0,0,0,1,1,1,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,away,145,136,702273,Noah Schultz,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,5,3,6,0,1,23,True
 823137,2026-05-18,T-Mobile Park,away,145,136,700337,Edgar Quero,DH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823137,2026-05-18,T-Mobile Park,away,145,136,643217,Andrew Benintendi,DH,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
@@ -20599,8 +20599,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823464,2026-05-19,Citizens Bank Park,home,143,113,666969,Adolis García,RF,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 823464,2026-05-19,Citizens Bank Park,home,143,113,607208,Trea Turner,DH,4,4,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 823464,2026-05-19,Citizens Bank Park,away,113,143,682829,Elly De La Cruz,SS,4,3,1,0,1,0,1,1,1,2,3,0,0.0,0,0,0,0,0,0,0,False
-823464,2026-05-19,Citizens Bank Park,away,113,143,701398,Sal Stewart,DH,4,3,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
 823464,2026-05-19,Citizens Bank Park,away,113,143,667472,Dane Myers,CF,4,3,0,0,0,0,1,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823464,2026-05-19,Citizens Bank Park,away,113,143,701398,Sal Stewart,DH,4,3,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
 823464,2026-05-19,Citizens Bank Park,away,113,143,572955,Pierce Johnson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,1,0,4,False
 823464,2026-05-19,Citizens Bank Park,away,113,143,663574,Tony Santillan,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
 823464,2026-05-19,Citizens Bank Park,away,113,143,680574,Matt McLain,2B,5,5,0,0,0,0,1,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
@@ -20618,8 +20618,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 822736,2026-05-19,Nationals Park,home,120,121,686611,Dylan Crews,RF,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 822736,2026-05-19,Nationals Park,home,120,121,663992,Richard Lovelady,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
 822736,2026-05-19,Nationals Park,home,120,121,695418,Brad Lord,P,0,0,0,0,0,0,0,0,0,0,0,0,3.0,9,2,1,3,0,1,10,False
-822736,2026-05-19,Nationals Park,home,120,121,677588,José Tena,DH,4,4,1,0,0,1,1,2,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 822736,2026-05-19,Nationals Park,home,120,121,695734,Daylen Lile,LF,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822736,2026-05-19,Nationals Park,home,120,121,677588,José Tena,DH,4,4,1,0,0,1,1,2,0,1,4,0,0.0,0,0,0,0,0,0,0,False
 822736,2026-05-19,Nationals Park,home,120,121,695578,James Wood,RF,5,5,3,0,0,1,4,2,0,0,6,0,0.0,0,0,0,0,0,0,0,False
 822736,2026-05-19,Nationals Park,home,120,121,656492,Foster Griffin,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,8,5,5,0,2,24,True
 822736,2026-05-19,Nationals Park,home,120,121,671277,Luis García Jr.,1B,5,5,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
@@ -20650,8 +20650,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823548,2026-05-19,Yankee Stadium,home,147,141,656234,Jake Bird,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,1,0,0,3,False
 823548,2026-05-19,Yankee Stadium,home,147,141,666808,Camilo Doval,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,1,0,1,0,6,False
 823548,2026-05-19,Yankee Stadium,home,147,141,663757,Trent Grisham,CF,4,3,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
-823548,2026-05-19,Yankee Stadium,away,141,147,672820,Lenyn Sosa,2B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823548,2026-05-19,Yankee Stadium,away,141,147,695445,Chase Lee,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,2,0,3,False
+823548,2026-05-19,Yankee Stadium,away,141,147,672820,Lenyn Sosa,2B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823548,2026-05-19,Yankee Stadium,away,141,147,671936,Adam Macko,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,1,0,0,3,False
 823548,2026-05-19,Yankee Stadium,away,141,147,686973,Louis Varland,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
 823548,2026-05-19,Yankee Stadium,away,141,147,676391,Ernie Clement,PH,1,1,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
@@ -20659,8 +20659,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823548,2026-05-19,Yankee Stadium,away,141,147,665926,Andrés Giménez,SS,4,3,1,0,0,0,1,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
 823548,2026-05-19,Yankee Stadium,away,141,147,656302,Dylan Cease,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,4,5,9,4,2,22,True
 823548,2026-05-19,Yankee Stadium,away,141,147,676914,Davis Schneider,LF,4,2,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
-823548,2026-05-19,Yankee Stadium,away,141,147,543807,George Springer,DH,5,5,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 823548,2026-05-19,Yankee Stadium,away,141,147,682818,Yohendrick Piñango,LF,3,3,1,0,0,0,1,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823548,2026-05-19,Yankee Stadium,away,141,147,543807,George Springer,DH,5,5,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 823548,2026-05-19,Yankee Stadium,away,141,147,689254,Mason Fluharty,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
 823548,2026-05-19,Yankee Stadium,away,141,147,623168,Tyler Heineman,C,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823548,2026-05-19,Yankee Stadium,away,141,147,665489,Vladimir Guerrero Jr.,1B,5,3,0,0,0,0,1,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
@@ -20680,8 +20680,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824112,2026-05-19,Kauffman Stadium,home,118,111,672580,Maikel Garcia,3B,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 824112,2026-05-19,Kauffman Stadium,home,118,111,657041,Lane Thomas,CF,4,4,2,1,0,0,1,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
 824112,2026-05-19,Kauffman Stadium,home,118,111,695506,Jac Caglianone,RF,4,4,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
-824112,2026-05-19,Kauffman Stadium,home,118,111,677951,Bobby Witt Jr.,SS,4,4,1,0,0,0,0,1,0,0,1,1,0.0,0,0,0,0,0,0,0,False
 824112,2026-05-19,Kauffman Stadium,home,118,111,670167,John Schreiber,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,0,0,4,False
+824112,2026-05-19,Kauffman Stadium,home,118,111,677951,Bobby Witt Jr.,SS,4,4,1,0,0,0,0,1,0,0,1,1,0.0,0,0,0,0,0,0,0,False
 824112,2026-05-19,Kauffman Stadium,away,111,118,575929,Willson Contreras,1B,5,5,2,0,0,0,3,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
 824112,2026-05-19,Kauffman Stadium,away,111,118,677161,Zack Kelly,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,0,0,3,False
 824112,2026-05-19,Kauffman Stadium,away,111,118,677800,Wilyer Abreu,RF,5,5,2,0,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
@@ -20705,7 +20705,7 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823704,2026-05-19,Target Field,home,142,117,668885,Austin Martin,RF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823704,2026-05-19,Target Field,home,142,117,656484,Tristan Gray,3B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823704,2026-05-19,Target Field,home,142,117,607455,Anthony Banda,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
-823704,2026-05-19,Target Field,home,142,117,605137,Josh Bell,1B,4,4,3,0,0,0,1,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+823704,2026-05-19,Target Field,home,142,117,605137,Josh Bell,1B,4,4,2,0,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 823704,2026-05-19,Target Field,home,142,117,681546,James Outman,CF,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823704,2026-05-19,Target Field,home,142,117,701519,Travis Adams,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,1,0,0,6,False
 823704,2026-05-19,Target Field,home,142,117,606115,Orlando Arcia,2B,2,2,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
@@ -20718,7 +20718,7 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823704,2026-05-19,Target Field,away,117,142,701358,Cam Smith,RF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823704,2026-05-19,Target Field,away,117,142,669699,Braden Shewmake,2B,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 823704,2026-05-19,Target Field,away,117,142,805904,Zach Cole,LF,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
-823704,2026-05-19,Target Field,away,117,142,660853,Enyel De Los Santos,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,1,0,0,0,4,False
+823704,2026-05-19,Target Field,away,117,142,660853,Enyel De Los Santos,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,0,0,4,False
 823704,2026-05-19,Target Field,away,117,142,676694,Jake Meyers,CF,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 823704,2026-05-19,Target Field,away,117,142,595345,Steven Okert,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,3,0,0,3,False
 823704,2026-05-19,Target Field,away,117,142,665161,Jeremy Peña,SS,4,4,2,0,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
@@ -20738,7 +20738,7 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824677,2026-05-19,Wrigley Field,home,112,158,657097,Jacob Webb,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,0,0,0,0,5,False
 824677,2026-05-19,Wrigley Field,home,112,158,665804,Miguel Amaya,C,3,3,1,1,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 824677,2026-05-19,Wrigley Field,home,112,158,694208,Moisés Ballesteros,DH,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
-824677,2026-05-19,Wrigley Field,home,112,158,673548,Seiya Suzuki,RF,4,4,2,0,0,0,1,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+824677,2026-05-19,Wrigley Field,home,112,158,673548,Seiya Suzuki,RF,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
 824677,2026-05-19,Wrigley Field,home,112,158,663423,Trent Thornton,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,2,0,1,1,5,False
 824677,2026-05-19,Wrigley Field,home,112,158,621020,Dansby Swanson,SS,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
 824677,2026-05-19,Wrigley Field,home,112,158,664208,Phil Maton,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
@@ -20751,8 +20751,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824677,2026-05-19,Wrigley Field,away,158,112,641343,Jake Bauers,1B,5,5,2,0,0,0,1,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
 824677,2026-05-19,Wrigley Field,away,158,112,686217,Sal Frelick,RF,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 824677,2026-05-19,Wrigley Field,away,158,112,682842,Abner Uribe,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+824677,2026-05-19,Wrigley Field,away,158,112,676879,Aaron Ashby,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,3,1,2,1,0,7,False
 824677,2026-05-19,Wrigley Field,away,158,112,669003,Garrett Mitchell,CF,5,4,1,0,0,0,1,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
-824677,2026-05-19,Wrigley Field,away,158,112,676879,Aaron Ashby,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,4,2,2,1,0,7,False
 824677,2026-05-19,Wrigley Field,away,158,112,666152,David Hamilton,SS,4,3,1,0,0,0,0,1,1,0,1,2,0.0,0,0,0,0,0,0,0,False
 824677,2026-05-19,Wrigley Field,away,158,112,661388,William Contreras,C,5,5,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 824677,2026-05-19,Wrigley Field,away,158,112,668930,Brice Turang,2B,5,4,3,0,0,1,2,2,1,1,6,0,0.0,0,0,0,0,0,0,0,False
@@ -20769,8 +20769,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823059,2026-05-19,Busch Stadium,home,138,134,695336,Thomas Saggese,SS,2,1,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
 823059,2026-05-19,Busch Stadium,home,138,134,676617,Riley O'Brien,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,0,1,0,7,False
 823059,2026-05-19,Busch Stadium,home,138,134,666277,George Soriano,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
-823059,2026-05-19,Busch Stadium,home,138,134,686780,Pedro Pagés,C,4,3,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
 823059,2026-05-19,Busch Stadium,home,138,134,669461,Matthew Liberatore,P,0,0,0,0,0,0,0,0,0,0,0,0,4.666666666666667,14,7,4,9,2,0,23,True
+823059,2026-05-19,Busch Stadium,home,138,134,686780,Pedro Pagés,C,4,3,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
 823059,2026-05-19,Busch Stadium,home,138,134,592773,Ryne Stanek,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,1,0,3,False
 823059,2026-05-19,Busch Stadium,home,138,134,693409,César Prieto,SS,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823059,2026-05-19,Busch Stadium,home,138,134,671056,Iván Herrera,DH,5,5,1,0,0,1,3,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
@@ -20828,7 +20828,7 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824033,2026-05-19,Angel Stadium,home,108,133,820862,José Fermin,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,0,0,1,0,3,False
 824033,2026-05-19,Angel Stadium,home,108,133,666176,Jo Adell,RF,5,5,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824033,2026-05-19,Angel Stadium,home,108,133,687093,Vaughn Grissom,3B,5,5,1,0,0,0,2,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
-824033,2026-05-19,Angel Stadium,home,108,133,694384,Nolan Schanuel,1B,5,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824033,2026-05-19,Angel Stadium,home,108,133,694384,Nolan Schanuel,1B,5,4,2,0,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 824033,2026-05-19,Angel Stadium,home,108,133,666139,Josh Lowe,LF,2,2,1,1,0,0,2,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 824033,2026-05-19,Angel Stadium,home,108,133,681351,Logan O'Hoppe,C,5,5,2,1,0,0,0,1,0,1,3,0,0.0,0,0,0,0,0,0,0,False
 824033,2026-05-19,Angel Stadium,home,108,133,672282,Reid Detmers,P,0,0,0,0,0,0,0,0,0,0,0,0,5.666666666666667,17,8,8,8,2,0,27,True
@@ -20841,7 +20841,7 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824033,2026-05-19,Angel Stadium,away,133,108,686993,Justin Sterner,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,0,0,1,False
 824033,2026-05-19,Angel Stadium,away,133,108,605130,Scott Barlow,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
 824033,2026-05-19,Angel Stadium,away,133,108,682052,Jacob Lopez,P,0,0,0,0,0,0,0,0,0,0,0,0,3.6666666666666665,11,7,4,2,3,1,21,True
-824033,2026-05-19,Angel Stadium,away,133,108,669270,Joel Kuhnel,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,5,False
+824033,2026-05-19,Angel Stadium,away,133,108,669270,Joel Kuhnel,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,0,0,5,False
 824033,2026-05-19,Angel Stadium,away,133,108,691016,Tyler Soderstrom,LF,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 824033,2026-05-19,Angel Stadium,away,133,108,687231,Darell Hernaiz,2B,5,4,2,0,0,0,1,2,1,0,2,0,0.0,0,0,0,0,0,0,0,False
 824033,2026-05-19,Angel Stadium,away,133,108,701762,Nick Kurtz,1B,5,5,3,1,0,0,5,2,0,0,4,1,0.0,0,0,0,0,0,0,0,False
@@ -20953,14 +20953,14 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823462,2026-05-20,Citizens Bank Park,home,143,113,641745,Brad Keller,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
 823462,2026-05-20,Citizens Bank Park,home,143,113,607208,Trea Turner,SS,4,2,1,0,0,0,0,1,2,0,1,2,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,682829,Elly De La Cruz,DH,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
-823462,2026-05-20,Citizens Bank Park,away,113,143,701398,Sal Stewart,1B,5,5,4,1,0,1,2,3,0,0,8,0,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,667472,Dane Myers,CF,2,2,1,1,0,0,1,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823462,2026-05-20,Citizens Bank Park,away,113,143,701398,Sal Stewart,1B,5,5,4,1,0,1,2,3,0,0,8,0,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,663993,Nathaniel Lowe,1B,5,5,2,2,0,0,3,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,680574,Matt McLain,SS,5,5,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,666181,Will Benson,RF,2,2,0,0,0,0,1,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,694362,Blake Dunn,RF,5,5,2,1,1,0,0,2,0,0,5,0,0.0,0,0,0,0,0,0,0,False
-823462,2026-05-20,Citizens Bank Park,away,113,143,668715,Spencer Steer,2B,5,5,2,0,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,664731,P.J. Higgins,C,4,4,2,0,0,0,2,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823462,2026-05-20,Citizens Bank Park,away,113,143,668715,Spencer Steer,2B,5,5,2,0,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,683175,Connor Phillips,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,668933,Graham Ashcraft,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
 823462,2026-05-20,Citizens Bank Park,away,113,143,594580,Sam Moll,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
@@ -20985,8 +20985,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 822977,2026-05-20,Tropicana Field,away,110,139,670329,Rico Garcia,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,0,0,0,0,2,False
 822977,2026-05-20,Tropicana Field,away,110,139,642215,Weston Wilson,3B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 822977,2026-05-20,Tropicana Field,away,110,139,683002,Gunnar Henderson,SS,5,5,3,0,0,0,0,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
-822977,2026-05-20,Tropicana Field,away,110,139,621493,Taylor Ward,LF,5,3,0,0,0,0,0,1,2,1,0,0,0.0,0,0,0,0,0,0,0,False
 822977,2026-05-20,Tropicana Field,away,110,139,669358,Shane Baz,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,2,1,6,3,1,22,True
+822977,2026-05-20,Tropicana Field,away,110,139,621493,Taylor Ward,LF,5,3,0,0,0,0,0,1,2,1,0,0,0.0,0,0,0,0,0,0,0,False
 822977,2026-05-20,Tropicana Field,away,110,139,668939,Adley Rutschman,C,5,4,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
 822977,2026-05-20,Tropicana Field,away,110,139,641933,Tyler O'Neill,RF,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 822977,2026-05-20,Tropicana Field,away,110,139,677942,Blaze Alexander,3B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
@@ -21053,11 +21053,11 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824355,2026-05-20,Coors Field,away,140,115,664059,Sam Haggerty,LF,2,2,1,1,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
 824355,2026-05-20,Coors Field,away,140,115,643376,Danny Jansen,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 824355,2026-05-20,Coors Field,away,140,115,596001,Jakob Junis,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
-825084,2026-05-20,Chase Field,home,109,137,694374,Tim Tawa,LF,3,3,1,0,0,0,0,1,0,2,1,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,home,109,137,694297,Brandon Pfaadt,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
+825084,2026-05-20,Chase Field,home,109,137,694374,Tim Tawa,LF,3,3,1,0,0,0,0,1,0,2,1,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,home,109,137,680728,Adrian Del Castillo,C,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
-825084,2026-05-20,Chase Field,home,109,137,814439,Ryan Waldschmidt,CF,3,3,2,0,0,0,0,2,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,home,109,137,518876,Merrill Kelly,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,8,3,4,0,1,26,True
+825084,2026-05-20,Chase Field,home,109,137,814439,Ryan Waldschmidt,CF,3,3,2,0,0,0,0,2,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,home,109,137,606466,Ketel Marte,2B,4,3,3,1,0,1,2,3,1,0,7,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,home,109,137,545121,Ildemaro Vargas,1B,4,4,0,0,0,0,1,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,home,109,137,672695,Geraldo Perdomo,SS,4,3,1,1,0,0,3,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
@@ -21069,8 +21069,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 825084,2026-05-20,Chase Field,home,109,137,678489,Jorge Barrosa,RF,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,away,137,109,669477,Casey Schmitt,LF,4,4,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,away,137,109,686823,Will Brennan,RF,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
-825084,2026-05-20,Chase Field,away,137,109,683679,Jesus Rodriguez,RF,1,0,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,away,137,109,641816,Tyler Mahle,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,8,6,6,0,1,23,True
+825084,2026-05-20,Chase Field,away,137,109,683679,Jesus Rodriguez,RF,1,0,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,away,137,109,676775,Keaton Winn,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,3,0,0,3,False
 825084,2026-05-20,Chase Field,away,137,109,656305,Matt Chapman,3B,4,4,2,0,0,0,0,2,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 825084,2026-05-20,Chase Field,away,137,109,687551,Drew Gilbert,CF,2,2,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
@@ -21168,8 +21168,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823866,2026-05-20,loanDepot park,away,144,146,642201,Eli White,RF,1,1,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 823866,2026-05-20,loanDepot park,away,144,146,645277,Ozzie Albies,2B,4,4,2,0,0,0,1,2,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 823866,2026-05-20,loanDepot park,away,144,146,663586,Austin Riley,3B,4,3,1,0,0,1,3,1,1,1,4,0,0.0,0,0,0,0,0,0,0,False
-823866,2026-05-20,loanDepot park,away,144,146,573262,Mike Yastrzemski,LF,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 823866,2026-05-20,loanDepot park,away,144,146,506702,Sandy León,C,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823866,2026-05-20,loanDepot park,away,144,146,573262,Mike Yastrzemski,LF,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 822735,2026-05-20,Nationals Park,home,120,121,682928,CJ Abrams,SS,4,4,2,0,0,1,3,2,0,0,5,0,0.0,0,0,0,0,0,0,0,False
 822735,2026-05-20,Nationals Park,home,120,121,683083,Nasim Nuñez,2B,4,2,0,0,0,0,1,1,1,1,0,1,0.0,0,0,0,0,0,0,0,False
 822735,2026-05-20,Nationals Park,home,120,121,665953,Andrés Chaparro,1B,2,1,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
@@ -21193,8 +21193,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 822735,2026-05-20,Nationals Park,away,121,120,543760,Marcus Semien,2B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
 822735,2026-05-20,Nationals Park,away,121,120,669004,MJ Melendez,DH,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 822735,2026-05-20,Nationals Park,away,121,120,663584,Hayden Senger,C,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
-822735,2026-05-20,Nationals Park,away,121,120,665742,Juan Soto,LF,4,4,2,0,0,2,3,2,0,0,8,0,0.0,0,0,0,0,0,0,0,False
 822735,2026-05-20,Nationals Park,away,121,120,518886,Craig Kimbrel,P,0,0,0,0,0,0,0,0,0,0,0,0,2.6666666666666665,8,2,2,2,0,1,10,False
+822735,2026-05-20,Nationals Park,away,121,120,665742,Juan Soto,LF,4,4,2,0,0,2,3,2,0,0,8,0,0.0,0,0,0,0,0,0,0,False
 822735,2026-05-20,Nationals Park,away,121,120,804267,Zach Thornton,P,0,0,0,0,0,0,0,0,0,0,0,0,4.333333333333333,13,4,4,3,2,1,19,True
 822735,2026-05-20,Nationals Park,away,121,120,805999,A.J. Ewing,CF,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,home,147,141,682987,Spencer Jones,CF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
@@ -21206,20 +21206,20 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823547,2026-05-20,Yankee Stadium,home,147,141,700250,Ben Rice,DH,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,home,147,141,683011,Anthony Volpe,SS,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,home,147,141,641355,Cody Bellinger,CF,4,4,1,1,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
-823547,2026-05-20,Yankee Stadium,home,147,141,665862,Jazz Chisholm Jr.,2B,4,4,3,0,0,0,0,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+823547,2026-05-20,Yankee Stadium,home,147,141,665862,Jazz Chisholm Jr.,2B,4,4,2,0,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,home,147,141,656234,Jake Bird,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
 823547,2026-05-20,Yankee Stadium,home,147,141,663757,Trent Grisham,CF,1,1,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,home,147,141,693645,Cam Schlittler,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,8,2,7,2,0,27,True
 823547,2026-05-20,Yankee Stadium,home,147,141,672442,Yovanny Cruz,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,3,0,0,6,False
-823547,2026-05-20,Yankee Stadium,away,141,147,686973,Louis Varland,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,1,2,0,0,5,False
+823547,2026-05-20,Yankee Stadium,away,141,147,686973,Louis Varland,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,0,0,5,False
 823547,2026-05-20,Yankee Stadium,away,141,147,676391,Ernie Clement,2B,4,4,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,away,141,147,662139,Daulton Varsho,CF,4,4,1,1,0,0,0,0,0,3,2,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,away,141,147,665926,Andrés Giménez,SS,4,3,1,0,0,0,1,0,1,2,1,1,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,away,141,147,678218,Brandon Valenzuela,C,4,3,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,away,141,147,656546,Jeff Hoffman,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,0,0,2,False
 823547,2026-05-20,Yankee Stadium,away,141,147,702056,Trey Yesavage,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,2,0,8,0,0,20,True
-823547,2026-05-20,Yankee Stadium,away,141,147,543807,George Springer,DH,4,4,1,0,0,0,0,0,0,1,1,1,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,away,141,147,682818,Yohendrick Piñango,RF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823547,2026-05-20,Yankee Stadium,away,141,147,543807,George Springer,DH,4,4,1,0,0,0,0,0,0,1,1,1,0.0,0,0,0,0,0,0,0,False
 823547,2026-05-20,Yankee Stadium,away,141,147,689254,Mason Fluharty,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,2,0,0,0,0,3,False
 823547,2026-05-20,Yankee Stadium,away,141,147,643511,Tyler Rogers,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
 823547,2026-05-20,Yankee Stadium,away,141,147,665489,Vladimir Guerrero Jr.,1B,4,3,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
@@ -21360,7 +21360,7 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 824032,2026-05-20,Angel Stadium,away,133,108,643446,Jeff McNeil,2B,5,4,1,0,0,1,1,1,1,2,4,0,0.0,0,0,0,0,0,0,0,False
 824032,2026-05-20,Angel Stadium,away,133,108,605130,Scott Barlow,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,4,False
 824032,2026-05-20,Angel Stadium,away,133,108,666126,Carlos Cortes,RF,5,3,1,0,0,0,0,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
-824032,2026-05-20,Angel Stadium,away,133,108,691016,Tyler Soderstrom,LF,5,5,2,0,0,0,3,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+824032,2026-05-20,Angel Stadium,away,133,108,691016,Tyler Soderstrom,LF,5,5,2,0,1,0,3,0,0,2,4,0,0.0,0,0,0,0,0,0,0,False
 824032,2026-05-20,Angel Stadium,away,133,108,687231,Darell Hernaiz,SS,3,1,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
 824032,2026-05-20,Angel Stadium,away,133,108,650644,Aaron Civale,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,5,5,2,2,3,21,True
 824032,2026-05-20,Angel Stadium,away,133,108,701762,Nick Kurtz,1B,5,3,1,0,0,0,1,2,2,1,1,0,0.0,0,0,0,0,0,0,0,False
@@ -21492,14 +21492,14 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823545,2026-05-21,Yankee Stadium,home,147,141,502671,Paul Goldschmidt,1B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,home,147,141,700250,Ben Rice,DH,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,home,147,141,687396,Brent Headrick,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
-823545,2026-05-21,Yankee Stadium,home,147,141,683011,Anthony Volpe,SS,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,home,147,141,641555,J.C. Escarra,C,3,2,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823545,2026-05-21,Yankee Stadium,home,147,141,683011,Anthony Volpe,SS,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,home,147,141,641355,Cody Bellinger,LF,4,2,0,0,0,0,0,0,2,0,0,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,home,147,141,665862,Jazz Chisholm Jr.,2B,4,4,0,0,0,0,0,0,0,4,0,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,home,147,141,666808,Camilo Doval,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,1,0,0,1,3,False
 823545,2026-05-21,Yankee Stadium,home,147,141,672442,Yovanny Cruz,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,0,0,0,0,3,False
-823545,2026-05-21,Yankee Stadium,away,141,147,672820,Lenyn Sosa,2B,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,away,141,147,693686,Spencer Miles,P,0,0,0,0,0,0,0,0,0,0,0,0,4.333333333333333,13,2,0,6,1,0,16,False
+823545,2026-05-21,Yankee Stadium,away,141,147,672820,Lenyn Sosa,2B,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,away,141,147,671936,Adam Macko,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,0,2,0,0,5,False
 823545,2026-05-21,Yankee Stadium,away,141,147,676391,Ernie Clement,2B,4,4,3,3,0,0,0,0,0,0,6,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,away,141,147,662139,Daulton Varsho,CF,4,4,1,1,0,0,1,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
@@ -21507,8 +21507,8 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823545,2026-05-21,Yankee Stadium,away,141,147,678218,Brandon Valenzuela,C,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,away,141,147,656546,Jeff Hoffman,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
 823545,2026-05-21,Yankee Stadium,away,141,147,676914,Davis Schneider,LF,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
-823545,2026-05-21,Yankee Stadium,away,141,147,543807,George Springer,DH,5,4,1,0,0,1,1,1,1,2,4,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,away,141,147,682818,Yohendrick Piñango,RF,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823545,2026-05-21,Yankee Stadium,away,141,147,543807,George Springer,DH,5,4,1,0,0,1,1,1,1,2,4,0,0.0,0,0,0,0,0,0,0,False
 823545,2026-05-21,Yankee Stadium,away,141,147,680755,Braydon Fisher,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,4,1,0,5,True
 823545,2026-05-21,Yankee Stadium,away,141,147,643511,Tyler Rogers,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,1,0,3,False
 823545,2026-05-21,Yankee Stadium,away,141,147,665489,Vladimir Guerrero Jr.,1B,4,2,1,0,0,0,0,1,2,0,1,1,0.0,0,0,0,0,0,0,0,False
@@ -31869,3 +31869,1043 @@ game_pk,date,venue,side,team_id,opp_team_id,player_id,name,position,pa,ab,h,doub
 823127,2026-06-17,T-Mobile Park,away,110,136,702616,Jackson Holliday,2B,4,3,1,0,0,1,1,2,1,1,4,0,0.0,0,0,0,0,0,0,0,False
 823127,2026-06-17,T-Mobile Park,away,110,136,664854,Ryan Helsley,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,2,0,2,5,False
 823127,2026-06-17,T-Mobile Park,away,110,136,666974,Yennier Cano,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,1,0,2,False
+824748,2026-06-18,Fenway Park,home,111,141,575929,Willson Contreras,1B,4,4,0,0,0,0,1,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,657136,Connor Wong,C,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,677800,Wilyer Abreu,RF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,655316,Andruw Monasterio,2B,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,543243,Sonny Gray,P,0,0,0,0,0,0,0,0,0,0,0,0,7.0,21,6,3,4,1,2,27,True
+824748,2026-06-18,Fenway Park,home,111,141,643396,Isiah Kiner-Falefa,SS,3,3,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,686580,Justin Slaten,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,0,1,0,0,4,False
+824748,2026-06-18,Fenway Park,home,111,141,681508,Mickey Gasper,DH,4,4,2,1,0,0,0,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,702332,Caleb Durbin,3B,3,3,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,680776,Jarren Duran,LF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,678882,Ceddanne Rafaela,CF,4,3,1,1,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,home,111,141,547973,Aroldis Chapman,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,1,1,0,0,5,False
+824748,2026-06-18,Fenway Park,away,141,111,667297,Tommy Nance,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,0,0,3,False
+824748,2026-06-18,Fenway Park,away,141,111,676391,Ernie Clement,2B,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,665926,Andrés Giménez,SS,4,3,0,0,0,0,1,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,678218,Brandon Valenzuela,C,4,4,2,1,0,0,1,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,702056,Trey Yesavage,P,0,0,0,0,0,0,0,0,0,0,0,0,7.333333333333333,22,4,3,6,0,2,26,True
+824748,2026-06-18,Fenway Park,away,141,111,664770,Nathan Lukes,RF,4,4,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,543807,George Springer,DH,4,4,2,1,0,0,0,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,682818,Yohendrick Piñango,LF,4,3,1,1,0,0,0,0,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,689254,Mason Fluharty,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
+824748,2026-06-18,Fenway Park,away,141,111,665489,Vladimir Guerrero Jr.,1B,4,4,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,660821,Jesús Sánchez,RF,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824748,2026-06-18,Fenway Park,away,141,111,672960,Kazuma Okamoto,3B,4,4,1,1,0,0,0,1,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,806198,Cooper Pratt,SS,4,2,1,0,0,0,1,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,687401,Joey Ortiz,3B,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,694192,Jackson Chourio,LF,5,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,680723,Drew Rom,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,0,3,2,0,7,False
+823772,2026-06-18,American Family Field,home,158,114,592885,Christian Yelich,DH,5,4,1,1,0,0,0,0,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,641343,Jake Bauers,RF,5,4,1,0,0,0,0,0,1,2,1,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,684974,Craig Yoho,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,0,0,4,False
+823772,2026-06-18,American Family Field,home,158,114,681982,Grant Anderson,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,2,1,2,1,5,False
+823772,2026-06-18,American Family Field,home,158,114,683734,Andrew Vaughn,1B,5,2,0,0,0,0,0,1,3,0,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,675660,Shane Drohan,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,3,1,3,3,1,21,True
+823772,2026-06-18,American Family Field,home,158,114,669270,Joel Kuhnel,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,0,1,1,5,False
+823772,2026-06-18,American Family Field,home,158,114,669003,Garrett Mitchell,CF,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,663368,Blake Perkins,CF,3,3,1,1,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,661388,William Contreras,PH,1,0,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,668930,Brice Turang,2B,5,4,0,0,0,0,0,0,1,3,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,home,158,114,596142,Gary Sánchez,C,4,3,1,0,0,0,1,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,696135,Kahlil Watson,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,595978,Austin Hedges,C,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,683953,Travis Bazzana,2B,5,3,1,0,0,1,1,1,2,0,4,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,682177,Daniel Schneemann,CF,2,1,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,677587,Brayan Rocchio,SS,5,4,2,1,0,0,0,0,1,0,3,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,672356,Gabriel Arias,3B,5,5,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,670059,Colin Holderman,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,1,0,3,False
+823772,2026-06-18,American Family Field,away,114,158,681807,David Fry,LF,3,2,1,0,0,1,1,1,1,0,4,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,671922,Cade Smith,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,2,2,0,6,False
+823772,2026-06-18,American Family Field,away,114,158,680757,Steven Kwan,LF,2,1,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,700932,Kyle Manzardo,DH,5,3,1,0,0,1,1,1,1,0,4,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,800048,Parker Messick,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,4,2,9,3,0,25,True
+823772,2026-06-18,American Family Field,away,114,158,683769,Hunter Gaddis,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,2,1,0,4,False
+823772,2026-06-18,American Family Field,away,114,158,682120,Tim Herrin,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,2,0,3,False
+823772,2026-06-18,American Family Field,away,114,158,656413,Stuart Fairchild,CF,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823772,2026-06-18,American Family Field,away,114,158,656555,Rhys Hoskins,1B,5,4,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,694671,Wyatt Langford,CF,5,4,2,0,0,1,1,1,1,2,5,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,669394,Jake Burger,1B,4,3,1,0,0,0,0,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,682608,Peyton Gray,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+822889,2026-06-18,Globe Life Field,home,140,142,696030,Alejandro Osuna,CF,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,592626,Joc Pederson,DH,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,683004,Jack Leiter,P,0,0,0,0,0,0,0,0,0,0,0,0,4.0,12,7,6,4,2,2,20,True
+822889,2026-06-18,Globe Life Field,home,140,142,615698,Cal Quantrill,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,4,2,1,0,1,10,False
+822889,2026-06-18,Globe Life Field,home,140,142,670032,Nicky Lopez,SS,1,1,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,673962,Josh Jung,3B,5,5,2,0,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,679822,Justin Foscue,DH,2,1,1,0,0,1,1,1,1,0,4,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,695239,Robby Ahlstrom,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,1,0,1,0,6,False
+822889,2026-06-18,Globe Life Field,home,140,142,543309,Kyle Higashioka,C,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,677649,Ezequiel Duran,SS,3,3,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,607043,Brandon Nimmo,RF,5,5,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,669701,Josh Smith,2B,4,4,1,1,0,0,0,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,683227,Cody Freeman,LF,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,home,140,142,668390,Cole Winn,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+822889,2026-06-18,Globe Life Field,away,142,140,689520,Cody Laweryson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,3,1,0,0,1,6,False
+822889,2026-06-18,Globe Life Field,away,142,140,605170,Victor Caratini,C,4,4,3,0,0,0,0,2,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,665019,Kody Clemens,RF,5,5,1,0,0,0,0,1,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,686797,Brooks Lee,3B,5,5,1,0,0,1,3,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,656484,Tristan Gray,SS,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,605137,Josh Bell,DH,5,4,2,0,0,0,1,1,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,664875,Justin Lawrence,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,2,0,2,5,False
+822889,2026-06-18,Globe Life Field,away,142,140,668952,Ryan Kreidler,SS,2,2,1,0,0,1,2,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,573124,Taylor Rogers,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,0,0,1,0,3,False
+822889,2026-06-18,Globe Life Field,away,142,140,668904,Royce Lewis,1B,5,5,0,0,0,0,0,0,0,4,0,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,663616,Trevor Larnach,LF,5,5,3,0,0,1,3,2,0,0,6,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,621439,Byron Buxton,CF,5,5,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822889,2026-06-18,Globe Life Field,away,142,140,657746,Joe Ryan,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,3,0,7,2,0,20,True
+822889,2026-06-18,Globe Life Field,away,142,140,679358,Eric Orze,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,0,1,0,0,5,False
+822889,2026-06-18,Globe Life Field,away,142,140,702193,Andrew Morris,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,0,0,1,False
+822889,2026-06-18,Globe Life Field,away,142,140,807712,Luke Keaschall,2B,4,2,2,0,0,0,0,1,2,0,2,1,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,647304,Josh Naylor,1B,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,645302,Victor Robles,CF,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,702284,Cole Young,2B,3,3,1,1,0,0,1,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,641487,J.P. Crawford,3B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,686527,Dominic Canzone,RF,4,3,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,663728,Cal Raleigh,DH,4,4,0,0,0,0,0,0,0,4,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,670156,Miles Mastrobuoni,LF,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,693433,Bryan Woo,P,0,0,0,0,0,0,0,0,0,0,0,0,7.0,21,3,0,9,1,0,25,True
+823125,2026-06-18,T-Mobile Park,home,136,110,806068,Colt Emerson,SS,3,2,1,0,0,0,2,0,1,1,1,1,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,662253,Andrés Muñoz,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,2,0,5,False
+823125,2026-06-18,T-Mobile Park,home,136,110,641598,Mitch Garver,C,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,home,136,110,660825,Eduard Bazardo,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+823125,2026-06-18,T-Mobile Park,away,110,136,694212,Samuel Basallo,C,4,3,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,670329,Rico Garcia,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+823125,2026-06-18,T-Mobile Park,away,110,136,683002,Gunnar Henderson,SS,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,665750,Leody Taveras,RF,4,4,1,0,0,0,0,0,0,2,1,1,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,621493,Taylor Ward,LF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,669358,Shane Baz,P,0,0,0,0,0,0,0,0,0,0,0,0,7.0,21,5,3,9,2,0,28,True
+823125,2026-06-18,T-Mobile Park,away,110,136,668939,Adley Rutschman,DH,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,677942,Blaze Alexander,3B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,624413,Pete Alonso,1B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,702616,Jackson Holliday,2B,3,3,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+823125,2026-06-18,T-Mobile Park,away,110,136,681297,Colton Cowser,CF,3,2,1,0,0,0,0,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,687282,Gabriel Rincones Jr.,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,669016,Brandon Marsh,LF,4,4,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,621237,José Alvarado,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,3,3,1,1,0,7,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,702222,Justin Crawford,CF,4,4,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,547180,Bryce Harper,1B,4,3,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,592663,J.T. Realmuto,C,4,3,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,624641,Edmundo Sosa,SS,4,4,1,0,1,0,0,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,686751,Seth Johnson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,664761,Alec Bohm,3B,4,4,2,1,0,0,2,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,681082,Bryson Stott,2B,4,3,1,0,0,0,0,1,1,0,1,1,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,656941,Kyle Schwarber,DH,5,5,1,0,0,0,0,1,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,605400,Aaron Nola,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,7,2,6,1,2,24,True
+823448,2026-06-18,Citizens Bank Park,home,143,121,607208,Trea Turner,SS,1,0,0,0,0,0,0,1,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,656537,Derek Hill,RF,3,3,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,home,143,121,669060,Bryse Wilson,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,1,0,0,1,0,7,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,666182,Bo Bichette,3B,5,5,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,682626,Francisco Alvarez,C,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,668901,Mark Vientos,1B,2,1,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,640455,Sean Manaea,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,6,2,5,1,0,23,True
+823448,2026-06-18,Citizens Bank Park,away,121,143,683146,Brett Baty,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,623211,Huascar Brazobán,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,1,0,4,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,596133,Luke Weaver,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,3,0,0,3,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,701807,Carson Benge,CF,5,5,3,0,0,0,0,1,0,1,3,1,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,676572,Eric Wagaman,PH,1,1,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,642207,Devin Williams,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,1,0,6,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,670097,Zack Short,SS,1,1,0,0,0,0,0,1,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,543760,Marcus Semien,2B,4,4,2,0,1,0,2,0,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,669004,MJ Melendez,DH,4,3,0,0,0,0,0,0,1,3,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,621345,A.J. Minter,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,0,0,2,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,665742,Juan Soto,LF,5,4,2,0,0,2,2,2,1,0,8,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,676724,Jared Young,1B,3,3,0,0,0,0,0,1,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823448,2026-06-18,Citizens Bank Park,away,121,143,805999,A.J. Ewing,CF,3,3,2,1,0,0,1,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,676609,José Caballero,2B,3,3,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,682987,Spencer Jones,CF,3,3,1,1,0,0,0,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,641857,Ryan McMahon,3B,3,3,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,677960,Ryan Weathers,P,0,0,0,0,0,0,0,0,0,0,0,0,6.333333333333333,19,3,1,8,1,1,22,True
+823533,2026-06-18,Yankee Stadium,home,147,145,657612,Tim Hill,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,2,1,0,0,3,False
+823533,2026-06-18,Yankee Stadium,home,147,145,502671,Paul Goldschmidt,DH,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,691176,Jasson Domínguez,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,700250,Ben Rice,1B,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,683011,Anthony Volpe,SS,2,1,1,1,0,0,0,0,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,641555,J.C. Escarra,C,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,518585,Fernando Cruz,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,1,1,0,0,3,False
+823533,2026-06-18,Yankee Stadium,home,147,145,641355,Cody Bellinger,LF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,665862,Jazz Chisholm Jr.,2B,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,home,147,145,666808,Camilo Doval,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,2,1,1,0,1,7,False
+823533,2026-06-18,Yankee Stadium,away,145,147,694378,Jacob Gonzalez,1B,2,1,0,0,0,0,0,1,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,671976,Tristan Peters,CF,3,2,0,0,0,0,0,1,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,682668,Luisangel Acuña,SS,2,2,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,545341,Randal Grichuk,DH,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,805367,Chase Meidroth,2B,4,4,1,0,0,0,0,0,0,3,1,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,678577,Junior Perez,LF,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,695657,Colson Montgomery,SS,4,3,2,0,0,1,1,1,1,0,5,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,695731,Braden Montgomery,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,700337,Edgar Quero,C,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,643217,Andrew Benintendi,DH,1,1,1,0,0,1,4,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,680732,Sean Burke,P,0,0,0,0,0,0,0,0,0,0,0,0,7.333333333333333,22,5,1,8,1,1,25,False
+823533,2026-06-18,Yankee Stadium,away,145,147,663542,Bryan Hudson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,1,0,2,0,0,6,True
+823533,2026-06-18,Yankee Stadium,away,145,147,803011,Sam Antonacci,LF,2,2,1,1,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+823533,2026-06-18,Yankee Stadium,away,145,147,678246,Miguel Vargas,3B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,695600,Carter Jensen,DH,5,5,2,2,0,0,1,2,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,686475,Tyler Tolbert,SS,3,2,0,0,0,0,0,1,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,696131,Mason Black,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,3,2,0,2,0,11,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,686555,Isaac Collins,LF,5,5,2,1,0,0,1,2,0,0,3,1,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,521692,Salvador Perez,C,5,5,3,1,0,1,1,2,0,0,7,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,679845,Nick Loftin,3B,5,5,2,2,0,0,2,0,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,686681,Michael Massey,2B,4,3,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,516782,Starling Marte,RF,5,5,3,1,0,0,1,2,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,694360,Beck Way,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,0,2,2,0,10,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,657041,Lane Thomas,CF,5,5,2,1,0,0,2,1,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,702070,Noah Cameron,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,8,3,6,2,0,27,True
+824098,2026-06-18,Kauffman Stadium,home,118,138,695506,Jac Caglianone,1B,5,5,1,0,0,1,2,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,home,118,138,677951,Bobby Witt Jr.,SS,2,2,2,0,0,1,2,2,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,691023,Jordan Walker,RF,5,4,2,0,0,0,1,0,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,665877,José Fermín,SS,5,5,2,0,0,0,2,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,700669,Gordon Graceffo,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,4,4,0,2,1,11,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,802139,JJ Wetherholt,2B,6,4,3,1,0,0,0,1,2,0,4,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,677865,Justin Bruihl,P,0,0,0,0,0,0,0,0,0,0,0,0,2.6666666666666665,8,4,1,2,0,0,12,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,691458,Blaze Jordan,3B,5,5,2,1,0,0,0,2,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,676475,Alec Burleson,1B,5,3,0,0,0,0,1,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,686780,Pedro Pagés,1B,5,4,0,0,0,0,1,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,669461,Matthew Liberatore,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,7,5,2,0,1,13,True
+824098,2026-06-18,Kauffman Stadium,away,138,118,691008,Max Rajcic,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,1,1,0,1,8,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,691026,Masyn Winn,SS,5,5,3,1,0,0,0,2,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,671056,Iván Herrera,DH,6,4,0,0,0,0,0,1,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,699625,Jimmy Crooks,C,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824098,2026-06-18,Kauffman Stadium,away,138,118,676369,Nelson Velázquez,RF,5,4,1,1,0,0,0,0,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,641680,Jonah Heim,DH,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,680869,Zack Gelof,3B,4,3,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,643446,Jeff McNeil,2B,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,686930,Mason Barnett,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,1,0,5,False
+824989,2026-06-18,Sutter Health Park,home,133,108,666126,Carlos Cortes,RF,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,691016,Tyler Soderstrom,LF,4,4,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,695611,Gage Jump,P,0,0,0,0,0,0,0,0,0,0,0,0,7.0,21,1,0,7,3,0,24,True
+824989,2026-06-18,Sutter Health Park,home,133,108,701762,Nick Kurtz,1B,4,4,1,1,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,663687,Hogan Harris,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,0,3,0,0,5,False
+824989,2026-06-18,Sutter Health Park,home,133,108,703607,Henry Bolte,CF,4,2,1,0,0,0,1,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,669127,Shea Langeliers,C,4,4,1,0,0,1,3,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,home,133,108,805779,Jacob Wilson,SS,4,3,1,0,0,0,0,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,672724,Oswald Peraza,DH,4,4,1,1,0,0,0,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,642350,Jose Siri,CF,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,687263,Zach Neto,SS,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,695681,Christian Moore,LF,4,4,1,0,0,0,0,0,0,3,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,663611,Nick Madrigal,2B,4,3,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,696270,Ryan Johnson,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,8,5,2,1,2,25,True
+824989,2026-06-18,Sutter Health Park,away,108,133,666176,Jo Adell,CF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,694203,Denzer Guzman,3B,4,2,0,0,0,0,0,0,2,2,0,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,687093,Vaughn Grissom,1B,4,3,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,666171,Ryan Zeferjahn,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,2,0,5,False
+824989,2026-06-18,Sutter Health Park,away,108,133,685133,Wade Meckler,RF,1,1,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,681351,Logan O'Hoppe,C,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824989,2026-06-18,Sutter Health Park,away,108,133,608718,Brent Suter,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,2,0,0,6,False
+824663,2026-06-19,Wrigley Field,home,112,141,624424,Michael Conforto,LF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,571948,Hoby Milner,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+824663,2026-06-19,Wrigley Field,home,112,141,664023,Ian Happ,LF,5,4,2,0,0,0,0,3,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,681799,Ethan Roberts,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+824663,2026-06-19,Wrigley Field,home,112,141,608324,Alex Bregman,3B,5,4,1,0,0,0,2,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,699393,Pedro Ramírez,3B,1,1,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,683737,Michael Busch,1B,6,5,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,608348,Carson Kelly,C,6,4,2,0,0,1,6,3,2,1,5,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,691718,Pete Crow-Armstrong,CF,5,3,3,0,0,0,1,1,2,0,3,2,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,673548,Seiya Suzuki,DH,6,5,3,1,0,0,2,2,1,0,4,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,681909,Justin Dean,CF,2,2,1,0,1,0,3,1,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,668970,Gavin Hollowell,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,0,0,4,False
+824663,2026-06-19,Wrigley Field,home,112,141,621020,Dansby Swanson,SS,6,4,1,0,0,0,1,2,2,0,1,2,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,663538,Nico Hoerner,2B,6,6,3,1,0,0,0,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,home,112,141,676962,Ben Brown,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,4,2,4,0,1,22,True
+824663,2026-06-19,Wrigley Field,home,112,141,807713,Matt Shaw,RF,6,5,0,0,0,0,0,2,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,693686,Spencer Miles,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,1,0,4,False
+824663,2026-06-19,Wrigley Field,away,141,112,667297,Tommy Nance,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,0,0,0,5,False
+824663,2026-06-19,Wrigley Field,away,141,112,663893,Brendon Little,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,4,1,3,0,8,False
+824663,2026-06-19,Wrigley Field,away,141,112,807727,Charles McAdoo,1B,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,665926,Andrés Giménez,SS,3,3,1,1,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,592332,Kevin Gausman,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,7,7,3,4,1,17,True
+824663,2026-06-19,Wrigley Field,away,141,112,676914,Davis Schneider,2B,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,664770,Nathan Lukes,CF,3,3,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,543807,George Springer,DH,4,4,2,0,0,1,2,1,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,682818,Yohendrick Piñango,LF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,680755,Braydon Fisher,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,1,0,5,False
+824663,2026-06-19,Wrigley Field,away,141,112,643511,Tyler Rogers,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,3,0,0,1,0,7,False
+824663,2026-06-19,Wrigley Field,away,141,112,665489,Vladimir Guerrero Jr.,1B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,660821,Jesús Sánchez,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,664702,Myles Straw,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,4,0,0,1,0,9,False
+824663,2026-06-19,Wrigley Field,away,141,112,672386,Alejandro Kirk,C,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824663,2026-06-19,Wrigley Field,away,141,112,672960,Kazuma Okamoto,3B,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,669373,Tarik Skubal,P,0,0,0,0,0,0,0,0,0,0,0,0,5.666666666666667,17,7,3,8,1,2,25,True
+824264,2026-06-19,Comerica Park,home,116,145,701678,Hao-Yu  Lee,2B,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,663330,Jahmai Jones,PH,1,1,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,623454,Drew Anderson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,0,3,0,0,5,False
+824264,2026-06-19,Comerica Park,home,116,145,682985,Riley Greene,LF,4,3,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,805808,Kevin McGonigle,3B,4,4,1,1,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,681481,Kerry Carpenter,DH,3,3,1,1,0,0,2,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,445276,Kenley Jansen,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+824264,2026-06-19,Comerica Park,home,116,145,679529,Spencer Torkelson,1B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,663837,Matt Vierling,RF,4,4,1,0,0,1,2,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,669360,Trei Cruz,RF,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,693307,Dillon Dingler,C,4,4,3,0,0,0,0,2,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,home,116,145,676684,Will Vest,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,1,0,3,False
+824264,2026-06-19,Comerica Park,home,116,145,690993,Colt Keith,3B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,671976,Tristan Peters,CF,4,4,0,0,0,0,1,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,682668,Luisangel Acuña,SS,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,685126,Brandon Eisert,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,2,2,2,0,1,6,True
+824264,2026-06-19,Comerica Park,away,145,116,545341,Randal Grichuk,DH,4,3,2,1,0,1,1,1,1,1,6,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,805367,Chase Meidroth,2B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,678577,Junior Perez,RF,3,3,2,0,0,1,1,1,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,695657,Colson Montgomery,3B,4,3,0,0,0,0,0,0,1,3,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,695731,Braden Montgomery,RF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,622554,Seranthony Domínguez,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,0,0,3,False
+824264,2026-06-19,Comerica Park,away,145,116,669684,Chris Murphy,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,3,False
+824264,2026-06-19,Comerica Park,away,145,116,700337,Edgar Quero,C,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,643217,Andrew Benintendi,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,607200,Erick Fedde,P,0,0,0,0,0,0,0,0,0,0,0,0,4.666666666666667,14,4,2,4,1,0,19,False
+824264,2026-06-19,Comerica Park,away,145,116,803011,Sam Antonacci,LF,4,4,2,1,0,0,0,1,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824264,2026-06-19,Comerica Park,away,145,116,678246,Miguel Vargas,1B,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,682987,Spencer Jones,CF,4,2,0,0,0,0,0,1,2,1,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,641857,Ryan McMahon,3B,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,502671,Paul Goldschmidt,1B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,691176,Jasson Domínguez,RF,4,4,2,1,0,0,0,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,700250,Ben Rice,DH,4,4,2,0,0,1,3,1,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,687396,Brent Headrick,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,1,0,4,False
+823534,2026-06-19,Yankee Stadium,home,147,113,683011,Anthony Volpe,SS,4,3,2,0,0,0,1,1,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,641555,J.C. Escarra,C,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,641355,Cody Bellinger,LF,4,3,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,665862,Jazz Chisholm Jr.,2B,4,3,1,0,0,1,1,2,1,0,4,1,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,home,147,113,656234,Jake Bird,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+823534,2026-06-19,Yankee Stadium,home,147,113,670280,David Bednar,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+823534,2026-06-19,Yankee Stadium,home,147,113,693645,Cam Schlittler,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,4,0,13,0,0,23,True
+823534,2026-06-19,Yankee Stadium,away,113,147,701398,Sal Stewart,1B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,663993,Nathaniel Lowe,DH,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,680574,Matt McLain,SS,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,657571,Caleb Ferguson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,1,0,0,0,0,5,False
+823534,2026-06-19,Yankee Stadium,away,113,147,694362,Blake Dunn,CF,4,3,2,1,0,0,0,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,695076,Rhett Lowder,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,6,4,5,3,2,25,True
+823534,2026-06-19,Yankee Stadium,away,113,147,668715,Spencer Steer,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,553993,Eugenio Suárez,3B,4,4,1,0,0,0,0,0,0,3,1,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,663886,Tyler Stephenson,C,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,695490,Edwin Arroyo,2B,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823534,2026-06-19,Yankee Stadium,away,113,147,687209,Zach Maxwell,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,1,2,0,6,False
+823534,2026-06-19,Yankee Stadium,away,113,147,668709,JJ Bleday,LF,4,3,0,0,0,0,0,0,1,3,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,670764,Taylor Walls,SS,3,3,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,571927,Steven Matz,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,1,0,1,0,0,6,False
+822966,2026-06-19,Tropicana Field,home,139,120,680700,Richie Palacios,2B,3,3,1,1,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,802415,Chandler Simpson,LF,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,676356,Jonny DeLuca,RF,4,4,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,664076,Garrett Cleavinger,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,2,False
+822966,2026-06-19,Tropicana Field,home,139,120,676439,Hunter Feduccia,C,3,2,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,687330,Kevin Kelly,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,0,0,0,0,3,False
+822966,2026-06-19,Tropicana Field,home,139,120,666018,Jonathan Aranda,1B,4,4,1,0,0,1,3,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,643377,Griffin Jax,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,4,2,5,0,2,18,True
+822966,2026-06-19,Tropicana Field,home,139,120,650490,Yandy Díaz,DH,4,4,2,0,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,641329,Bryan Baker,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+822966,2026-06-19,Tropicana Field,home,139,120,691406,Junior Caminero,3B,4,4,2,0,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,home,139,120,656775,Cedric Mullins,CF,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,682928,CJ Abrams,SS,4,4,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,683083,Nasim Nuñez,2B,3,3,1,0,0,0,0,0,0,0,1,1,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,571945,Miles Mikolas,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,9,5,2,1,2,26,False
+822966,2026-06-19,Tropicana Field,away,120,139,678391,Jorbit Vivas,3B,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,686611,Dylan Crews,DH,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,676571,PJ Poulin,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,1,0,1,0,0,7,True
+822966,2026-06-19,Tropicana Field,away,120,139,678554,Curtis Mead,1B,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,677588,José Tena,DH,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,695734,Daylen Lile,LF,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,695578,James Wood,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,696285,Jacob Young,CF,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,660688,Keibert Ruiz,C,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+822966,2026-06-19,Tropicana Field,away,120,139,671277,Luis García Jr.,1B,3,3,2,0,0,1,1,1,0,1,5,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,676604,Tyler Zuber,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,0,1,0,0,4,False
+823853,2026-06-19,loanDepot park,home,146,137,669199,Lake Bachar,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,3,1,1,2,0,9,True
+823853,2026-06-19,loanDepot park,home,146,137,681715,Heriberto Hernández,DH,4,4,1,1,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,664126,Pete Fairbanks,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
+823853,2026-06-19,loanDepot park,home,146,137,665923,Esteury Ruiz,LF,2,0,0,0,0,0,0,1,1,0,0,1,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,805300,Jakob Marsee,CF,4,3,1,0,0,0,0,0,1,1,1,1,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,676534,Calvin Faucher,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,0,0,2,False
+823853,2026-06-19,loanDepot park,home,146,137,691594,Javier Sanoja,3B,4,4,2,1,0,0,0,2,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,667463,John King,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,2,0,1,0,0,5,False
+823853,2026-06-19,loanDepot park,home,146,137,806188,Cade Gibson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,0,0,1,0,0,5,False
+823853,2026-06-19,loanDepot park,home,146,137,669065,Kyle Stowers,1B,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,656848,Michael Petersen,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,1,0,1,5,False
+823853,2026-06-19,loanDepot park,home,146,137,689414,Liam Hicks,C,5,5,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,669622,Anthony Bender,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,0,0,0,4,False
+823853,2026-06-19,loanDepot park,home,146,137,683357,Owen Caissie,RF,4,3,3,1,0,1,3,1,0,0,7,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,681393,Connor Norby,3B,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,691788,Joe Mack,C,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,home,146,137,672640,Otto Lopez,SS,4,4,1,0,0,0,0,0,0,1,1,1,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,669477,Casey Schmitt,LF,4,4,2,0,0,0,1,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,681916,Dylan Smith,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,0,1,0,4,False
+823853,2026-06-19,loanDepot park,away,137,146,676254,Ryan Walker,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,1,0,3,False
+823853,2026-06-19,loanDepot park,away,137,146,656305,Matt Chapman,3B,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,808982,Jung Hoo Lee,RF,4,4,2,1,0,0,0,1,0,1,3,1,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,687551,Drew Gilbert,CF,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,656529,Sam Hentges,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,2,2,0,0,0,4,False
+823853,2026-06-19,loanDepot park,away,137,146,646240,Rafael Devers,DH,4,3,2,0,0,1,1,1,1,0,5,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,642715,Willy Adames,SS,4,4,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,669062,Erik Miller,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,1,0,0,1,False
+823853,2026-06-19,loanDepot park,away,137,146,694738,Landen Roupp,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,7,2,7,1,1,25,True
+823853,2026-06-19,loanDepot park,away,137,146,650333,Luis Arraez,2B,5,5,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,805811,Bryce Eldridge,1B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823853,2026-06-19,loanDepot park,away,137,146,691740,Daniel Susac,C,4,3,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,669276,Dylan Lee,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,1,0,0,3,False
+824910,2026-06-19,Truist Park,home,144,158,663158,Robert Suarez,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,2,0,0,1,0,7,False
+824910,2026-06-19,Truist Park,home,144,158,622761,Jorge Mateo,SS,3,3,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,643289,Mauricio Dubón,CF,4,4,1,0,0,0,2,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,686948,Drake Baldwin,C,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,621566,Matt Olson,1B,4,3,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,642086,Dominic Smith,DH,4,4,2,1,0,0,0,0,0,2,3,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,642201,Eli White,LF,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,645277,Ozzie Albies,2B,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,628452,Raisel Iglesias,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,1,1,1,0,5,False
+824910,2026-06-19,Truist Park,home,144,158,663586,Austin Riley,3B,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,573262,Mike Yastrzemski,RF,3,3,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,home,144,158,527048,Martín Pérez,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,6,1,5,2,0,25,True
+824910,2026-06-19,Truist Park,away,158,144,806198,Cooper Pratt,SS,3,3,1,0,0,0,0,0,0,1,1,1,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,687401,Joey Ortiz,SS,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,694192,Jackson Chourio,LF,5,4,1,1,0,0,0,0,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,592885,Christian Yelich,DH,5,4,1,0,0,0,0,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,641343,Jake Bauers,1B,1,0,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,686217,Sal Frelick,RF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,682842,Abner Uribe,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,2,0,1,4,False
+824910,2026-06-19,Truist Park,away,158,144,684974,Craig Yoho,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+824910,2026-06-19,Truist Park,away,158,144,683734,Andrew Vaughn,1B,4,4,2,1,0,0,0,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,669003,Garrett Mitchell,CF,4,4,2,0,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,663368,Blake Perkins,RF,3,3,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,661388,William Contreras,C,5,4,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,668930,Brice Turang,2B,5,5,2,0,0,0,2,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,596142,Gary Sánchez,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824910,2026-06-19,Truist Park,away,158,144,694819,Jacob Misiorowski,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,5,2,7,1,0,24,True
+822886,2026-06-19,Globe Life Field,home,140,135,694671,Wyatt Langford,CF,5,5,3,1,0,1,2,1,0,0,7,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,669394,Jake Burger,1B,4,4,1,1,0,0,2,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,696030,Alejandro Osuna,LF,3,3,2,1,0,0,2,1,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,592626,Joc Pederson,DH,5,4,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,656641,Jacob Latz,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,0,0,0,0,5,False
+822886,2026-06-19,Globe Life Field,home,140,135,670032,Nicky Lopez,2B,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,673962,Josh Jung,3B,5,4,2,0,0,0,0,3,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,679822,Justin Foscue,2B,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,677649,Ezequiel Duran,SS,5,2,1,0,0,0,1,1,3,0,1,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,594798,Jacob deGrom,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,6,6,9,3,2,27,True
+822886,2026-06-19,Globe Life Field,home,140,135,607043,Brandon Nimmo,RF,5,5,2,2,0,0,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,596001,Jakob Junis,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,3,1,1,0,1,8,False
+822886,2026-06-19,Globe Life Field,home,140,135,553869,Elias Díaz,C,4,4,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,home,140,135,672284,Jarred Kelenic,LF,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,673513,Yuki Matsui,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,1,0,3,1,0,7,False
+822886,2026-06-19,Globe Life Field,away,135,140,669256,Nick Solak,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,688158,David Morgan,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,3,1,0,0,0,4,False
+822886,2026-06-19,Globe Life Field,away,135,140,593974,Wandy Peralta,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,0,0,0,1,0,6,False
+822886,2026-06-19,Globe Life Field,away,135,140,701538,Jackson Merrill,CF,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,592094,Jason Adam,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,1,0,1,4,False
+822886,2026-06-19,Globe Life Field,away,135,140,660710,Rodolfo Durán,C,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,669392,Samad Taylor,RF,5,5,3,0,0,0,0,1,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,657757,Gavin Sheets,LF,4,4,2,0,0,1,2,2,0,1,5,1,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,695238,Will Wagner,DH,4,3,2,0,0,0,0,0,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,592518,Manny Machado,3B,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,665487,Fernando Tatis Jr.,2B,5,4,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,664034,Ty France,1B,4,4,3,1,0,2,5,2,0,0,10,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,593428,Xander Bogaerts,SS,4,3,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+822886,2026-06-19,Globe Life Field,away,135,140,681190,Randy Vásquez,P,0,0,0,0,0,0,0,0,0,0,0,0,3.3333333333333335,10,8,6,1,3,0,21,True
+824179,2026-06-19,Daikin Park,home,117,114,670623,Isaac Paredes,3B,4,4,2,0,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,701358,Cam Smith,RF,4,3,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,676694,Jake Meyers,CF,4,4,1,1,0,0,1,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,595345,Steven Okert,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,3,0,0,6,False
+824179,2026-06-19,Daikin Park,home,117,114,694728,Brice Matthews,LF,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,514888,Jose Altuve,2B,4,4,2,1,0,1,4,1,0,2,6,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,694388,Joey Loperfido,LF,3,3,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,837227,Tatsuya Imai,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,6,3,11,0,1,24,True
+824179,2026-06-19,Daikin Park,home,117,114,665161,Jeremy Peña,SS,5,5,3,0,0,2,3,2,0,1,9,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,681347,Mike Burrows,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+824179,2026-06-19,Daikin Park,home,117,114,572233,Christian Walker,1B,5,4,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,673237,Yainer Diaz,C,4,4,1,1,0,0,0,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,home,117,114,670541,Yordan Alvarez,DH,5,4,1,0,0,0,0,2,1,2,1,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,542888,Shawn Armstrong,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,1,0,0,3,False
+824179,2026-06-19,Daikin Park,away,114,117,696135,Kahlil Watson,RF,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,683953,Travis Bazzana,2B,4,4,2,1,0,0,0,1,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,682177,Daniel Schneemann,CF,4,4,0,0,0,0,0,0,0,4,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,672275,Patrick Bailey,C,3,3,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,677587,Brayan Rocchio,SS,4,4,2,1,0,0,1,1,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,690984,Petey Halpin,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,672356,Gabriel Arias,3B,4,4,1,1,0,0,0,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,670036,Matt Festa,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,3,1,0,0,1,5,False
+824179,2026-06-19,Daikin Park,away,114,117,681807,David Fry,RF,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,680757,Steven Kwan,LF,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,700932,Kyle Manzardo,DH,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824179,2026-06-19,Daikin Park,away,114,117,682982,Daniel Espino,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,3,2,2,0,1,6,False
+824179,2026-06-19,Daikin Park,away,114,117,681870,Erik Sabrowski,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,2,1,1,0,3,False
+824179,2026-06-19,Daikin Park,away,114,117,676440,Tanner Bibee,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,4,3,7,2,1,22,True
+824179,2026-06-19,Daikin Park,away,114,117,656555,Rhys Hoskins,1B,4,4,1,0,0,1,2,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,695600,Carter Jensen,C,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,686475,Tyler Tolbert,SS,3,2,0,0,0,0,1,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,686555,Isaac Collins,LF,4,4,2,2,0,0,2,0,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,521692,Salvador Perez,DH,4,4,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,679845,Nick Loftin,3B,4,3,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,670231,John Rave,RF,4,2,1,1,0,0,0,1,2,0,2,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,686681,Michael Massey,2B,4,4,1,0,0,0,1,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,621381,Matt Strahm,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,3,0,1,0,5,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,663738,Daniel Lynch IV,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,607625,Seth Lugo,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,5,1,0,3,0,23,True
+824097,2026-06-19,Kauffman Stadium,home,118,138,657041,Lane Thomas,CF,4,4,1,1,0,0,0,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,656638,Alex Lange,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,0,0,0,0,2,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,695506,Jac Caglianone,1B,4,4,2,0,0,1,2,2,0,1,5,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,home,118,138,670167,John Schreiber,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,700241,Michael McGreevy,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,8,5,2,1,1,23,True
+824097,2026-06-19,Kauffman Stadium,away,138,118,694335,Matt Svanson,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,1,1,0,7,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,691023,Jordan Walker,RF,4,3,2,0,0,0,1,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,701675,Nathan Church,CF,2,1,1,0,1,0,0,1,1,0,3,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,663457,Lars Nootbaar,LF,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,665877,José Fermín,CF,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,802139,JJ Wetherholt,2B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,691458,Blaze Jordan,3B,4,4,1,0,0,0,2,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,676475,Alec Burleson,1B,4,4,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,666277,George Soriano,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,0,1,0,5,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,691026,Masyn Winn,SS,4,4,1,1,0,0,1,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,671056,Iván Herrera,C,4,2,1,0,0,0,1,1,2,0,1,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,699625,Jimmy Crooks,DH,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824097,2026-06-19,Kauffman Stadium,away,138,118,676369,Nelson Velázquez,PH,1,0,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,664983,Jake McCarthy,LF,4,4,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,690924,Braxton Fulford,DH,1,1,1,1,0,0,2,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,607536,Kyle Freeland,P,0,0,0,0,0,0,0,0,0,0,0,0,7.333333333333333,22,4,2,8,0,0,26,True
+824345,2026-06-19,Coors Field,home,115,134,650489,Willi Castro,2B,4,3,1,1,0,0,1,0,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,671289,Tyler Freeman,RF,4,3,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,694249,Cole Carrigg,CF,4,3,1,0,0,0,0,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,696100,Hunter Goodman,C,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,678662,Ezequiel Tovar,SS,4,4,2,0,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,681198,TJ Rumfield,1B,4,4,2,0,0,1,1,1,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,622608,Antonio Senzatela,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,1,0,5,False
+824345,2026-06-19,Coors Field,home,115,134,677955,Jaden Hill,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,1,0,0,0,4,False
+824345,2026-06-19,Coors Field,home,115,134,694514,Sterlin Thompson,DH,3,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,home,115,134,691720,Kyle Karros,3B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,687462,Spencer Horwitz,1B,4,3,0,0,0,0,0,1,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,664040,Brandon Lowe,2B,4,4,1,1,0,0,0,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,682848,Endy Rodríguez,C,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,668804,Bryan Reynolds,PH,1,1,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,682254,Mason Montgomery,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,3,2,1,0,0,5,False
+824345,2026-06-19,Coors Field,away,134,115,699013,Esmerlyn Valdez,LF,3,3,1,1,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,669707,Jared Triolo,SS,4,4,2,1,0,0,1,1,0,0,3,1,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,670990,Yohan Ramírez,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,0,0,0,4,False
+824345,2026-06-19,Coors Field,away,134,115,696149,Bubba Chandler,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,6,2,1,2,1,26,True
+824345,2026-06-19,Coors Field,away,134,115,695257,Billy Cook,CF,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,682997,Tyler Callihan,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,656811,Ryan O'Hearn,RF,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,693304,Nick Gonzales,3B,4,4,1,0,1,0,1,0,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824345,2026-06-19,Coors Field,away,134,115,542303,Marcell Ozuna,DH,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,671732,Lawrence Butler,RF,5,4,2,0,0,1,1,4,1,0,5,1,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,641680,Jonah Heim,DH,1,1,1,0,0,1,2,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,680869,Zack Gelof,2B,6,4,1,0,0,0,1,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,643446,Jeff McNeil,2B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,686993,Justin Sterner,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,4,4,1,1,2,9,False
+824990,2026-06-19,Sutter Health Park,home,133,108,605130,Scott Barlow,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+824990,2026-06-19,Sutter Health Park,home,133,108,666126,Carlos Cortes,DH,3,3,0,0,0,0,1,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,660761,José Suarez,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,1,3,0,1,8,False
+824990,2026-06-19,Sutter Health Park,home,133,108,691777,Max Muncy,3B,3,3,1,0,0,1,2,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,691016,Tyler Soderstrom,LF,5,3,3,1,0,0,0,3,2,0,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,665660,Elvis Alvarado,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,1,0,2,0,0,6,False
+824990,2026-06-19,Sutter Health Park,home,133,108,701762,Nick Kurtz,1B,6,4,0,0,0,0,1,0,2,4,0,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,703607,Henry Bolte,CF,5,2,1,0,0,0,0,0,3,0,1,1,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,687515,Colby Thomas,DH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,669127,Shea Langeliers,C,5,5,1,1,0,0,1,1,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,home,133,108,605488,Jeffrey Springs,P,0,0,0,0,0,0,0,0,0,0,0,0,3.6666666666666665,11,4,6,4,4,2,18,True
+824990,2026-06-19,Sutter Health Park,home,133,108,805779,Jacob Wilson,SS,5,5,2,1,0,1,3,1,0,1,6,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,672724,Oswald Peraza,2B,5,5,3,1,0,0,0,2,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,642350,Jose Siri,CF,4,4,1,0,0,1,3,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,687263,Zach Neto,SS,5,4,1,0,0,1,1,1,1,3,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,695681,Christian Moore,DH,5,4,0,0,0,0,1,0,0,4,0,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,681217,Chase Silseth,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,2,1,1,1,5,False
+824990,2026-06-19,Sutter Health Park,away,108,133,667755,José Soriano,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,6,4,6,4,1,24,True
+824990,2026-06-19,Sutter Health Park,away,108,133,815083,Mitch Farris,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,3,3,3,2,1,9,False
+824990,2026-06-19,Sutter Health Park,away,108,133,666176,Jo Adell,RF,5,4,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,694203,Denzer Guzman,3B,5,5,1,0,0,1,2,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,696147,Sam Bachman,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,0,0,1,5,False
+824990,2026-06-19,Sutter Health Park,away,108,133,694384,Nolan Schanuel,1B,5,4,1,0,0,1,1,2,1,0,4,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,685133,Wade Meckler,LF,5,4,1,1,0,0,0,1,1,3,2,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,681351,Logan O'Hoppe,C,5,4,3,0,0,1,3,2,1,0,6,0,0.0,0,0,0,0,0,0,0,False
+824990,2026-06-19,Sutter Health Park,away,108,133,489446,Kirby Yates,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,1,0,3,False
+824990,2026-06-19,Sutter Health Park,away,108,133,696519,Samy Natera Jr.,P,0,0,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,1,0,1,False
+825069,2026-06-19,Chase Field,home,109,142,691783,Jordan Lawlar,LF,4,4,2,0,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,694410,LuJames Groover,DH,3,3,1,1,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,571448,Nolan Arenado,3B,4,4,2,0,0,0,0,1,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,686753,Drey Jameson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,3,1,1,2,0,9,False
+825069,2026-06-19,Chase Field,home,109,142,656464,Kevin Ginkel,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,1,1,2,5,False
+825069,2026-06-19,Chase Field,home,109,142,606466,Ketel Marte,2B,5,4,1,0,0,1,1,1,1,1,4,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,642528,Jonathan Loáisiga,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,0,0,0,4,False
+825069,2026-06-19,Chase Field,home,109,142,545121,Ildemaro Vargas,1B,4,4,1,0,0,0,2,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,672695,Geraldo Perdomo,SS,5,3,0,0,0,0,0,2,2,2,0,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,623149,Paul Sewald,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,1,0,4,False
+825069,2026-06-19,Chase Field,home,109,142,647336,Michael Soroka,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,0,0,0,0,4,True
+825069,2026-06-19,Chase Field,home,109,142,672515,Gabriel Moreno,C,5,5,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,682998,Corbin Carroll,RF,5,4,3,1,1,0,4,1,1,0,6,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,664199,Taylor Clarke,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,0,0,1,4,False
+825069,2026-06-19,Chase Field,home,109,142,666971,Lourdes Gurriel Jr.,LF,4,4,1,0,0,0,1,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,657044,Ryan Thompson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,5,False
+825069,2026-06-19,Chase Field,home,109,142,805299,Brandyn Garcia,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,1,0,4,False
+825069,2026-06-19,Chase Field,home,109,142,656976,Pavin Smith,DH,1,1,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,home,109,142,678489,Jorge Barrosa,CF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,689520,Cody Laweryson,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,0,0,2,False
+825069,2026-06-19,Chase Field,away,142,109,605170,Victor Caratini,C,4,2,1,0,0,1,1,1,2,0,4,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,665019,Kody Clemens,1B,5,5,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,686797,Brooks Lee,3B,4,3,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,668885,Austin Martin,RF,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,656484,Tristan Gray,SS,4,4,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,605137,Josh Bell,DH,4,4,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,687570,Connor Prielipp,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,9,3,4,3,1,30,True
+825069,2026-06-19,Chase Field,away,142,109,701519,Travis Adams,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,4,3,4,1,0,9,False
+825069,2026-06-19,Chase Field,away,142,109,668904,Royce Lewis,3B,4,4,1,0,0,1,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,663616,Trevor Larnach,LF,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,621439,Byron Buxton,CF,5,4,2,0,0,0,0,0,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+825069,2026-06-19,Chase Field,away,142,109,807712,Luke Keaschall,2B,4,3,1,0,0,0,0,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,687221,Dalton Rushing,C,5,5,1,0,0,0,1,0,0,3,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,663656,Kyle Tucker,RF,5,4,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,669899,Ryan Ward,DH,5,3,0,0,0,0,0,1,2,1,0,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,571970,Max Muncy,3B,5,3,1,0,0,0,2,0,2,1,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,518692,Freddie Freeman,1B,5,4,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,669242,Tommy Edman,LF,5,5,3,1,0,0,0,0,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,669165,Kyle Hurt,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,694361,Will Klein,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,1,0,1,0,4,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,681624,Andy Pages,CF,5,5,1,1,0,0,1,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,605141,Mookie Betts,SS,5,5,3,1,0,1,1,2,0,2,7,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,676263,Jack Dreyer,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,1,1,0,0,3,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,595014,Blake Treinen,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,808963,Roki Sasaki,P,0,0,0,0,0,0,0,0,0,0,0,0,5.666666666666667,17,4,3,6,1,2,21,True
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,home,119,110,690976,Alex Freeland,2B,4,4,2,0,0,0,0,1,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,669236,Jeremiah Jackson,LF,3,3,1,0,0,0,2,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,694212,Samuel Basallo,C,4,4,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,669330,Tyler Wells,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,2,0,3,0,0,7,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,683002,Gunnar Henderson,SS,4,4,1,0,0,1,2,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,665750,Leody Taveras,CF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,621493,Taylor Ward,DH,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,694346,Trey Gibson,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,7,3,8,4,0,26,True
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,624413,Pete Alonso,1B,4,4,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,702616,Jackson Holliday,2B,3,2,1,0,0,0,0,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,664854,Ryan Helsley,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,2,0,2,1,6,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,552640,Andrew Kittredge,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,666974,Yennier Cano,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,1,0,0,1,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,681297,Colton Cowser,LF,4,3,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+823936,2026-06-19,UNIQLO Field at Dodger Stadium,away,110,119,691723,Coby Mayo,3B,4,4,1,0,0,0,0,1,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,647304,Josh Naylor,1B,4,4,1,1,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,645302,Victor Robles,LF,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,702284,Cole Young,2B,4,3,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,642215,Weston Wilson,3B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,641487,J.P. Crawford,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,686527,Dominic Canzone,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,663728,Cal Raleigh,C,4,1,0,0,0,0,0,1,3,1,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,608701,Rob Refsnyder,DH,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,806068,Colt Emerson,SS,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,622491,Luis Castillo,P,0,0,0,0,0,0,0,0,0,0,0,0,4.0,12,7,4,4,0,0,19,False
+823124,2026-06-19,T-Mobile Park,home,136,111,677594,Julio Rodríguez,CF,4,4,1,0,0,1,2,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,home,136,111,682243,Bryce Miller,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,3,1,7,0,1,16,True
+823124,2026-06-19,T-Mobile Park,away,111,136,575929,Willson Contreras,1B,4,4,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,669711,Greg Weissert,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+823124,2026-06-19,T-Mobile Park,away,111,136,677800,Wilyer Abreu,RF,4,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,655316,Andruw Monasterio,2B,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,686580,Justin Slaten,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,1,0,0,1,False
+823124,2026-06-19,T-Mobile Park,away,111,136,681508,Mickey Gasper,DH,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,702332,Caleb Durbin,3B,4,4,3,1,0,1,1,3,0,1,7,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,624133,Ranger Suarez,P,0,0,0,0,0,0,0,0,0,0,0,0,6.666666666666667,20,1,0,5,3,0,24,True
+823124,2026-06-19,T-Mobile Park,away,111,136,592454,Tommy Kahnle,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,2,1,1,1,5,False
+823124,2026-06-19,T-Mobile Park,away,111,136,665966,Carlos Narváez,C,4,3,0,0,0,0,1,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,680776,Jarren Duran,LF,4,4,1,0,0,0,0,1,0,3,1,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,678882,Ceddanne Rafaela,CF,4,4,1,1,0,0,0,1,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+823124,2026-06-19,T-Mobile Park,away,111,136,691785,Marcelo Mayer,SS,4,4,2,1,0,0,3,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,656716,Zach McKinstry,SS,4,2,0,0,0,0,0,1,2,1,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,701678,Hao-Yu  Lee,2B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,663330,Jahmai Jones,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,682985,Riley Greene,LF,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,663947,Tyler Holton,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,0,2,0,0,8,False
+824263,2026-06-20,Comerica Park,home,116,145,805808,Kevin McGonigle,3B,4,3,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,681481,Kerry Carpenter,RF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,445276,Kenley Jansen,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,1,0,5,False
+824263,2026-06-20,Comerica Park,home,116,145,679529,Spencer Torkelson,1B,4,3,1,1,0,0,0,1,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,668670,Jake Rogers,C,4,4,1,0,0,0,1,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,681546,James Outman,CF,2,2,2,0,0,0,1,1,0,0,2,1,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,663837,Matt Vierling,RF,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,693307,Dillon Dingler,DH,4,4,2,0,0,1,2,1,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,home,116,145,675512,Troy Melton,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,1,1,5,3,1,23,True
+824263,2026-06-20,Comerica Park,away,145,116,694378,Jacob Gonzalez,1B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,671976,Tristan Peters,CF,2,1,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,545341,Randal Grichuk,LF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,805367,Chase Meidroth,SS,2,2,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,678577,Junior Perez,CF,2,1,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,695657,Colson Montgomery,3B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,691011,Drew Romo,C,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,670950,Trevor Richards,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,1,0,1,4,False
+824263,2026-06-20,Comerica Park,away,145,116,697812,Joe Rock,P,0,0,0,0,0,0,0,0,0,0,0,0,2.3333333333333335,7,5,2,1,2,0,14,False
+824263,2026-06-20,Comerica Park,away,145,116,695731,Braden Montgomery,RF,4,3,1,1,0,0,0,0,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,669684,Chris Murphy,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+824263,2026-06-20,Comerica Park,away,145,116,700337,Edgar Quero,DH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,643217,Andrew Benintendi,DH,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,656794,Sean Newcomb,P,0,0,0,0,0,0,0,0,0,0,0,0,3.0,9,0,0,4,0,0,9,True
+824263,2026-06-20,Comerica Park,away,145,116,803011,Sam Antonacci,2B,4,2,2,0,0,1,1,1,1,0,5,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,678246,Miguel Vargas,1B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824263,2026-06-20,Comerica Park,away,145,116,699823,Tyler Davis,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,3,0,5,False
+823532,2026-06-20,Yankee Stadium,home,147,113,645305,Ali Sánchez,C,2,2,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,676609,José Caballero,3B,4,3,0,0,0,0,1,0,1,1,0,1,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,682987,Spencer Jones,CF,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,642232,Ryan Yarbrough,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,5,4,2,0,0,8,False
+823532,2026-06-20,Yankee Stadium,home,147,113,680474,Max Schuemann,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,1,0,5,False
+823532,2026-06-20,Yankee Stadium,home,147,113,642708,Amed Rosario,3B,4,3,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,657612,Tim Hill,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,0,0,1,False
+823532,2026-06-20,Yankee Stadium,home,147,113,502671,Paul Goldschmidt,DH,5,5,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,691176,Jasson Domínguez,RF,4,3,2,0,0,0,0,0,0,0,2,1,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,700250,Ben Rice,1B,5,5,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,701542,Will Warren,P,0,0,0,0,0,0,0,0,0,0,0,0,5.666666666666667,17,8,2,8,2,1,28,True
+823532,2026-06-20,Yankee Stadium,home,147,113,641555,J.C. Escarra,C,1,1,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,683011,Anthony Volpe,SS,4,3,1,0,0,0,0,0,1,0,1,1,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,641355,Cody Bellinger,LF,4,4,2,0,0,0,0,1,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,665862,Jazz Chisholm Jr.,2B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,home,147,113,656234,Jake Bird,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,0,0,0,4,False
+823532,2026-06-20,Yankee Stadium,away,113,147,701398,Sal Stewart,3B,5,4,2,2,0,0,6,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,667472,Dane Myers,DH,1,1,1,1,0,0,1,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,682622,Noelvi Marte,RF,5,4,1,1,0,0,0,0,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,622088,Tejay Antone,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,1,0,0,7,False
+823532,2026-06-20,Yankee Stadium,away,113,147,663993,Nathaniel Lowe,DH,4,3,2,1,0,0,0,1,1,1,3,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,680574,Matt McLain,SS,5,5,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,695534,Chase Petty,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+823532,2026-06-20,Yankee Stadium,away,113,147,694362,Blake Dunn,CF,6,5,2,0,0,0,0,3,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,668715,Spencer Steer,1B,5,5,1,0,0,1,3,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,624431,Jose Trevino,C,5,5,0,0,0,0,0,1,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,695490,Edwin Arroyo,2B,5,5,4,1,0,0,0,2,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,668709,JJ Bleday,LF,5,5,1,1,0,0,0,1,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+823532,2026-06-20,Yankee Stadium,away,113,147,656271,Brock Burke,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,1,0,0,0,5,False
+823532,2026-06-20,Yankee Stadium,away,113,147,671096,Andrew Abbott,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,5,1,6,3,1,23,True
+824665,2026-06-20,Wrigley Field,home,112,141,664023,Ian Happ,LF,5,4,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,681799,Ethan Roberts,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,0,0,0,4,False
+824665,2026-06-20,Wrigley Field,home,112,141,573204,Caleb Thielbar,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,2,0,1,0,3,False
+824665,2026-06-20,Wrigley Field,home,112,141,608324,Alex Bregman,3B,5,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,699393,Pedro Ramírez,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,683737,Michael Busch,1B,5,4,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,691718,Pete Crow-Armstrong,CF,5,4,2,0,0,1,2,1,1,2,5,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,657097,Jacob Webb,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,3,3,2,0,1,5,False
+824665,2026-06-20,Wrigley Field,home,112,141,665804,Miguel Amaya,C,4,3,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,673548,Seiya Suzuki,DH,5,4,1,0,0,0,0,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,669020,Ryan Rolison,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,0,0,1,False
+824665,2026-06-20,Wrigley Field,home,112,141,663423,Trent Thornton,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,3,1,0,1,5,False
+824665,2026-06-20,Wrigley Field,home,112,141,621020,Dansby Swanson,SS,4,3,2,1,0,0,0,1,1,0,3,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,607067,Colin Rea,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,3,0,3,0,0,19,True
+824665,2026-06-20,Wrigley Field,home,112,141,663538,Nico Hoerner,2B,5,4,0,0,0,0,1,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,home,112,141,807713,Matt Shaw,RF,5,5,1,0,0,1,3,1,0,3,4,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,686973,Louis Varland,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,2,0,0,7,False
+824665,2026-06-20,Wrigley Field,away,141,112,676391,Ernie Clement,SS,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,662139,Daulton Varsho,CF,4,4,1,0,0,1,3,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,665926,Andrés Giménez,SS,2,2,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,678218,Brandon Valenzuela,C,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,656546,Jeff Hoffman,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,1,0,5,False
+824665,2026-06-20,Wrigley Field,away,141,112,676914,Davis Schneider,2B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,664770,Nathan Lukes,RF,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,543807,George Springer,DH,5,5,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,689254,Mason Fluharty,P,0,0,0,0,0,0,0,0,0,0,0,0,0.0,0,2,1,0,1,0,3,False
+824665,2026-06-20,Wrigley Field,away,141,112,665489,Vladimir Guerrero Jr.,1B,4,4,2,0,0,0,1,2,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,571578,Patrick Corbin,P,0,0,0,0,0,0,0,0,0,0,0,0,3.6666666666666665,11,6,3,4,3,1,20,True
+824665,2026-06-20,Wrigley Field,away,141,112,681751,Lazaro Estrada,P,0,0,0,0,0,0,0,0,0,0,0,0,2.3333333333333335,7,1,2,0,2,1,9,False
+824665,2026-06-20,Wrigley Field,away,141,112,664702,Myles Straw,LF,4,3,1,0,0,0,0,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,672386,Alejandro Kirk,PH,1,1,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824665,2026-06-20,Wrigley Field,away,141,112,672960,Kazuma Okamoto,3B,4,3,1,0,0,1,3,2,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,694671,Wyatt Langford,CF,5,4,2,1,0,0,2,0,1,1,3,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,669394,Jake Burger,1B,4,3,1,0,0,1,2,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,682608,Peyton Gray,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,4,False
+822885,2026-06-20,Globe Life Field,home,140,135,641302,Tyler Alexander,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,0,0,1,0,3,False
+822885,2026-06-20,Globe Life Field,home,140,135,592626,Joc Pederson,DH,5,5,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,656641,Jacob Latz,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+822885,2026-06-20,Globe Life Field,home,140,135,605452,Joe Ross,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,0,1,1,6,False
+822885,2026-06-20,Globe Life Field,home,140,135,670032,Nicky Lopez,2B,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,673962,Josh Jung,3B,5,5,2,1,0,0,0,1,0,3,3,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,679822,Justin Foscue,2B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,543309,Kyle Higashioka,C,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,677649,Ezequiel Duran,SS,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,669022,MacKenzie Gore,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,5,1,6,2,0,23,True
+822885,2026-06-20,Globe Life Field,home,140,135,607043,Brandon Nimmo,RF,5,5,2,0,0,0,0,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,683227,Cody Freeman,LF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,672284,Jarred Kelenic,LF,3,3,1,0,0,0,0,1,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,home,140,135,668390,Cole Winn,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,1,0,0,0,4,False
+822885,2026-06-20,Globe Life Field,away,135,140,669256,Nick Solak,DH,4,2,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,695243,Mason Miller,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,0,0,4,False
+822885,2026-06-20,Globe Life Field,away,135,140,621111,Walker Buehler,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,5,1,7,1,0,21,True
+822885,2026-06-20,Globe Life Field,away,135,140,701538,Jackson Merrill,CF,5,5,3,0,0,0,1,0,0,0,3,2,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,592094,Jason Adam,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,2,2,0,1,5,False
+822885,2026-06-20,Globe Life Field,away,135,140,660710,Rodolfo Durán,C,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,669392,Samad Taylor,RF,5,3,1,0,0,0,0,2,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,657757,Gavin Sheets,LF,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,675448,Blake Hunt,C,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,670970,Adrian Morejon,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,1,0,5,0,0,8,False
+822885,2026-06-20,Globe Life Field,away,135,140,695238,Will Wagner,DH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,592518,Manny Machado,3B,5,5,2,1,0,1,5,1,0,0,6,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,665487,Fernando Tatis Jr.,2B,5,5,2,2,0,0,0,3,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,664034,Ty France,1B,5,4,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,593428,Xander Bogaerts,SS,5,4,1,0,0,0,0,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,687749,Jase Bowen,RF,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822885,2026-06-20,Globe Life Field,away,135,140,606996,Kyle Hart,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,1,0,0,2,False
+822967,2026-06-20,Tropicana Field,home,139,120,670764,Taylor Walls,SS,4,2,1,1,0,0,0,1,2,1,2,2,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,680700,Richie Palacios,2B,2,1,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,802415,Chandler Simpson,LF,4,4,2,0,0,0,1,0,0,0,2,1,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,592155,Cam Booser,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,3,1,0,0,1,6,False
+822967,2026-06-20,Tropicana Field,home,139,120,693855,Ian Seymour,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,7,3,4,0,1,22,True
+822967,2026-06-20,Tropicana Field,home,139,120,642121,Cole Sulser,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,4,0,0,6,False
+822967,2026-06-20,Tropicana Field,home,139,120,676439,Hunter Feduccia,C,1,0,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,666018,Jonathan Aranda,1B,5,4,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,663743,Nick Fortes,C,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,518886,Craig Kimbrel,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
+822967,2026-06-20,Tropicana Field,home,139,120,650490,Yandy Díaz,DH,5,4,2,0,0,0,1,1,1,2,2,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,810938,Ben Williamson,2B,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,683748,Victor Mesa Jr.,RF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,691406,Junior Caminero,3B,5,3,3,0,0,0,1,1,1,0,3,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,home,139,120,656775,Cedric Mullins,CF,5,5,1,0,0,0,0,0,0,4,1,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,682928,CJ Abrams,SS,4,4,1,0,0,1,1,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,683083,Nasim Nuñez,2B,4,4,2,1,0,0,1,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,665953,Andrés Chaparro,1B,3,3,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,678391,Jorbit Vivas,PH,1,1,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,686611,Dylan Crews,CF,4,4,2,0,0,1,1,2,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,690925,Clayton Beeter,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,2,2,0,6,False
+822967,2026-06-20,Tropicana Field,away,120,139,695418,Brad Lord,P,0,0,0,0,0,0,0,0,0,0,0,0,3.0,9,2,0,5,0,0,11,False
+822967,2026-06-20,Tropicana Field,away,120,139,678554,Curtis Mead,3B,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,695734,Daylen Lile,LF,4,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,695578,James Wood,RF,5,5,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,676917,Cade Cavalli,P,0,0,0,0,0,0,0,0,0,0,0,0,2.6666666666666665,8,6,2,1,3,0,16,True
+822967,2026-06-20,Tropicana Field,away,120,139,696285,Jacob Young,CF,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,680730,Mitchell Parker,P,0,0,0,0,0,0,0,0,0,0,0,0,2.3333333333333335,7,1,0,2,1,0,8,False
+822967,2026-06-20,Tropicana Field,away,120,139,660688,Keibert Ruiz,C,4,4,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+822967,2026-06-20,Tropicana Field,away,120,139,671277,Luis García Jr.,1B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,676604,Tyler Zuber,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,2,0,0,4,False
+823854,2026-06-20,loanDepot park,home,146,137,681715,Heriberto Hernández,LF,4,3,1,0,0,1,2,1,1,1,4,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,664126,Pete Fairbanks,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+823854,2026-06-20,loanDepot park,home,146,137,665923,Esteury Ruiz,RF,4,2,0,0,0,0,0,1,0,0,0,1,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,805300,Jakob Marsee,CF,5,4,2,1,0,0,1,1,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,676974,Max Meyer,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,7,2,7,2,1,23,True
+823854,2026-06-20,loanDepot park,home,146,137,806188,Cade Gibson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,1,1,1,0,5,False
+823854,2026-06-20,loanDepot park,home,146,137,669364,Xavier Edwards,2B,5,5,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,669065,Kyle Stowers,1B,5,2,0,0,0,0,0,0,2,1,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,669622,Anthony Bender,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,0,0,0,0,4,False
+823854,2026-06-20,loanDepot park,home,146,137,683357,Owen Caissie,DH,4,2,1,0,0,0,1,0,2,0,1,1,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,677870,Leo Jiménez,3B,4,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,691788,Joe Mack,C,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,home,146,137,672640,Otto Lopez,SS,5,5,1,0,0,0,0,2,0,0,1,1,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,669477,Casey Schmitt,LF,4,4,3,2,0,1,2,1,0,1,8,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,664141,JT Brubaker,P,0,0,0,0,0,0,0,0,0,0,0,0,2.3333333333333335,7,1,0,2,1,0,9,False
+823854,2026-06-20,loanDepot park,away,137,146,686790,Trevor McDonald,P,0,0,0,0,0,0,0,0,0,0,0,0,3.0,9,3,3,1,3,0,20,True
+823854,2026-06-20,loanDepot park,away,137,146,682674,Victor Bericoto,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,656305,Matt Chapman,3B,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,808982,Jung Hoo Lee,RF,4,4,2,2,0,0,0,2,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,687551,Drew Gilbert,CF,4,4,3,1,0,0,1,0,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,646240,Rafael Devers,1B,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,663941,Tristan Beck,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,0,0,1,0,0,6,False
+823854,2026-06-20,loanDepot park,away,137,146,606992,Eric Haase,C,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,642715,Willy Adames,SS,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,650333,Luis Arraez,2B,5,3,1,0,0,0,0,0,2,0,1,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,805811,Bryce Eldridge,DH,5,4,1,0,0,0,0,0,1,3,1,0,0.0,0,0,0,0,0,0,0,False
+823854,2026-06-20,loanDepot park,away,137,146,657424,Matt Gage,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,1,0,1,1,5,False
+824909,2026-06-20,Truist Park,home,144,158,669276,Dylan Lee,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+824909,2026-06-20,Truist Park,home,144,158,675916,James Karinchak,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+824909,2026-06-20,Truist Park,home,144,158,671739,Michael Harris II,CF,3,3,1,1,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,663698,Joey Bart,C,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,622761,Jorge Mateo,SS,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,643289,Mauricio Dubón,LF,4,4,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,642133,Rowdy Tellez,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,800311,Didier Fuentes,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,2,1,1,0,0,6,False
+824909,2026-06-20,Truist Park,home,144,158,686948,Drake Baldwin,DH,4,4,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,519242,Chris Sale,P,0,0,0,0,0,0,0,0,0,0,0,0,5.666666666666667,17,5,0,7,1,0,23,True
+824909,2026-06-20,Truist Park,home,144,158,621566,Matt Olson,1B,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,642086,Dominic Smith,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,642201,Eli White,RF,2,2,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,645277,Ozzie Albies,2B,4,4,3,0,0,2,3,3,0,0,9,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,home,144,158,663586,Austin Riley,3B,3,3,0,0,0,0,1,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,806198,Cooper Pratt,SS,4,4,2,0,0,0,0,1,0,0,2,1,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,687401,Joey Ortiz,3B,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,694192,Jackson Chourio,LF,4,4,1,0,0,0,1,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,641343,Jake Bauers,1B,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,686217,Sal Frelick,RF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,682842,Abner Uribe,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,0,0,0,2,False
+824909,2026-06-20,Truist Park,away,158,144,683734,Andrew Vaughn,1B,3,3,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,690986,Kyle Harrison,P,0,0,0,0,0,0,0,0,0,0,0,0,6.333333333333333,19,4,2,7,0,1,23,True
+824909,2026-06-20,Truist Park,away,158,144,669003,Garrett Mitchell,CF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,676879,Aaron Ashby,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,2,2,1,0,1,3,False
+824909,2026-06-20,Truist Park,away,158,144,663368,Blake Perkins,RF,2,2,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,661388,William Contreras,C,4,4,2,0,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,668930,Brice Turang,2B,4,4,0,0,0,0,0,1,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,596142,Gary Sánchez,DH,4,2,0,0,0,0,1,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824909,2026-06-20,Truist Park,away,158,144,656730,Trevor Megill,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+824180,2026-06-20,Daikin Park,home,117,114,670623,Isaac Paredes,1B,4,4,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,650556,Bryan Abreu,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
+824180,2026-06-20,Daikin Park,home,117,114,701358,Cam Smith,RF,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,676694,Jake Meyers,CF,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,694728,Brice Matthews,3B,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,805123,AJ Blubaugh,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,3,0,0,3,False
+824180,2026-06-20,Daikin Park,home,117,114,666211,Taylor Trammell,PH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,514888,Jose Altuve,2B,4,4,2,0,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,694388,Joey Loperfido,LF,1,1,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,665161,Jeremy Peña,SS,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,669384,Raynel Delgado,SS,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,572233,Christian Walker,1B,3,2,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,663878,Nate Pearson,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,4,2,0,0,0,6,False
+824180,2026-06-20,Daikin Park,home,117,114,681293,Spencer Arrighetti,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,6,6,8,0,3,24,True
+824180,2026-06-20,Daikin Park,home,117,114,673237,Yainer Diaz,C,3,3,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,home,117,114,670541,Yordan Alvarez,DH,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,696135,Kahlil Watson,RF,4,4,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,683953,Travis Bazzana,2B,4,4,4,0,0,2,5,3,0,0,10,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,682177,Daniel Schneemann,3B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,672275,Patrick Bailey,C,4,4,3,0,0,0,0,2,0,0,3,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,677587,Brayan Rocchio,SS,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,690984,Petey Halpin,CF,4,3,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,670036,Matt Festa,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,0,0,4,False
+824180,2026-06-20,Daikin Park,away,114,117,680757,Steven Kwan,LF,4,3,0,0,0,0,0,1,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,700932,Kyle Manzardo,1B,4,4,2,0,0,1,3,1,0,2,5,0,0.0,0,0,0,0,0,0,0,False
+824180,2026-06-20,Daikin Park,away,114,117,676282,Joey Cantillo,P,0,0,0,0,0,0,0,0,0,0,0,0,8.0,24,4,1,9,1,0,28,True
+824180,2026-06-20,Daikin Park,away,114,117,656555,Rhys Hoskins,DH,4,4,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,687282,Gabriel Rincones Jr.,RF,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,669016,Brandon Marsh,LF,5,5,1,0,0,0,0,1,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,702222,Justin Crawford,CF,4,3,2,1,0,0,1,1,1,1,3,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,650911,Cristopher Sánchez,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,5,1,5,1,1,24,True
+823447,2026-06-20,Citizens Bank Park,home,143,121,547180,Bryce Harper,1B,5,5,4,1,1,1,3,2,0,0,10,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,592663,J.T. Realmuto,C,4,4,2,2,0,0,2,2,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,661395,Jhoan Duran,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,2,0,0,4,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,664761,Alec Bohm,3B,5,5,1,0,0,0,0,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,681082,Bryson Stott,2B,5,5,1,1,0,0,1,1,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,656941,Kyle Schwarber,DH,5,5,4,0,0,3,6,4,0,0,13,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,676661,Max Lazar,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,2,2,1,0,1,8,False
+823447,2026-06-20,Citizens Bank Park,home,143,121,607208,Trea Turner,SS,5,5,2,0,0,0,1,3,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,620443,Luis Torrens,C,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,666182,Bo Bichette,3B,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,682626,Francisco Alvarez,DH,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,668901,Mark Vientos,1B,4,4,2,0,0,1,1,2,0,2,5,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,668964,Tobias Myers,P,0,0,0,0,0,0,0,0,0,0,0,0,2.3333333333333335,7,3,2,1,0,1,10,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,683146,Brett Baty,SS,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,701807,Carson Benge,RF,4,4,1,0,0,1,2,1,0,2,4,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,676572,Eric Wagaman,3B,4,3,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,670097,Zack Short,P,4,4,1,0,0,0,0,0,0,3,1,0,1.0,3,0,0,0,0,0,3,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,543760,Marcus Semien,2B,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,672335,Cionel Pérez,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,4,3,3,0,1,10,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,669004,MJ Melendez,LF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,642547,Freddy Peralta,P,0,0,0,0,0,0,0,0,0,0,0,0,2.6666666666666665,8,10,10,2,1,2,19,True
+823447,2026-06-20,Citizens Bank Park,away,121,143,665742,Juan Soto,LF,3,3,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+823447,2026-06-20,Citizens Bank Park,away,121,143,805999,A.J. Ewing,CF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,623474,Jimmy Herget,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,0,0,2,1,0,4,False
+824342,2026-06-20,Coors Field,home,115,134,664983,Jake McCarthy,RF,4,4,2,1,0,1,1,2,0,0,6,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,687859,Troy Johnston,DH,4,2,0,0,0,0,0,0,2,1,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,650489,Willi Castro,2B,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,657514,Brennan Bernardino,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,2,0,2,0,0,5,False
+824342,2026-06-20,Coors Field,home,115,134,694249,Cole Carrigg,CF,3,2,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,666397,Edouard Julien,2B,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,696100,Hunter Goodman,C,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,608372,Tomoyuki Sugano,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,4,1,5,0,1,22,True
+824342,2026-06-20,Coors Field,home,115,134,678662,Ezequiel Tovar,SS,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,681198,TJ Rumfield,1B,4,2,1,0,0,0,1,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,home,115,134,677955,Jaden Hill,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,0,0,1,0,0,3,False
+824342,2026-06-20,Coors Field,home,115,134,694514,Sterlin Thompson,LF,3,3,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,694973,Paul Skenes,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,4,2,8,2,1,24,True
+824342,2026-06-20,Coors Field,away,134,115,687462,Spencer Horwitz,1B,4,4,2,0,0,1,1,1,0,0,5,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,664040,Brandon Lowe,2B,4,4,2,1,0,0,0,0,0,1,3,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,682848,Endy Rodríguez,C,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,668804,Bryan Reynolds,LF,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,669707,Jared Triolo,SS,3,3,0,0,0,0,0,0,0,1,0,1,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,663968,Jake Mangum,CF,4,4,1,1,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,669387,Carmen Mlodzinski,P,0,0,0,0,0,0,0,0,0,0,0,0,2.0,6,1,0,2,1,0,8,False
+824342,2026-06-20,Coors Field,away,134,115,680779,Henry Davis,C,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,682997,Tyler Callihan,RF,4,3,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,656811,Ryan O'Hearn,DH,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824342,2026-06-20,Coors Field,away,134,115,693304,Nick Gonzales,3B,4,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,671732,Lawrence Butler,RF,2,2,1,0,0,0,0,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,641680,Jonah Heim,DH,4,4,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,669372,J.T. Ginn,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,7,4,5,3,0,26,True
+824988,2026-06-20,Sutter Health Park,home,133,108,643446,Jeff McNeil,2B,2,2,1,1,0,0,0,0,0,0,2,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,664129,Geoff Hartlieb,P,0,0,0,0,0,0,0,0,0,0,0,0,3.0,9,3,1,1,1,1,13,False
+824988,2026-06-20,Sutter Health Park,home,133,108,605130,Scott Barlow,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,3,2,1,0,0,5,False
+824988,2026-06-20,Sutter Health Park,home,133,108,675961,Alika Williams,2B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,691777,Max Muncy,3B,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,691016,Tyler Soderstrom,LF,4,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,701762,Nick Kurtz,1B,4,3,1,1,0,0,0,0,1,2,2,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,703607,Henry Bolte,CF,4,4,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,687515,Colby Thomas,RF,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,669127,Shea Langeliers,C,4,4,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,home,133,108,805779,Jacob Wilson,SS,4,4,1,0,0,0,0,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,622268,Donovan Walton,2B,5,5,3,1,0,0,1,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,642350,Jose Siri,CF,5,4,1,0,0,0,1,1,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,687263,Zach Neto,SS,5,4,1,1,0,0,2,1,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,666176,Jo Adell,RF,5,5,3,2,0,0,0,1,0,1,5,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,694203,Denzer Guzman,3B,5,4,1,0,0,1,1,1,1,1,4,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,687093,Vaughn Grissom,DH,5,5,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,666171,Ryan Zeferjahn,P,0,0,0,0,0,0,0,0,0,0,0,0,1.6666666666666667,5,0,0,3,1,0,6,False
+824988,2026-06-20,Sutter Health Park,away,108,133,694384,Nolan Schanuel,1B,5,5,1,1,0,0,2,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,685133,Wade Meckler,LF,5,4,1,0,0,0,0,1,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,623168,Tyler Heineman,C,4,3,2,1,0,0,0,1,1,0,3,0,0.0,0,0,0,0,0,0,0,False
+824988,2026-06-20,Sutter Health Park,away,108,133,700712,Walbert Ureña,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,4,0,6,0,0,20,True
+824988,2026-06-20,Sutter Health Park,away,108,133,489446,Kirby Yates,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+824988,2026-06-20,Sutter Health Park,away,108,133,696519,Samy Natera Jr.,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,1,0,2,1,0,6,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,687221,Dalton Rushing,C,3,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,681911,Alex Vesia,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,1,0,4,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,663656,Kyle Tucker,RF,4,4,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,571970,Max Muncy,3B,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,518692,Freddie Freeman,1B,4,3,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,683618,Edgardo Henriquez,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,1,0,4,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,669242,Tommy Edman,LF,4,4,2,0,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,660271,Shohei Ohtani,DH,4,4,1,0,0,1,1,1,0,1,4,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,642546,Jonathan Hernández,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,681624,Andy Pages,CF,4,3,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,605141,Mookie Betts,SS,4,3,1,0,0,0,0,0,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,669743,Alex Call,LF,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,500743,Miguel Rojas,2B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,690976,Alex Freeland,PH,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,home,119,110,808967,Yoshinobu Yamamoto,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,6,3,6,2,0,26,True
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,669236,Jeremiah Jackson,2B,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,694212,Samuel Basallo,C,4,4,2,0,0,0,0,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,669432,Trevor Rogers,P,0,0,0,0,0,0,0,0,0,0,0,0,7.0,21,1,0,6,2,0,23,True
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,670329,Rico Garcia,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,2,0,0,3,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,683002,Gunnar Henderson,DH,5,4,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,665750,Leody Taveras,RF,4,4,2,0,0,0,0,2,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,621493,Taylor Ward,LF,5,5,1,0,0,0,0,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,677942,Blaze Alexander,SS,4,4,1,1,0,0,2,0,0,1,2,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,624413,Pete Alonso,1B,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,702616,Jackson Holliday,2B,3,3,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,552640,Andrew Kittredge,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,1,1,0,1,1,3,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,664991,Grant Wolfram,P,0,0,0,0,0,0,0,0,0,0,0,0,0.3333333333333333,1,0,0,0,0,0,1,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,666974,Yennier Cano,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,1,0,1,0,0,4,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,681297,Colton Cowser,CF,4,3,1,0,0,0,0,1,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+823937,2026-06-20,UNIQLO Field at Dodger Stadium,away,110,119,691723,Coby Mayo,3B,4,3,0,0,0,0,1,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,647304,Josh Naylor,1B,4,4,1,0,0,0,1,0,0,1,1,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,702284,Cole Young,2B,4,3,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,678606,José A. Ferrer,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,0,0,0,0,3,False
+823126,2026-06-20,T-Mobile Park,home,136,111,689546,Nick Davila,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,2,0,5,False
+823126,2026-06-20,T-Mobile Park,home,136,111,621074,Michael Rucker,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,4,False
+823126,2026-06-20,T-Mobile Park,home,136,111,695380,Alex Hoppe,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+823126,2026-06-20,T-Mobile Park,home,136,111,641487,J.P. Crawford,3B,4,3,0,0,0,0,0,1,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,686527,Dominic Canzone,RF,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,663728,Cal Raleigh,C,4,3,1,0,0,0,0,0,1,1,1,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,608701,Rob Refsnyder,LF,4,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,656582,Connor Joe,LF,2,2,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,806068,Colt Emerson,SS,3,3,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,641598,Mitch Garver,DH,2,2,0,0,0,0,0,0,0,2,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,677594,Julio Rodríguez,CF,4,3,0,0,0,0,0,0,0,0,0,1,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,670042,Luke Raley,DH,1,1,0,0,0,0,0,0,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,home,136,111,676106,Emerson Hancock,P,0,0,0,0,0,0,0,0,0,0,0,0,5.333333333333333,16,4,5,6,2,1,22,True
+823126,2026-06-20,T-Mobile Park,away,111,136,575929,Willson Contreras,1B,4,2,0,0,0,0,0,1,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,594027,Tyron Guerrero,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,2,0,0,3,False
+823126,2026-06-20,T-Mobile Park,away,111,136,813349,Connelly Early,P,0,0,0,0,0,0,0,0,0,0,0,0,6.0,18,2,1,7,2,0,24,True
+823126,2026-06-20,T-Mobile Park,away,111,136,678011,Anthony Seigler,2B,4,4,1,0,0,0,0,1,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,677800,Wilyer Abreu,RF,4,3,1,0,0,1,2,2,1,0,4,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,676477,Garrett Whitlock,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+823126,2026-06-20,T-Mobile Park,away,111,136,655316,Andruw Monasterio,2B,1,1,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,702332,Caleb Durbin,3B,4,4,2,0,0,0,1,0,0,0,2,2,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,665966,Carlos Narváez,C,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,681987,Nate Eaton,CF,4,3,0,0,0,0,0,0,1,2,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,680776,Jarren Duran,LF,4,4,0,0,0,0,0,1,0,1,0,0,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,807799,Masataka Yoshida,DH,4,4,1,0,0,0,0,0,0,1,1,1,0.0,0,0,0,0,0,0,0,False
+823126,2026-06-20,T-Mobile Park,away,111,136,543056,Danny Coulombe,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,0,0,0,3,False
+823126,2026-06-20,T-Mobile Park,away,111,136,691785,Marcelo Mayer,SS,4,4,1,0,0,0,1,0,0,2,1,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,694410,LuJames Groover,3B,3,3,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,694374,Tim Tawa,2B,3,2,0,0,0,0,0,0,1,1,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,680728,Adrian Del Castillo,C,4,3,1,0,0,0,0,2,1,0,1,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,571448,Nolan Arenado,3B,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,694371,Tommy Troy,CF,4,3,2,0,0,0,0,1,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,606466,Ketel Marte,2B,2,1,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,545121,Ildemaro Vargas,P,3,3,1,1,0,0,3,1,0,0,2,0,1.6666666666666667,5,0,0,0,2,0,6,False
+825068,2026-06-20,Chase Field,home,109,142,672695,Geraldo Perdomo,SS,5,3,0,0,0,0,2,1,2,1,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,682998,Corbin Carroll,RF,2,2,0,0,0,0,0,0,0,0,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,668678,Zac Gallen,P,0,0,0,0,0,0,0,0,0,0,0,0,4.0,12,12,9,2,2,0,26,True
+825068,2026-06-20,Chase Field,home,109,142,666971,Lourdes Gurriel Jr.,LF,5,5,0,0,0,0,0,0,0,3,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,691769,Philip Abner,P,0,0,0,0,0,0,0,0,0,0,0,0,2.6666666666666665,8,1,0,1,2,0,11,False
+825068,2026-06-20,Chase Field,home,109,142,656976,Pavin Smith,1B,5,5,2,0,0,0,1,0,0,2,2,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,home,109,142,700270,Yilber Díaz,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,7,7,0,1,1,10,False
+825068,2026-06-20,Chase Field,home,109,142,678489,Jorge Barrosa,RF,4,3,2,1,0,1,2,3,1,1,6,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,671737,Taj Bradley,P,0,0,0,0,0,0,0,0,0,0,0,0,5.0,15,3,2,4,2,1,20,True
+825068,2026-06-20,Chase Field,away,142,109,605170,Victor Caratini,C,6,5,3,1,0,0,3,3,1,2,4,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,665019,Kody Clemens,RF,5,5,1,0,0,0,1,0,0,0,1,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,686797,Brooks Lee,3B,6,6,4,1,1,0,2,3,0,0,7,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,668885,Austin Martin,LF,1,0,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,607455,Anthony Banda,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,1,0,1,0,0,4,False
+825068,2026-06-20,Chase Field,away,142,109,605137,Josh Bell,DH,6,5,2,1,0,0,0,2,1,0,3,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,693459,Kyler Fedko,CF,2,1,0,0,0,0,0,0,1,0,0,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,664875,Justin Lawrence,P,0,0,0,0,0,0,0,0,0,0,0,0,0.6666666666666666,2,2,5,2,4,0,8,False
+825068,2026-06-20,Chase Field,away,142,109,668952,Ryan Kreidler,SS,5,4,3,0,1,0,4,2,1,0,5,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,668904,Royce Lewis,1B,6,5,1,1,0,0,0,0,1,1,2,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,663616,Trevor Larnach,LF,6,5,2,0,0,0,2,2,1,0,2,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,621439,Byron Buxton,CF,4,4,1,0,0,1,4,1,0,0,4,0,0.0,0,0,0,0,0,0,0,False
+825068,2026-06-20,Chase Field,away,142,109,672782,Yoendrys Gómez,P,0,0,0,0,0,0,0,0,0,0,0,0,1.0,3,0,0,1,0,0,3,False
+825068,2026-06-20,Chase Field,away,142,109,679358,Eric Orze,P,0,0,0,0,0,0,0,0,0,0,0,0,1.3333333333333333,4,2,1,0,1,0,7,False
+825068,2026-06-20,Chase Field,away,142,109,807712,Luke Keaschall,RF,6,6,3,0,0,0,0,3,0,0,3,0,0.0,0,0,0,0,0,0,0,False
