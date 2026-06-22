@@ -289,11 +289,155 @@ class SimResult:
     mean_total: float
     score_dist: dict          # "h-a" -> count for the modal line
     total_hist: dict          # total runs -> probability
+    # Distributions for the simulation leaderboard — exact COUNTS over the n
+    # sims so any line's hit rate is sum(count where outcome wins) / n.
+    bat_hist: dict = field(default_factory=dict)   # {player_id: {stat: {value: count}}}
+    pit_hist: dict = field(default_factory=dict)   # {player_id: {stat: {value: count}}}
+    margin_counts: dict = field(default_factory=dict)  # {home_margin: count}
+    total_counts: dict = field(default_factory=dict)   # {total runs: count}
 
 
 def _sp_target(starter: dict, rng: random.Random) -> int:
     base = float((starter or {}).get("expected_outs") or 15.0)
     return max(6, min(24, int(round(rng.gauss(base, 3.0)))))
+
+
+# ---------- Simulation leaderboard ----------
+# market -> (kind, stat) where kind is "bat" or "pit".
+_LB_PROP_MAP = {
+    "prop_hits": ("bat", "h"), "prop_hr": ("bat", "hr"), "prop_tb": ("bat", "tb"),
+    "prop_rbi": ("bat", "rbi"), "prop_runs": ("bat", "r"), "prop_k": ("bat", "k"),
+    "prop_bb": ("bat", "bb"),
+    "prop_pitcher_k": ("pit", "k"), "prop_pitcher_bb": ("pit", "bb"),
+    "prop_pitcher_h": ("pit", "h"), "prop_pitcher_hr": ("pit", "hr"),
+    "prop_pitcher_er": ("pit", "er"), "prop_pitcher_outs": ("pit", "outs"),
+}
+
+
+def _hist_over(hist_stat: dict, line: float) -> int:
+    return sum(c for v, c in hist_stat.items() if float(v) > line)
+
+
+def _hist_under(hist_stat: dict, line: float) -> int:
+    return sum(c for v, c in hist_stat.items() if float(v) < line)
+
+
+def _side_of(desc: str) -> str:
+    if " OVER " in desc:
+        return "OVER"
+    if " UNDER " in desc:
+        return "UNDER"
+    return ""
+
+
+def bet_sim_hitrate(res: SimResult, bet: dict) -> float | None:
+    """Fraction of the sim's `n` games in which `bet` would WIN. None if the
+    bet can't be mapped to a simulated distribution. Pushes count as non-hits."""
+    n = res.n
+    if not n:
+        return None
+    market = bet.get("market", "")
+    desc = bet.get("description", "") or ""
+    try:
+        line = float(bet.get("line") or 0)
+    except (TypeError, ValueError):
+        return None
+
+    # --- player props ---
+    if market in _LB_PROP_MAP:
+        kind, stat = _LB_PROP_MAP[market]
+        pid = bet.get("player_id")
+        if pid is None:
+            return None
+        store = res.bat_hist if kind == "bat" else res.pit_hist
+        try:
+            hist = store.get(int(pid))
+        except (TypeError, ValueError):
+            return None
+        if not hist or stat not in hist:
+            return None
+        side = _side_of(desc)
+        if side == "OVER":
+            return _hist_over(hist[stat], line) / n
+        if side == "UNDER":
+            return _hist_under(hist[stat], line) / n
+        return None
+
+    # --- game lines, scored off the home-margin / total distributions ---
+    home, away = res.home_team, res.away_team
+    if market in ("moneyline", "sharp_moneyline"):
+        wins = 0
+        for m, c in res.margin_counts.items():
+            if (home in desc and m > 0) or (away in desc and m < 0):
+                wins += c
+            elif m == 0:
+                wins += c * 0.5     # extra-innings coin flip
+        return wins / n
+    if market in ("total", "sharp_total"):
+        side = "OVER" if " Over " in desc else ("UNDER" if " Under " in desc else "")
+        if not side:
+            return None
+        if side == "OVER":
+            return sum(c for t, c in res.total_counts.items() if t > line) / n
+        return sum(c for t, c in res.total_counts.items() if t < line) / n
+    if market in ("run_line", "sharp_run_line"):
+        # description: "<team> <signed spread>" e.g. "NYY -1.5" / "BOS +1.5"
+        import re
+        m = re.search(r"([+-]\d+(?:\.\d+)?)", desc)
+        if not m:
+            return None
+        spread = float(m.group(1))
+        team_is_home = home in desc and (away not in desc or desc.index(home) < desc.index(away))
+        wins = 0
+        for mg, c in res.margin_counts.items():
+            t_margin = mg if team_is_home else -mg
+            if t_margin + spread > 0:
+                wins += c
+        return wins / n
+    return None
+
+
+def build_sim_leaderboard(games: list, sim_for_game, offered_bets: list[dict],
+                          top: int = 20) -> list[dict]:
+    """Rank every offered prop / game line across the slate by its simulated
+    hit rate. `sim_for_game(gp)->SimResult` runs (or caches) the sim for a
+    game; `offered_bets` is the slate-wide pool (each dict has market,
+    description, line, odds, game_pk, player_id). Returns the top `top` by
+    hit rate, deduped to one row per (game, player/market/side, line)."""
+    sims: dict = {}
+    rows: list[dict] = []
+    seen: set = set()
+    for b in offered_bets:
+        gpk = b.get("game_pk")
+        if gpk is None:
+            continue
+        if gpk not in sims:
+            gp = next((g for g in games if g.game_pk == gpk), None)
+            sims[gpk] = sim_for_game(gp) if gp is not None else None
+        res = sims[gpk]
+        if res is None or isinstance(res, str):
+            continue
+        hr = bet_sim_hitrate(res, b)
+        if hr is None:
+            continue
+        key = (gpk, b.get("player_id"), b.get("market"),
+               _side_of(b.get("description", "")) or b.get("description", ""),
+               round(float(b.get("line") or 0), 1))
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append({
+            "matchup": f"{res.away_team} @ {res.home_team}",
+            "description": b.get("description", ""),
+            "market": b.get("market", ""),
+            "odds": b.get("odds", 0),
+            "sim_hit": round(hr, 4),
+            "sim_hits_n": int(round(hr * res.n)),
+            "n": res.n,
+            "novig_prob": b.get("novig_prob"),
+        })
+    rows.sort(key=lambda r: -r["sim_hit"])
+    return rows[:top]
 
 
 def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
@@ -345,6 +489,15 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
     total_sum = 0
     score_counter: dict = {}
     total_hist: dict = {}
+    # Per-player value->count histograms for the leaderboard.
+    _BSTATS = ("h", "hr", "tb", "rbi", "r", "k", "bb")
+    _PSTATS = ("k", "bb", "h", "hr", "er", "outs")
+    bh_a = [{st: {} for st in _BSTATS} for _ in range(9)]
+    bh_h = [{st: {} for st in _BSTATS} for _ in range(9)]
+    ph_a = {st: {} for st in _PSTATS}
+    ph_h = {st: {} for st in _PSTATS}
+    margin_counts: dict = {}
+    total_counts: dict = {}
     ta = th = 0
     for i in range(n):
         spa = _sp_target(gp.get("away_starter"), rng)
@@ -352,7 +505,7 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
         ba, bh, pa, ph, ra, rh = _simulate_one(cums_a, cums_h, spa, sph, rng)
         ta += ra
         th += rh
-        for side_box, side_sum in ((ba, sum_a), (bh, sum_h)):
+        for side_box, side_sum, side_hist in ((ba, sum_a, bh_a), (bh, sum_h, bh_h)):
             for j in range(9):
                 bl = side_box[j]
                 s = side_sum[j]
@@ -362,13 +515,22 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
                     s["ph"] += 1
                 if bl.hr >= 1:
                     s["phr"] += 1
-        for src, dst in ((pa["SP"], psum_a), (ph["SP"], psum_h)):
+                hd = side_hist[j]
+                for st, val in (("h", bl.h), ("hr", bl.hr), ("tb", bl.tb),
+                                ("rbi", bl.rbi), ("r", bl.r), ("k", bl.k), ("bb", bl.bb)):
+                    d = hd[st]; d[val] = d.get(val, 0) + 1
+        for src, dst, dhist in ((pa["SP"], psum_a, ph_a), (ph["SP"], psum_h, ph_h)):
             dst["outs"] += src.outs; dst["k"] += src.k; dst["bb"] += src.bb
             dst["h"] += src.h; dst["hr"] += src.hr; dst["er"] += src.er
+            for st, val in (("k", src.k), ("bb", src.bb), ("h", src.h),
+                            ("hr", src.hr), ("er", src.er), ("outs", src.outs)):
+                d = dhist[st]; d[val] = d.get(val, 0) + 1
         if rh > ra:
             home_wins += 1
         total_sum += ra + rh
         total_hist[ra + rh] = total_hist.get(ra + rh, 0) + 1
+        total_counts[ra + rh] = total_counts.get(ra + rh, 0) + 1
+        margin_counts[rh - ra] = margin_counts.get(rh - ra, 0) + 1
         key = f"{rh}-{ra}"
         score_counter[key] = score_counter.get(key, 0) + 1
 
@@ -396,6 +558,25 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
             "er": round(psum["er"] / n, 2),
         }
 
+    # Key per-player histograms by player_id for leaderboard matching.
+    bat_hist: dict = {}
+    for jb, b in enumerate(bat_a):
+        pid = b.get("player_id")
+        if pid is not None:
+            bat_hist[int(pid)] = bh_a[jb]
+    for jb, b in enumerate(bat_h):
+        pid = b.get("player_id")
+        if pid is not None:
+            bat_hist[int(pid)] = bh_h[jb]
+    pit_hist: dict = {}
+    for sid_key, dhist in (("away_sp_id", ph_a), ("home_sp_id", ph_h)):
+        sid = gp.get(sid_key)
+        if sid is not None:
+            try:
+                pit_hist[int(sid)] = dhist
+            except (TypeError, ValueError):
+                pass
+
     return SimResult(
         n=n, away_team=gp.get("away_team", "AWAY"), home_team=gp.get("home_team", "HOME"),
         box_away=_box(bat_a, sum_a), box_home=_box(bat_h, sum_h),
@@ -409,4 +590,6 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
         mean_total=round(total_sum / n, 2),
         score_dist=dict(sorted(score_counter.items(), key=lambda kv: -kv[1])[:6]),
         total_hist={k: round(v / n, 4) for k, v in sorted(total_hist.items())},
+        bat_hist=bat_hist, pit_hist=pit_hist,
+        margin_counts=margin_counts, total_counts=total_counts,
     )

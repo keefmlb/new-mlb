@@ -680,7 +680,17 @@ def _gp_sim_dict(gp) -> dict:
         "pred_away_runs": gp.pred_away_runs, "pred_home_runs": gp.pred_home_runs,
         "away_batters": gp.away_batters, "home_batters": gp.home_batters,
         "away_starter": gp.away_starter, "home_starter": gp.home_starter,
+        "away_sp_id": gp.away_sp_id, "home_sp_id": gp.home_sp_id,
     }
+
+
+@st.cache_data(show_spinner=False)
+def _sim_leaderboard_cached(date: str, n: int, _games, _all_bets):
+    """Top-20 offered props/lines by simulated hit rate across the slate."""
+    from src import game_sim
+    def _sim_for_game(gp):
+        return game_sim.simulate_game(_gp_sim_dict(gp), n=n, seed=gp.game_pk)
+    return game_sim.build_sim_leaderboard(_games, _sim_for_game, _all_bets, top=20)
 
 
 @st.cache_data(show_spinner="Simulating…")
@@ -706,6 +716,48 @@ with main_tab_sim:
         st.info("No games have full 9-batter lineups projected yet (lineups post "
                 "closer to first pitch).")
     else:
+        # ---- Simulation leaderboard (10k sims/game) ----
+        st.markdown("##### :trophy: Simulation Leaderboard")
+        st.caption(
+            "Top 20 offered props & game lines across the slate, ranked by how "
+            "often they HIT across **10,000 sims per game**. The highest-"
+            "conviction outcomes the simulation produces — heavy favorites and "
+            "low-bar overs/unders. Heavy compute, so it runs on demand and caches."
+        )
+        if st.button("Build 10,000-sim leaderboard", key="sim_lb_btn"):
+            st.session_state["sim_lb_run"] = True
+        if st.session_state.get("sim_lb_run"):
+            with st.spinner("Simulating 10,000 games per matchup…"):
+                _lb = _sim_leaderboard_cached(
+                    slate.target_date, 10000, _sim_games, slate.all_bets)
+            if not _lb:
+                st.info("No offered props/lines could be matched to the simulation "
+                        "yet (need live odds + projected lineups).")
+            else:
+                import pandas as _pd
+                _amerf = lambda o: (f"+{int(o)}" if o and o > 0 else f"{int(o)}" if o else "—")
+                _lbdf = _pd.DataFrame([{
+                    "#": i + 1,
+                    "Matchup": r["matchup"],
+                    "Bet": r["description"],
+                    "Sim hit": f"{r['sim_hit']:.1%}",
+                    "Hits / 10k": f"{r['sim_hits_n']:,}",
+                    "Odds": _amerf(r["odds"]),
+                    "Book no-vig": (f"{r['novig_prob']:.1%}"
+                                    if r.get("novig_prob") not in (None, "") else "—"),
+                    "Sim − book": (f"{(r['sim_hit'] - float(r['novig_prob'])) * 100:+.1f}pp"
+                                   if r.get("novig_prob") not in (None, "") else "—"),
+                } for i, r in enumerate(_lb)])
+                st.dataframe(_lbdf, use_container_width=True, hide_index=True)
+                st.caption(
+                    "Ranked purely by **Sim hit** (simulated win frequency). "
+                    "**Sim − book** = simulation hit rate minus the book's no-vig "
+                    "implied probability — positive means the sim is more "
+                    "confident than the market (a model-vs-market edge signal, "
+                    "not a guarantee). One row per game/player/market/side."
+                )
+        st.divider()
+
         # ---- Slate overview (low N, cached) ----
         st.markdown("##### Slate overview")
         st.caption("Quick scan — 400 sims/game, anchored. Drill into a game below "
