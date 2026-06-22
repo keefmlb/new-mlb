@@ -136,6 +136,15 @@ def _edge_juice_adj(r):
     return float(r["edge_pct"]) / max(0.01, d - 1.0)
 
 
+def _edge_1sided_disc(r):
+    """edge_pct, but one-sided 'Yes' props are halved — their edge rests on
+    the unreliable 8% juice-strip estimate and floods the live leaderboard."""
+    e = float(r["edge_pct"])
+    if "1-sided" in str(r.get("description", "")):
+        e *= 0.5
+    return e
+
+
 def _skill_backed_only(r):
     """Edge × reliability, but ONLY for skill-backed markets — everything
     else is sent to the back of the pack."""
@@ -147,6 +156,7 @@ def _skill_backed_only(r):
 CANDIDATES = {
     "current_score (live)":      _current_score,
     "raw edge_pct":              _raw_edge,
+    "edge_pct 1-sided×0.5":      _edge_1sided_disc,
     "EV/$":                      _ev_per_dollar,
     "Kelly":                     _kelly,
     "edge × rel":                _edge_x_rel,
