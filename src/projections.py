@@ -24,6 +24,19 @@ from typing import Optional
 import math
 import pandas as pd
 
+# Per-market blend-weight overrides (ML weight cap applied at projection time).
+# train_props re-picks blend_weight (~0.50) each retrain on the prop holdout,
+# but the LIVE record tells a different story than that holdout: prop_tb_OVER
+# has bled across ~5 retrains (live -35% ROI) while the SAME projection run in
+# pure-analytical form wins in the replay archive (+9-19% ROI). The holdout MAE
+# the trainer optimizes does not capture this analytical-vs-ML live divergence,
+# so we cap TB to pure analytical here. This survives retrains (override beats
+# the re-learned weight). Revisit if live TB recovers under the cap.
+# (Jun 24 2026 — policy 2026-06-24-tb-analytical.)
+BLEND_WEIGHT_OVERRIDE = {
+    "tb": 0.0,   # pure analytical for total bases
+}
+
 # League rate priors (2024-2025 MLB averages)
 LG = {
     "k_pct": 0.225,
@@ -227,6 +240,8 @@ def _apply_ml_adjustment_batter(
                        ("k", "proj_k"), ("bb", "proj_bb")]:
         if stat in models:
             w = blend if blend is not None else getattr(models[stat], "blend_weight", 0.5)
+            if blend is None and stat in BLEND_WEIGHT_OVERRIDE:
+                w = BLEND_WEIGHT_OVERRIDE[stat]
             if w <= 0:
                 continue
             ml_pred = float(models[stat].predict(df)[0])
