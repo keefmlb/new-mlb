@@ -397,13 +397,10 @@ def bet_sim_hitrate(res: SimResult, bet: dict) -> float | None:
     return None
 
 
-def build_sim_leaderboard(games: list, sim_for_game, offered_bets: list[dict],
-                          top: int = 20) -> list[dict]:
-    """Rank every offered prop / game line across the slate by its simulated
-    hit rate. `sim_for_game(gp)->SimResult` runs (or caches) the sim for a
-    game; `offered_bets` is the slate-wide pool (each dict has market,
-    description, line, odds, game_pk, player_id). Returns the top `top` by
-    hit rate, deduped to one row per (game, player/market/side, line)."""
+def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict]) -> list[dict]:
+    """Score every offered prop / game line by its simulated hit rate, deduped
+    to one row per (game, player/market/side, line). Returns ALL rows
+    (unsorted, untruncated) — callers slice/group as needed."""
     sims: dict = {}
     rows: list[dict] = []
     seen: set = set()
@@ -431,13 +428,45 @@ def build_sim_leaderboard(games: list, sim_for_game, offered_bets: list[dict],
             "description": b.get("description", ""),
             "market": b.get("market", ""),
             "odds": b.get("odds", 0),
+            "line": b.get("line"),
+            "side": _side_of(b.get("description", "")),
+            "game_pk": gpk,
+            "player_id": b.get("player_id"),
             "sim_hit": round(hr, 4),
             "sim_hits_n": int(round(hr * res.n)),
             "n": res.n,
             "novig_prob": b.get("novig_prob"),
         })
+    return rows
+
+
+def build_sim_leaderboard(games: list, sim_for_game, offered_bets: list[dict],
+                          top: int = 20) -> list[dict]:
+    """Rank every offered prop / game line across the slate by its simulated
+    hit rate. `sim_for_game(gp)->SimResult` runs (or caches) the sim for a
+    game; `offered_bets` is the slate-wide pool (each dict has market,
+    description, line, odds, game_pk, player_id). Returns the top `top` by
+    hit rate, deduped to one row per (game, player/market/side, line)."""
+    rows = _build_sim_rows(games, sim_for_game, offered_bets)
     rows.sort(key=lambda r: -r["sim_hit"])
     return rows[:top]
+
+
+def build_sim_leaderboard_by_market(games: list, sim_for_game,
+                                    offered_bets: list[dict],
+                                    top: int = 20) -> dict[str, list[dict]]:
+    """Same scoring as `build_sim_leaderboard`, but grouped by market (stat).
+    Returns {market: top-N rows by sim hit count}, one entry per market that
+    has at least one mapped offer. Each market's rows are independently ranked
+    by simulated hit frequency and capped at `top`."""
+    rows = _build_sim_rows(games, sim_for_game, offered_bets)
+    by_mkt: dict[str, list[dict]] = {}
+    for r in rows:
+        by_mkt.setdefault(r["market"], []).append(r)
+    for mkt in by_mkt:
+        by_mkt[mkt].sort(key=lambda r: -r["sim_hit"])
+        by_mkt[mkt] = by_mkt[mkt][:top]
+    return by_mkt
 
 
 def simulate_game(gp: dict, n: int = 2000, seed: int = 0,

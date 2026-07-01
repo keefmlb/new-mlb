@@ -215,6 +215,11 @@ class GamePrediction:
     # Every evaluated bet for this game, regardless of edge — used by the
     # Pure Confidence leaderboard (model-certainty only, ignores book agreement).
     all_bets: list[dict] = field(default_factory=list)
+    # Bets removed from all_bets by value-policy guards (e.g. the pitcher-K
+    # OVER block) but kept for the Simulation Leaderboard, which measures the
+    # sim's own hit rates independently of the value policy. NEVER fed to the
+    # value-bet leaderboard or the bet log.
+    sim_only_bets: list[dict] = field(default_factory=list)
     # True only when BOTH starters are announced. UI flags this as a
     # warning and the leaderboard's Top 5 panel excludes bets from
     # unconfirmed games (since pitcher projections fall back to defaults).
@@ -233,6 +238,9 @@ class SlateResult:
     concentration_warning: Optional[str] = None
     # Slate-wide unfiltered bet pool for Pure Confidence ranking.
     all_bets: list[dict] = field(default_factory=list)
+    # Slate-wide pool for the Simulation Leaderboard = all_bets + bets the
+    # value policy blocked (e.g. pitcher-K OVERs). Measurement only.
+    sim_bets: list[dict] = field(default_factory=list)
     # Sharp-strategy audit: {"games_checked": int, "n_bets": int,
     # "best_ev": float|None}. games_checked counts games with a Polymarket
     # reference AND a comparable Fanatics line; best_ev is the best EV/$ seen
@@ -914,7 +922,16 @@ def predict_slate(target_date: date | str | None = None,
                     # to beat a K line set by people who know the pitch-count
                     # plan, matchup, and weather; our compression-corrected
                     # projections overshoot exactly there (-76% ROI, no guard
-                    # level rescued it).
+                    # level rescued it). We still hand the blocked overs to the
+                    # Simulation Leaderboard (measurement only) so the sim can
+                    # report its own K-over hit rates independently of this
+                    # value-policy block.
+                    _blocked_k_overs = [vb for vb in vbs_all if " OVER " in vb.description]
+                    for vb in _blocked_k_overs:
+                        vb.game_pk = int(f.game_pk)
+                        vb.player_id = _pid
+                        vb.starters_confirmed = starters_confirmed
+                    gp.sim_only_bets.extend(_vb_to_dict(vb) for vb in _blocked_k_overs)
                     vbs_all = [vb for vb in vbs_all if " OVER " not in vb.description]
                     # K prop edge cap at 15%. Mechanism: adverse selection — a
                     # huge model-vs-book gap on a K line almost always means the
@@ -1028,8 +1045,11 @@ def predict_slate(target_date: date | str | None = None,
         pass
 
     slate_all_bets: list[dict] = []
+    slate_sim_bets: list[dict] = []
     for gp in games_out:
         slate_all_bets.extend(gp.all_bets)
+        slate_sim_bets.extend(gp.all_bets)
+        slate_sim_bets.extend(gp.sim_only_bets)
 
     # Model-CI leaderboard + skill-backed parlays, from the full alt-line pool.
     model_ci_bets = parlays.model_confident_bets(slate_all_bets, MODEL_CI_THRESHOLD)
@@ -1052,6 +1072,7 @@ def predict_slate(target_date: date | str | None = None,
         top_value=top_value,
         concentration_warning=concentration_warning,
         all_bets=slate_all_bets,
+        sim_bets=slate_sim_bets,
         sharp_summary={"games_checked": _sharp_games_checked,
                        "n_bets": _n_sharp_bets,
                        "best_ev": _sharp_best_ev},

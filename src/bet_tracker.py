@@ -681,3 +681,10 @@ if __name__ == "__main__":
     else:
         n = evaluate_outcomes()
         print(f"Evaluated outcomes: {n} picks updated.")
+        # Grade Simulation Leaderboard picks in the same pipeline step.
+        try:
+            from . import sim_tracker
+            sn = sim_tracker.evaluate_sim_outcomes()
+            print(f"Evaluated sim outcomes: {sn} picks updated.")
+        except Exception as e:
+            print(f"(sim outcome grading skipped: {e})")

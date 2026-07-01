@@ -686,11 +686,12 @@ def _gp_sim_dict(gp) -> dict:
 
 @st.cache_data(show_spinner=False)
 def _sim_leaderboard_cached(date: str, n: int, _games, _all_bets):
-    """Top-20 offered props/lines by simulated hit rate across the slate."""
+    """Per-market top-20 offered props/lines by simulated hit rate."""
     from src import game_sim
     def _sim_for_game(gp):
         return game_sim.simulate_game(_gp_sim_dict(gp), n=n, seed=gp.game_pk)
-    return game_sim.build_sim_leaderboard(_games, _sim_for_game, _all_bets, top=20)
+    return game_sim.build_sim_leaderboard_by_market(
+        _games, _sim_for_game, _all_bets, top=20)
 
 
 @st.cache_data(show_spinner="Simulating…")
@@ -719,43 +720,114 @@ with main_tab_sim:
         # ---- Simulation leaderboard (10k sims/game) ----
         st.markdown("##### :trophy: Simulation Leaderboard")
         st.caption(
-            "Top 20 offered props & game lines across the slate, ranked by how "
-            "often they HIT across **10,000 sims per game**. The highest-"
-            "conviction outcomes the simulation produces — heavy favorites and "
-            "low-bar overs/unders. Heavy compute, so it runs on demand and caches."
+            "One tab per stat. Each shows the top 20 offered bets of that stat "
+            "across the slate, ranked by how many of **10,000 sims per game** "
+            "they HIT. Heavy compute, so it runs on demand and caches."
         )
+        # market -> display label / tab order (props first, then game lines).
+        _SIM_LB_LABELS = {
+            "prop_hits": "Hits", "prop_hr": "HR", "prop_tb": "TB",
+            "prop_rbi": "RBI", "prop_runs": "Runs", "prop_k": "Batter K",
+            "prop_bb": "Walks",
+            "prop_pitcher_k": "Pitcher K", "prop_pitcher_bb": "Pitcher BB",
+            "prop_pitcher_h": "Pitcher H", "prop_pitcher_er": "Pitcher ER",
+            "prop_pitcher_hr": "Pitcher HR", "prop_pitcher_outs": "Pitcher Outs",
+            "moneyline": "Moneyline", "total": "Total", "run_line": "Run Line",
+        }
         if st.button("Build 10,000-sim leaderboard", key="sim_lb_btn"):
             st.session_state["sim_lb_run"] = True
         if st.session_state.get("sim_lb_run"):
             with st.spinner("Simulating 10,000 games per matchup…"):
-                _lb = _sim_leaderboard_cached(
-                    slate.target_date, 10000, _sim_games, slate.all_bets)
-            if not _lb:
+                _lb_by_mkt = _sim_leaderboard_cached(
+                    slate.target_date, 10000, _sim_games,
+                    getattr(slate, "sim_bets", None) or slate.all_bets)
+            if not _lb_by_mkt:
                 st.info("No offered props/lines could be matched to the simulation "
                         "yet (need live odds + projected lineups).")
             else:
+                # Record the picks (live date only) so we can grade the sim's
+                # most-confident calls against actuals later. Idempotent.
+                if slate.target_date == today.isoformat():
+                    try:
+                        from src import sim_tracker
+                        _added = sim_tracker.log_sim_picks(slate.target_date, _lb_by_mkt)
+                        if _added:
+                            st.caption(f":floppy_disk: Logged {_added} new sim "
+                                       f"picks to the record.")
+                    except Exception as _e:
+                        st.caption(f"(sim-pick logging skipped: {_e})")
                 import pandas as _pd
                 _amerf = lambda o: (f"+{int(o)}" if o and o > 0 else f"{int(o)}" if o else "—")
-                _lbdf = _pd.DataFrame([{
-                    "#": i + 1,
-                    "Matchup": r["matchup"],
-                    "Bet": r["description"],
-                    "Sim hit": f"{r['sim_hit']:.1%}",
-                    "Hits / 10k": f"{r['sim_hits_n']:,}",
-                    "Odds": _amerf(r["odds"]),
-                    "Book no-vig": (f"{r['novig_prob']:.1%}"
-                                    if r.get("novig_prob") not in (None, "") else "—"),
-                    "Sim − book": (f"{(r['sim_hit'] - float(r['novig_prob'])) * 100:+.1f}pp"
-                                   if r.get("novig_prob") not in (None, "") else "—"),
-                } for i, r in enumerate(_lb)])
-                st.dataframe(_lbdf, use_container_width=True, hide_index=True)
+                # Tab order: labelled markets in declared order, then any extras.
+                _ordered = [m for m in _SIM_LB_LABELS if m in _lb_by_mkt]
+                _ordered += [m for m in _lb_by_mkt if m not in _SIM_LB_LABELS]
+                _tab_labels = [f"{_SIM_LB_LABELS.get(m, m)} ({len(_lb_by_mkt[m])})"
+                               for m in _ordered]
+                for _tab, _mkt in zip(st.tabs(_tab_labels), _ordered):
+                    with _tab:
+                        _rows = _lb_by_mkt[_mkt]
+                        _lbdf = _pd.DataFrame([{
+                            "#": i + 1,
+                            "Matchup": r["matchup"],
+                            "Bet": r["description"],
+                            "Sim hit": f"{r['sim_hit']:.1%}",
+                            "Hits / 10k": f"{r['sim_hits_n']:,}",
+                            "Odds": _amerf(r["odds"]),
+                            "Book no-vig": (f"{r['novig_prob']:.1%}"
+                                            if r.get("novig_prob") not in (None, "") else "—"),
+                            "Sim − book": (f"{(r['sim_hit'] - float(r['novig_prob'])) * 100:+.1f}pp"
+                                           if r.get("novig_prob") not in (None, "") else "—"),
+                        } for i, r in enumerate(_rows)])
+                        st.dataframe(_lbdf, use_container_width=True, hide_index=True)
                 st.caption(
-                    "Ranked purely by **Sim hit** (simulated win frequency). "
-                    "**Sim − book** = simulation hit rate minus the book's no-vig "
-                    "implied probability — positive means the sim is more "
-                    "confident than the market (a model-vs-market edge signal, "
-                    "not a guarantee). One row per game/player/market/side."
+                    "Each tab ranks that stat's offers purely by **Sim hit** "
+                    "(simulated win frequency). **Sim − book** = simulation hit "
+                    "rate minus the book's no-vig implied probability — positive "
+                    "means the sim is more confident than the market (a model-vs-"
+                    "market edge signal, not a guarantee). One row per "
+                    "game/player/side/line."
                 )
+
+        # ---- Sim pick record (graded against actuals) ----
+        with st.expander(":bar_chart: Sim pick record — how the sim's picks have done"):
+            try:
+                from src import sim_tracker
+                _rec = sim_tracker.get_sim_record(days=60)
+            except Exception as _e:
+                _rec = None
+                st.caption(f"(sim record unavailable: {_e})")
+            if _rec and _rec["total"]:
+                _wr = _rec["win_rate"]
+                st.caption(
+                    f"Last 60 days · **{_rec['wins']}W-{_rec['losses']}L"
+                    f"-{_rec['pushes']}P** "
+                    + (f"({_wr:.0%})" if _wr is not None else "")
+                    + f" · {_rec['pending']} pending. Picks are logged the day "
+                    "you build the leaderboard and graded once games go final."
+                )
+                _cal = _rec.get("calibration", {})
+                _crows = []
+                for _m, _bm in sorted(_rec["by_market"].items()):
+                    _c = _cal.get(_m, {})
+                    _msh, _mwr = _c.get("mean_sim_hit"), _c.get("win_rate")
+                    _crows.append({
+                        "Stat": _SIM_LB_LABELS.get(_m, _m),
+                        "W": _bm["wins"], "L": _bm["losses"], "P": _bm["pushes"],
+                        "Pending": _bm["pending"],
+                        "Mean sim hit": f"{_msh:.0%}" if _msh is not None else "—",
+                        "Actual win%": f"{_mwr:.0%}" if _mwr is not None else "—",
+                    })
+                if _crows:
+                    st.dataframe(pd.DataFrame(_crows), use_container_width=True,
+                                 hide_index=True)
+                    st.caption(
+                        "**Mean sim hit** vs **Actual win%** is the calibration "
+                        "check: when the sim says a pick hits X% of the time, does "
+                        "it win about X% live? Close agreement = trustworthy sim."
+                    )
+            elif _rec is not None:
+                st.caption("No sim picks recorded yet. Build the leaderboard on a "
+                           "live slate to start the record.")
         st.divider()
 
         # ---- Slate overview (low N, cached) ----
