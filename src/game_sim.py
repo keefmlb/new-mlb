@@ -397,23 +397,43 @@ def bet_sim_hitrate(res: SimResult, bet: dict) -> float | None:
     return None
 
 
-def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict]) -> list[dict]:
+# Odds worse (more negative) than this are excluded from the leaderboard —
+# heavy chalk hits most often by construction and floods the "most times hit"
+# board (especially fine-tuned pitcher props) with unbettable juice.
+MIN_ODDS = -400
+
+
+def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict],
+                    min_odds: float | None = MIN_ODDS) -> list[dict]:
     """Score every offered prop / game line by its simulated hit rate, deduped
     to one row per (game, player/market/side, line). Returns ALL rows
-    (unsorted, untruncated) — callers slice/group as needed."""
+    (unsorted, untruncated) — callers slice/group as needed. Bets priced worse
+    than `min_odds` (-400 by default) are dropped; pass min_odds=None to keep
+    every offer (used when the odds feed is degraded/rate-limited so the board
+    isn't thinned further)."""
     sims: dict = {}
+    _labels: dict = {}
     rows: list[dict] = []
     seen: set = set()
     for b in offered_bets:
         gpk = b.get("game_pk")
         if gpk is None:
             continue
+        if min_odds is not None:
+            try:
+                _o = float(b.get("odds") or 0)
+            except (TypeError, ValueError):
+                _o = 0.0
+            if _o < 0 and _o < min_odds:  # e.g. -450, -500 — heavier than -400
+                continue
         if gpk not in sims:
             gp = next((g for g in games if g.game_pk == gpk), None)
             sims[gpk] = sim_for_game(gp) if gp is not None else None
+            _labels[gpk] = getattr(gp, "matchup_label", "") if gp is not None else ""
         res = sims[gpk]
         if res is None or isinstance(res, str):
             continue
+        _matchup = _labels.get(gpk) or f"{res.away_team} @ {res.home_team}"
         hr = bet_sim_hitrate(res, b)
         if hr is None:
             continue
@@ -424,7 +444,7 @@ def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict]) -> list
             continue
         seen.add(key)
         rows.append({
-            "matchup": f"{res.away_team} @ {res.home_team}",
+            "matchup": _matchup,
             "description": b.get("description", ""),
             "market": b.get("market", ""),
             "odds": b.get("odds", 0),
@@ -441,25 +461,30 @@ def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict]) -> list
 
 
 def build_sim_leaderboard(games: list, sim_for_game, offered_bets: list[dict],
-                          top: int = 20) -> list[dict]:
+                          top: int = 20,
+                          min_odds: float | None = MIN_ODDS) -> list[dict]:
     """Rank every offered prop / game line across the slate by its simulated
     hit rate. `sim_for_game(gp)->SimResult` runs (or caches) the sim for a
     game; `offered_bets` is the slate-wide pool (each dict has market,
     description, line, odds, game_pk, player_id). Returns the top `top` by
-    hit rate, deduped to one row per (game, player/market/side, line)."""
-    rows = _build_sim_rows(games, sim_for_game, offered_bets)
+    hit rate, deduped to one row per (game, player/market/side, line).
+    `min_odds=None` disables the -400 juice filter."""
+    rows = _build_sim_rows(games, sim_for_game, offered_bets, min_odds=min_odds)
     rows.sort(key=lambda r: -r["sim_hit"])
     return rows[:top]
 
 
 def build_sim_leaderboard_by_market(games: list, sim_for_game,
                                     offered_bets: list[dict],
-                                    top: int = 20) -> dict[str, list[dict]]:
+                                    top: int = 20,
+                                    min_odds: float | None = MIN_ODDS,
+                                    ) -> dict[str, list[dict]]:
     """Same scoring as `build_sim_leaderboard`, but grouped by market (stat).
     Returns {market: top-N rows by sim hit count}, one entry per market that
     has at least one mapped offer. Each market's rows are independently ranked
-    by simulated hit frequency and capped at `top`."""
-    rows = _build_sim_rows(games, sim_for_game, offered_bets)
+    by simulated hit frequency and capped at `top`. `min_odds=None` disables
+    the -400 juice filter (used when the odds feed is degraded)."""
+    rows = _build_sim_rows(games, sim_for_game, offered_bets, min_odds=min_odds)
     by_mkt: dict[str, list[dict]] = {}
     for r in rows:
         by_mkt.setdefault(r["market"], []).append(r)
@@ -467,6 +492,27 @@ def build_sim_leaderboard_by_market(games: list, sim_for_game,
         by_mkt[mkt].sort(key=lambda r: -r["sim_hit"])
         by_mkt[mkt] = by_mkt[mkt][:top]
     return by_mkt
+
+
+def build_sim_boards(games: list, sim_for_game, offered_bets: list[dict],
+                     top: int = 20, min_odds: float | None = MIN_ODDS,
+                     hi_threshold: float = 0.95) -> dict:
+    """Run the sim once and return every leaderboard view the app needs:
+      {"by_market": {market: top-N rows}, "high_conf": [rows >= hi_threshold]}
+    `high_conf` is the cross-stat pool of the most confident offers (default
+    sim hit >= 95%), sorted by hit rate descending and NOT truncated per market
+    — so a market with many locks still surfaces all of them. Building both
+    views from one row-scoring pass avoids simulating the slate twice."""
+    rows = _build_sim_rows(games, sim_for_game, offered_bets, min_odds=min_odds)
+    by_mkt: dict[str, list[dict]] = {}
+    for r in rows:
+        by_mkt.setdefault(r["market"], []).append(r)
+    for mkt in by_mkt:
+        by_mkt[mkt].sort(key=lambda r: -r["sim_hit"])
+        by_mkt[mkt] = by_mkt[mkt][:top]
+    high_conf = sorted((r for r in rows if r["sim_hit"] >= hi_threshold),
+                       key=lambda r: -r["sim_hit"])
+    return {"by_market": by_mkt, "high_conf": high_conf}
 
 
 def simulate_game(gp: dict, n: int = 2000, seed: int = 0,

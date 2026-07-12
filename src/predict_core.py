@@ -215,6 +215,9 @@ class GamePrediction:
     # Every evaluated bet for this game, regardless of edge — used by the
     # Pure Confidence leaderboard (model-certainty only, ignores book agreement).
     all_bets: list[dict] = field(default_factory=list)
+    # Display label "AWAY @ HOME", suffixed " (Game 1/2)" for doubleheaders.
+    # Set once per slate in predict_slate so every view labels DHs consistently.
+    matchup_label: str = ""
     # Bets removed from all_bets by value-policy guards (e.g. the pitcher-K
     # OVER block) but kept for the Simulation Leaderboard, which measures the
     # sim's own hit rates independently of the value policy. NEVER fed to the
@@ -1050,6 +1053,21 @@ def predict_slate(target_date: date | str | None = None,
         slate_all_bets.extend(gp.all_bets)
         slate_sim_bets.extend(gp.all_bets)
         slate_sim_bets.extend(gp.sim_only_bets)
+
+    # Doubleheader tagging: when the same two teams meet twice on a date, label
+    # the games "Game 1"/"Game 2" (ordered by first pitch, then game_pk) so the
+    # UI and sim record can tell them apart. Single games get no suffix.
+    _by_match: dict[tuple, list] = {}
+    for gp in games_out:
+        _by_match.setdefault((gp.away_team, gp.home_team), []).append(gp)
+    for (_away, _home), _grp in _by_match.items():
+        _base = f"{_away} @ {_home}"
+        if len(_grp) > 1:
+            _grp.sort(key=lambda g: (g.first_pitch_utc or "", g.game_pk))
+            for _i, gp in enumerate(_grp, start=1):
+                gp.matchup_label = f"{_base} (Game {_i})"
+        else:
+            _grp[0].matchup_label = _base
 
     # Model-CI leaderboard + skill-backed parlays, from the full alt-line pool.
     model_ci_bets = parlays.model_confident_bets(slate_all_bets, MODEL_CI_THRESHOLD)

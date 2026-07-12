@@ -7,6 +7,19 @@ Pages:
   - Slate (default): date picker, top value bets, per-game cards, drill-down
 """
 from __future__ import annotations
+import os
+
+# Cap BLAS/OpenMP thread pools and the joblib/loky worker count BEFORE numpy
+# (via pandas) initializes them. Without this, loading the team-runs ensemble
+# under scikit-learn 1.9 fans predict_slate out into ~1 worker process per CPU
+# core, each loading the full 1.5 GB model stack — 24 workers oversubscribe RAM
+# and livelock, so the app loads its shell (HTTP 200) but the slate never
+# populates. With the caps a full slate prediction runs in ~8 s instead of ~9
+# min. Only sets defaults, so an explicit override in the environment still wins.
+for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_v, "4")
+os.environ.setdefault("LOKY_MAX_CPU_COUNT", "2")
+
 import json
 import sys
 from datetime import date, datetime, timedelta, timezone
@@ -685,13 +698,16 @@ def _gp_sim_dict(gp) -> dict:
 
 
 @st.cache_data(show_spinner=False)
-def _sim_leaderboard_cached(date: str, n: int, _games, _all_bets):
-    """Per-market top-20 offered props/lines by simulated hit rate."""
+def _sim_leaderboard_cached(date: str, n: int, _games, _all_bets, min_odds=-400):
+    """Per-market top-20 + cross-stat 95%+ locks by simulated hit rate.
+    Returns {"by_market": {...}, "high_conf": [...]}. `min_odds` is the -400
+    juice filter; pass None to disable it (degraded odds feed)."""
     from src import game_sim
     def _sim_for_game(gp):
         return game_sim.simulate_game(_gp_sim_dict(gp), n=n, seed=gp.game_pk)
-    return game_sim.build_sim_leaderboard_by_market(
-        _games, _sim_for_game, _all_bets, top=20)
+    return game_sim.build_sim_boards(
+        _games, _sim_for_game, _all_bets, top=20, min_odds=min_odds,
+        hi_threshold=0.95)
 
 
 @st.cache_data(show_spinner="Simulating…")
@@ -737,10 +753,23 @@ with main_tab_sim:
         if st.button("Build 10,000-sim leaderboard", key="sim_lb_btn"):
             st.session_state["sim_lb_run"] = True
         if st.session_state.get("sim_lb_run"):
+            # When the odds feed is degraded (rate-limited / no props loaded),
+            # drop the -400 juice filter so the board still populates from the
+            # thin pool instead of thinning it further.
+            _degraded = (slate.n_props_loaded == 0
+                         or slate.odds_source in ("error", "none", ""))
+            _min_odds = None if _degraded else -400
+            if _degraded:
+                st.caption(":warning: Odds feed looks degraded/rate-limited — "
+                           "the -400 juice filter is OFF so the board still "
+                           "populates. Retry in a few minutes for the full pool.")
             with st.spinner("Simulating 10,000 games per matchup…"):
-                _lb_by_mkt = _sim_leaderboard_cached(
+                _boards = _sim_leaderboard_cached(
                     slate.target_date, 10000, _sim_games,
-                    getattr(slate, "sim_bets", None) or slate.all_bets)
+                    getattr(slate, "sim_bets", None) or slate.all_bets,
+                    min_odds=_min_odds)
+            _lb_by_mkt = _boards["by_market"]
+            _hi = _boards["high_conf"]
             if not _lb_by_mkt:
                 st.info("No offered props/lines could be matched to the simulation "
                         "yet (need live odds + projected lineups).")
@@ -758,16 +787,14 @@ with main_tab_sim:
                         st.caption(f"(sim-pick logging skipped: {_e})")
                 import pandas as _pd
                 _amerf = lambda o: (f"+{int(o)}" if o and o > 0 else f"{int(o)}" if o else "—")
-                # Tab order: labelled markets in declared order, then any extras.
-                _ordered = [m for m in _SIM_LB_LABELS if m in _lb_by_mkt]
-                _ordered += [m for m in _lb_by_mkt if m not in _SIM_LB_LABELS]
-                _tab_labels = [f"{_SIM_LB_LABELS.get(m, m)} ({len(_lb_by_mkt[m])})"
-                               for m in _ordered]
-                for _tab, _mkt in zip(st.tabs(_tab_labels), _ordered):
-                    with _tab:
-                        _rows = _lb_by_mkt[_mkt]
-                        _lbdf = _pd.DataFrame([{
-                            "#": i + 1,
+
+                def _lb_table(_rows, with_stat=False):
+                    _cols = []
+                    for i, r in enumerate(_rows):
+                        _row = {"#": i + 1}
+                        if with_stat:
+                            _row["Stat"] = _SIM_LB_LABELS.get(r["market"], r["market"])
+                        _row.update({
                             "Matchup": r["matchup"],
                             "Bet": r["description"],
                             "Sim hit": f"{r['sim_hit']:.1%}",
@@ -777,10 +804,48 @@ with main_tab_sim:
                                             if r.get("novig_prob") not in (None, "") else "—"),
                             "Sim − book": (f"{(r['sim_hit'] - float(r['novig_prob'])) * 100:+.1f}pp"
                                            if r.get("novig_prob") not in (None, "") else "—"),
-                        } for i, r in enumerate(_rows)])
-                        st.dataframe(_lbdf, use_container_width=True, hide_index=True)
+                        })
+                        _cols.append(_row)
+                    st.dataframe(_pd.DataFrame(_cols), use_container_width=True,
+                                 hide_index=True)
+
+                # Tab order: 95%+ locks FIRST, then labelled markets, then extras.
+                _ordered = [m for m in _SIM_LB_LABELS if m in _lb_by_mkt]
+                _ordered += [m for m in _lb_by_mkt if m not in _SIM_LB_LABELS]
+                _tab_labels = [f":fire: 95-100% ({len(_hi)})"] + [
+                    f"{_SIM_LB_LABELS.get(m, m)} ({len(_lb_by_mkt[m])})" for m in _ordered]
+                _tabs = st.tabs(_tab_labels)
+
+                # --- Locks tab (cross-stat 95%+) ---
+                with _tabs[0]:
+                    if not _hi:
+                        st.info("No offer cleared 95% sim hit today.")
+                    else:
+                        _locks100 = [r for r in _hi if r["sim_hit"] >= 0.9999]
+                        if _locks100:
+                            st.success(f":dart: **{len(_locks100)} offer(s) hit in "
+                                       f"ALL 10,000 sims (100%)**")
+                            _lb_table(_locks100, with_stat=True)
+                            st.markdown("**Rest of the 95-100% board**")
+                            _rest = [r for r in _hi if r["sim_hit"] < 0.9999]
+                            if _rest:
+                                _lb_table(_rest, with_stat=True)
+                        else:
+                            _lb_table(_hi, with_stat=True)
+                        st.caption(
+                            "Every offer across ALL stats the sim hit ≥95% of "
+                            "10,000 sims, most confident first. 100% = hit in "
+                            "every single sim. High sim confidence is NOT a "
+                            "guarantee — check the Sim pick record's bracket "
+                            "table for how these bands actually cash."
+                        )
+
+                # --- Per-stat tabs ---
+                for _tab, _mkt in zip(_tabs[1:], _ordered):
+                    with _tab:
+                        _lb_table(_lb_by_mkt[_mkt])
                 st.caption(
-                    "Each tab ranks that stat's offers purely by **Sim hit** "
+                    "Each stat tab ranks that stat's offers purely by **Sim hit** "
                     "(simulated win frequency). **Sim − book** = simulation hit "
                     "rate minus the book's no-vig implied probability — positive "
                     "means the sim is more confident than the market (a model-vs-"
@@ -825,6 +890,25 @@ with main_tab_sim:
                         "check: when the sim says a pick hits X% of the time, does "
                         "it win about X% live? Close agreement = trustworthy sim."
                     )
+                # Sim-confidence brackets: realized win% per 5% sim-hit band.
+                _brk = _rec.get("brackets", [])
+                if _brk:
+                    st.markdown("**Win rate by sim-confidence bracket**")
+                    _brows = [{
+                        "Sim confidence": b["label"],
+                        "W": b["wins"], "L": b["losses"],
+                        "Bets": b["decided"],
+                        "Actual win%": (f"{b['win_rate']:.0%}"
+                                        if b["win_rate"] is not None else "—"),
+                    } for b in _brk]
+                    st.dataframe(pd.DataFrame(_brows), use_container_width=True,
+                                 hide_index=True)
+                    st.caption(
+                        "Each row groups graded picks by the sim's stated hit "
+                        "chance (e.g. 90-95%) and shows how often they actually "
+                        "won. A well-calibrated sim's Actual win% lands inside "
+                        "each band; consistently lower = the sim runs hot."
+                    )
             elif _rec is not None:
                 st.caption("No sim picks recorded yet. Build the leaderboard on a "
                            "live slate to start the record.")
@@ -840,7 +924,7 @@ with main_tab_sim:
             if isinstance(r, str) or r is False:
                 continue
             _ov_rows.append({
-                "Game": f"{g.away_team} @ {g.home_team}",
+                "Game": getattr(g, "matchup_label", "") or f"{g.away_team} @ {g.home_team}",
                 "Sim score (H–A)": f"{r.anchored_home:.1f}–{r.anchored_away:.1f}",
                 "P(home win)": round(r.p_home_win, 3),
                 "Mean total": r.mean_total,
@@ -853,7 +937,8 @@ with main_tab_sim:
         st.divider()
         # ---- Per-game drill-down (high N) ----
         st.markdown("##### Drill-down")
-        _labels = [f"{g.away_team} @ {g.home_team}" for g in _sim_games]
+        _labels = [getattr(g, "matchup_label", "") or f"{g.away_team} @ {g.home_team}"
+                   for g in _sim_games]
         c1, c2 = st.columns([3, 1])
         _pick = c1.selectbox("Game", range(len(_sim_games)),
                              format_func=lambda i: _labels[i], key="sim_game")
@@ -867,7 +952,7 @@ with main_tab_sim:
             st.warning("Could not simulate this game.")
         else:
             # Team totals — anchored vs bottom-up vs model
-            st.markdown(f"**{res.away_team} @ {res.home_team}** · {res.n:,} sims")
+            st.markdown(f"**{_labels[_pick]}** · {res.n:,} sims")
             t1, t2, t3, t4 = st.columns(4)
             t1.metric(f"Sim score ({res.home_team})", f"{res.anchored_home:.2f}",
                       delta=f"bottom-up {res.free_home:.2f}")

@@ -176,6 +176,11 @@ def get_sim_record(days: int = 30) -> dict:
             "decided": decided,
         }
 
+    # Sim-confidence brackets: bucket each graded pick by its sim_hit into 5%
+    # bands and report the realized win rate per band. This is the calibration
+    # curve — a 90-95% band should win ~90-95% if the sim is honest.
+    brackets = _confidence_brackets(recent)
+
     wins   = sum(b["wins"] for b in by_market.values())
     losses = sum(b["losses"] for b in by_market.values())
     pushes = sum(b["pushes"] for b in by_market.values())
@@ -190,9 +195,58 @@ def get_sim_record(days: int = 30) -> dict:
         "win_rate": wins / decided if decided else None,
         "by_market": by_market,
         "calibration": calibration,
+        "brackets": brackets,
         "entries":  sorted(recent, key=lambda x: (x["date"], x.get("market", "")),
                            reverse=True),
     }
+
+
+# Sim-confidence band edges (fractions). Picks are bucketed by sim_hit into
+# [lo, hi) bands; the top band is inclusive of 1.0.
+_BRACKET_EDGES = [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.01]
+
+
+def _confidence_brackets(entries: list[dict]) -> list[dict]:
+    """Bucket graded picks (W/L; pushes/pending excluded) by sim_hit into 5%
+    bands and report the realized win rate per band. Highest band first.
+    Each row: {label, lo, hi, wins, losses, decided, win_rate, mean_sim_hit}."""
+    buckets: dict[int, dict] = {}
+    for e in entries:
+        o = e.get("outcome")
+        if o not in ("W", "L"):
+            continue
+        sh = e.get("sim_hit")
+        if sh is None:
+            continue
+        sh = float(sh)
+        # find band index
+        idx = None
+        for i in range(len(_BRACKET_EDGES) - 1):
+            lo, hi = _BRACKET_EDGES[i], _BRACKET_EDGES[i + 1]
+            if lo <= sh < hi:
+                idx = i
+                break
+        if idx is None:
+            continue
+        b = buckets.setdefault(idx, {"wins": 0, "losses": 0, "sim_sum": 0.0})
+        b["wins"] += 1 if o == "W" else 0
+        b["losses"] += 1 if o == "L" else 0
+        b["sim_sum"] += sh
+
+    out: list[dict] = []
+    for i in sorted(buckets, reverse=True):
+        lo, hi = _BRACKET_EDGES[i], _BRACKET_EDGES[i + 1]
+        b = buckets[i]
+        decided = b["wins"] + b["losses"]
+        hi_disp = min(hi, 1.0)
+        out.append({
+            "label": f"{lo*100:.0f}-{hi_disp*100:.0f}%",
+            "lo": lo, "hi": hi_disp,
+            "wins": b["wins"], "losses": b["losses"], "decided": decided,
+            "win_rate": (b["wins"] / decided if decided else None),
+            "mean_sim_hit": (b["sim_sum"] / decided if decided else None),
+        })
+    return out
 
 
 if __name__ == "__main__":
