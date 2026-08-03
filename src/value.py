@@ -41,6 +41,13 @@ def american_to_prob(odds: int) -> float:
 
 
 def american_to_decimal(odds: int) -> float:
+    # odds == 0 (or None) is missing data, not a real price — a degraded or
+    # rate-limited feed can hand back 0 and the unguarded -100/0 division used
+    # to raise ZeroDivisionError out of evaluate_game_lines, killing the whole
+    # slate. Mirror the odds == 0 guard in american_to_implied and return 1.0
+    # (stake back, no profit) so such a line can never look +EV.
+    if not odds:
+        return 1.0
     if odds > 0:
         return 1.0 + odds / 100.0
     return 1.0 + 100.0 / (-odds)
@@ -723,6 +730,10 @@ def evaluate_game_lines(
 PROP_DISPERSION = {
     "hr": 1.0, "hits": 1.0, "tb": 2.0, "rbi": 1.5, "runs": 1.0,
     "k": 1.0, "bb": 1.0, "sb": 1.0,
+    # H+R+RBI sums three positively-correlated counts, so it is materially
+    # over-dispersed vs any single part. Fallback only — the fitted curve in
+    # dispersion.json ("hrr") is what live pricing normally uses.
+    "hrr": 2.5,
     # Pitcher
     "pitcher_k": 1.2, "pitcher_outs": 1.2, "pitcher_er": 1.6, "pitcher_h": 1.2,
     "pitcher_bb": 1.0, "pitcher_hr": 1.2,

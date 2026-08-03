@@ -62,6 +62,7 @@ BAT_MARKETS = [
     ("proj_runs", "runs_b", "runs"),
     ("proj_k",    "k_b",    "k"),
     ("proj_bb",   "bb_b",   "bb"),
+    ("proj_hrr",  "hrr",    "hrr"),
 ]
 PIT_MARKETS = [
     ("proj_k",        "k_p",  "pitcher_k"),
@@ -107,6 +108,13 @@ def _load(csvs: list[Path]) -> pd.DataFrame | None:
     if not frames:
         return None
     df = pd.concat(frames, ignore_index=True, sort=False)
+    # Derive Hits+Runs+RBIs (a real book market) so it gets its own fitted
+    # calibration instead of falling back to the blanket 0.70 shrink.
+    _a = [c for c in ("h", "runs_b", "rbi") if c in df.columns]
+    _p = [c for c in ("proj_h", "proj_runs", "proj_rbi") if c in df.columns]
+    if len(_a) == 3 and len(_p) == 3:
+        df["hrr"] = df[_a].sum(axis=1)
+        df["proj_hrr"] = df[_p].sum(axis=1)
     return df.sort_values("date").reset_index(drop=True)
 
 

@@ -215,6 +215,10 @@ class GamePrediction:
     # Every evaluated bet for this game, regardless of edge — used by the
     # Pure Confidence leaderboard (model-certainty only, ignores book agreement).
     all_bets: list[dict] = field(default_factory=list)
+    # Bullpen quality — the sim needs it because relievers are NOT the starter
+    # (batter rates bake in the starter, so post-hook innings were mis-modelled).
+    home_bp_fip: float = 4.20
+    away_bp_fip: float = 4.20
     # Display label "AWAY @ HOME", suffixed " (Game 1/2)" for doubleheaders.
     # Set once per slate in predict_slate so every view labels DHs consistently.
     matchup_label: str = ""
@@ -336,6 +340,10 @@ _MARKET_MIN_EDGE_PCT: dict[str, float] = {
     "prop_rbi":        7.0,
     "prop_tb":         6.0,
     "prop_hits":       6.0,
+    # H+R+RBI compounds the projection error of its three noisy components,
+    # so it gets the same conservative floor as its parts until we have a
+    # live track record for it.
+    "prop_hrr":        7.0,
     "prop_pitcher_er": 6.0,
     "prop_pitcher_bb": 5.0,
     "prop_pitcher_hr": 5.0,
@@ -604,6 +612,7 @@ def predict_slate(target_date: date | str | None = None,
             home_sp_fip=f.home_sp_fip, home_sp_xfip=f.home_sp_xfip,
             away_sp_id=f.away_sp_id, away_sp_name=f.away_sp_name,
             away_sp_fip=f.away_sp_fip, away_sp_xfip=f.away_sp_xfip,
+            home_bp_fip=f.home_bp_fip, away_bp_fip=f.away_bp_fip,
             starters_confirmed=starters_confirmed,
 
             temp_f=f.temp_f, wind_to_cf_mph=f.wind_to_cf_mph,
@@ -875,6 +884,11 @@ def predict_slate(target_date: date | str | None = None,
                         "hr": bproj.proj_hr, "hits": bproj.proj_h, "tb": bproj.proj_tb,
                         "rbi": bproj.proj_rbi, "runs": bproj.proj_runs, "k": bproj.proj_k,
                         "bb": bproj.proj_bb, "sb": bproj.proj_sb,
+                        # Hits+Runs+RBIs: mean is additive even though the parts
+                        # are correlated (E[X+Y+Z] = EX+EY+EZ); the correlation
+                        # is absorbed by the fitted "hrr" dispersion.
+                        "hrr": (bproj.proj_h or 0.0) + (bproj.proj_runs or 0.0)
+                               + (bproj.proj_rbi or 0.0),
                     }
                     mean = means.get(pp["market"])
                 if mean is None:

@@ -92,6 +92,16 @@ def fit_all(bat_csv: Path, pit_csv: Path) -> dict:
     bat = pd.read_csv(bat_csv)
     pit = pd.read_csv(pit_csv)
 
+    # Hits+Runs+RBIs is a book market (the largest one Fanatics offers). It is
+    # a SUM of three positively-correlated counts, so its dispersion is much
+    # wider than any single component — fit it empirically rather than assuming
+    # the parts are independent.
+    _hrr_actual = [c for c in ("h", "runs_b", "rbi") if c in bat.columns]
+    _hrr_proj = [c for c in ("proj_h", "proj_runs", "proj_rbi") if c in bat.columns]
+    if len(_hrr_actual) == 3 and len(_hrr_proj) == 3:
+        bat["hrr"] = bat[_hrr_actual].sum(axis=1)
+        bat["proj_hrr"] = bat[_hrr_proj].sum(axis=1)
+
     out: dict[str, dict] = {"batter": {}, "pitcher": {}}
 
     for stat, actual_col, proj_col in [
@@ -102,6 +112,7 @@ def fit_all(bat_csv: Path, pit_csv: Path) -> dict:
         ("runs", "runs_b", "proj_runs"),
         ("k",    "k_b",    "proj_k"),
         ("bb",   "bb_b",   "proj_bb"),
+        ("hrr",  "hrr",    "proj_hrr"),
     ]:
         if proj_col not in bat.columns:
             continue

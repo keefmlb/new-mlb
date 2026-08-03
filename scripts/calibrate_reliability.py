@@ -66,6 +66,7 @@ BATTER_SPECS = [
     ("proj_runs", "runs_b", "prop_runs"),
     ("proj_k",    "k_b",    "prop_k"),
     ("proj_bb",   "bb_b",   "prop_bb"),
+    ("proj_hrr",  "hrr",    "prop_hrr"),
 ]
 
 PITCHER_SPECS = [
@@ -130,6 +131,13 @@ def main():
     if bat_combined is None:
         print(f"WARNING: no batter props CSVs found — run scripts.train_props first.")
     else:
+        # Derive the Hits+Runs+RBIs market (a real book market, summed from
+        # three correlated components) so it gets a reliability weight too.
+        _a = [c for c in ("h", "runs_b", "rbi") if c in bat_combined.columns]
+        _p = [c for c in ("proj_h", "proj_runs", "proj_rbi") if c in bat_combined.columns]
+        if len(_a) == 3 and len(_p) == 3:
+            bat_combined["hrr"] = bat_combined[_a].sum(axis=1)
+            bat_combined["proj_hrr"] = bat_combined[_p].sum(axis=1)
         years = sorted(bat_combined["_year"].unique())
         bat_ho = _holdout(bat_combined)
         print(f"Batter holdout: {len(bat_ho)} player-games  "

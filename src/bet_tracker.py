@@ -606,13 +606,19 @@ def _resolve_outcome(entry: dict, games, box) -> dict | None:
         "prop_pitcher_bb":   ("bb_p",  "h"),
         "prop_pitcher_hr":   ("hr_p",  "h"),
     }
-    if market not in stat_map:
-        return None
-
-    col, _ = stat_map[market]
-    if col not in r:
-        return None
-    actual = float(r[col] or 0)
+    # Hits+Runs+RBIs is a summed market — no single boxscore column holds it.
+    if market == "prop_hrr":
+        _parts = ("h", "runs_b", "rbi")
+        if any(c not in r for c in _parts):
+            return None
+        actual = float(sum(float(r[c] or 0) for c in _parts))
+    else:
+        if market not in stat_map:
+            return None
+        col, _ = stat_map[market]
+        if col not in r:
+            return None
+        actual = float(r[col] or 0)
     if actual == line:
         return {"outcome": "P", "actual": actual}   # push on whole-number lines
     side = "over" if "over" in desc else "under"

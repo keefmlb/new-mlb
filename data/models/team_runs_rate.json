@@ -1,5 +1,5 @@
 {
-  "rate_factor": 1.0,
+  "rate_factor": 0.92,
   "window_days": 14,
-  "n_games": 191
+  "n_games": 192
 }

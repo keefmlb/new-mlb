@@ -25,8 +25,10 @@ pipeline consumes them unchanged:
 from __future__ import annotations
 import json
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -45,29 +47,107 @@ _PROP_MARKET_MAP = {
     "Pitching Hits":    "pitcher_h",
     "Hits Allowed":     "pitcher_h",
     "Hits":             "hits",
-    # "Hits+Runs+RBIs" intentionally unmapped — we don't price that combo.
+    "Total Hits":       "hits",
+    "Batter Hits":      "hits",
+    # Fanatics' largest player-prop market by volume. Priced from the summed
+    # H+R+RBI projection with its own empirically-fitted dispersion, and scored
+    # exactly (not as independent marginals) by the play-by-play simulator.
+    "Hits+Runs+RBIs":   "hrr",
 }
 
 
+def _map_prop_market(raw_mkt: str) -> Optional[str]:
+    """Map a Fanatics prop label to an internal market name.
+
+    Exact lookup first, then a guarded fallback for batter hits: the feed has
+    shipped this market under several labels ("Hits", "Total Hits", …) and an
+    exact-match-only map silently dropped ALL hits props when the wording
+    changed. The fallback accepts any label mentioning hits while excluding
+    the pitcher variants (Hits Allowed / Pitching Hits, already mapped above)
+    and the Hits+Runs+RBIs combo, which we don't price.
+    """
+    m = _PROP_MARKET_MAP.get(raw_mkt)
+    if m:
+        return m
+    low = raw_mkt.lower()
+    if ("hit" in low and "+" not in raw_mkt
+            and "allow" not in low and "pitch" not in low
+            and "run" not in low and "rbi" not in low):
+        return "hits"
+    return None
+
+
 # ---------- key + http ----------
-def _api_key() -> Optional[str]:
+def _api_keys() -> list[str]:
+    """All configured odds-api.io keys, in priority order. Supports rotation
+    on rate-limit (429). Sources, de-duplicated, first-seen order:
+      - env ODDS_API_IO_KEY, then ODDS_API_IO_KEY2..ODDS_API_IO_KEY5
+      - secrets.json ODDS_API_IO_KEY (str) and ODDS_API_IO_KEYS (list[str])
+    Add a second key by setting ODDS_API_IO_KEY2 or the ODDS_API_IO_KEYS list.
+    """
     import os
-    k = os.environ.get("ODDS_API_IO_KEY")
-    if k:
-        return k.strip()
+    keys: list[str] = []
+
+    def _add(v):
+        if isinstance(v, str) and v.strip() and v.strip() not in keys:
+            keys.append(v.strip())
+
+    _add(os.environ.get("ODDS_API_IO_KEY"))
+    for i in range(2, 6):
+        _add(os.environ.get(f"ODDS_API_IO_KEY{i}"))
     try:
         sec = json.loads((_ROOT / "data" / "secrets.json").read_text(encoding="utf-8"))
-        return (sec.get("ODDS_API_IO_KEY") or "").strip() or None
+        _add(sec.get("ODDS_API_IO_KEY"))
+        for v in (sec.get("ODDS_API_IO_KEYS") or []):
+            _add(v)
+        for i in range(2, 6):
+            _add(sec.get(f"ODDS_API_IO_KEY{i}"))
     except Exception:
-        return None
+        pass
+    return keys
 
 
-def _get(path: str, key: str, timeout: int = 30) -> object:
+def _api_key() -> Optional[str]:
+    ks = _api_keys()
+    return ks[0] if ks else None
+
+
+def _get(path: str, key: str | None = None, timeout: int = 30,
+         retries: int = 2, backoff: float = 1.5) -> object:
+    """GET with rate-limit resilience. On HTTP 429, rotate to the next
+    configured key; if all keys are limited, back off and retry. `key` is
+    accepted for backward compatibility but the full key list is always used
+    so a single failing call can still succeed on a backup key."""
+    import time
+    keys = _api_keys()
+    if key and key not in keys:
+        keys = [key] + keys
+    if not keys:
+        raise RuntimeError("no odds-api.io key configured")
     sep = "&" if "?" in path else "?"
-    url = f"{_BASE}/{path}{sep}apiKey={urllib.parse.quote(key)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "mlb-predictor/1.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read())
+    last_exc: Exception | None = None
+    for attempt in range(retries + 1):
+        for k in keys:
+            url = f"{_BASE}/{path}{sep}apiKey={urllib.parse.quote(k)}"
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "mlb-predictor/1.0"})
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    return json.loads(r.read())
+            except urllib.error.HTTPError as e:
+                last_exc = e
+                if e.code == 429:
+                    continue  # this key is limited — try the next key
+                raise
+            except Exception as e:
+                last_exc = e
+                continue
+        # every key limited/failed this pass — wait and retry the whole set
+        if attempt < retries:
+            time.sleep(backoff * (2 ** attempt))
+    if last_exc:
+        raise last_exc
+    raise RuntimeError("odds-api.io request failed")
 
 
 # ---------- odds math ----------
@@ -157,7 +237,7 @@ def _parse_props(markets: list, game_str: str) -> list[dict]:
             if not mm:
                 continue
             player, raw_mkt = mm.group(1).strip(), mm.group(2).strip()
-            market = _PROP_MARKET_MAP.get(raw_mkt)
+            market = _map_prop_market(raw_mkt)
             if not market:
                 continue
             over = o.get("over"); under = o.get("under")
@@ -252,30 +332,54 @@ def fetch_mlb(bettable: str = "Fanatics", force: bool = False) -> tuple[list[dic
 
     pending = [e for e in (events or []) if e.get("status") == "pending"
                and e.get("id") and e.get("home") and e.get("away")]
-    # The events feed spans many days; a team in a series appears 2-3 times.
-    # Keep every pending event on each matchup's EARLIEST calendar day (= the
-    # next / today's games) so future dates can't be matched — but, unlike the
-    # old keep-one-event dedupe, BOTH games of a doubleheader survive.
-    # predict_core._find_book disambiguates twin games by commence_time.
+    # Keep ONLY the current slate (today + tomorrow UTC).
+    #
+    # BUG FIX (Jul 28 2026): this used to keep each matchup's EARLIEST calendar
+    # day, which was fine when the feed only published a few days ahead. The
+    # feed now returns the WHOLE REMAINING SEASON (~850 events): for any team
+    # not playing today the "earliest day" is a future date, so ~300 events
+    # survived -> ceil(300/10) = ~31 odds calls per refresh. At a 100/hour cap
+    # two or three slate runs exhausted the budget and every later call 429'd,
+    # silently killing player props for days at a time.
+    #
+    # A UTC day window covers the US slate (night games roll into tomorrow UTC)
+    # and keeps BOTH games of a doubleheader; predict_core._find_book still
+    # disambiguates twin games by commence_time. ~15-30 events -> 2-3 calls.
+    _today = datetime.now(timezone.utc).date()
+    _window = {_today.isoformat(), (_today + timedelta(days=1)).isoformat()}
+    pending = [e for e in pending if str(e.get("date", ""))[:10] in _window]
     pending.sort(key=lambda e: e.get("date", ""))
-    first_day: dict = {}
-    for e in pending:
-        mk = (e["away"], e["home"])
-        first_day.setdefault(mk, str(e.get("date", ""))[:10])
-    pending = [e for e in pending
-               if str(e.get("date", ""))[:10] == first_day[(e["away"], e["home"])]]
     book_games: list[dict] = []
     props: list[dict] = []
 
     # Batch via /odds/multi (up to 10 event ids per call) — this keeps a full
     # slate to ~1 (events) + ceil(N/10) (odds) calls, well under the 100/hour
     # cap even with frequent refreshes.
+    # Polymarket (the sharp reference) is a PAID-PLAN book on odds-api.io. On a
+    # free plan, asking for it returns HTTP 403 for the WHOLE request — which
+    # silently zeroed out games AND props for days (Jul 25-28 2026 outage).
+    # Ask for it, but on a 403 drop it and retry with the bettable book only;
+    # no sharp entry just means predict_core falls back to model pricing.
+    global _BOOKS
     bk_param = ",".join(_BOOKS)
     for i in range(0, len(pending), 10):
         chunk = pending[i:i + 10]
         ids = ",".join(str(e["id"]) for e in chunk)
         try:
             batch = _get(f"odds/multi?eventIds={ids}&bookmakers={bk_param}", key)
+        except urllib.error.HTTPError as e:
+            if e.code == 403 and len(_BOOKS) > 1:
+                print("[odds-api.io] sharp book unavailable on this plan — "
+                      "continuing with the bettable book only.")
+                _BOOKS = [bettable]
+                bk_param = bettable
+                try:
+                    batch = _get(f"odds/multi?eventIds={ids}&bookmakers={bk_param}",
+                                 key)
+                except Exception:
+                    continue
+            else:
+                continue
         except Exception:
             continue
         for od in (batch or []):

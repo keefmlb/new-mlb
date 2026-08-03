@@ -694,6 +694,11 @@ def _gp_sim_dict(gp) -> dict:
         "away_batters": gp.away_batters, "home_batters": gp.home_batters,
         "away_starter": gp.away_starter, "home_starter": gp.home_starter,
         "away_sp_id": gp.away_sp_id, "home_sp_id": gp.home_sp_id,
+        # Bullpen quality so the sim stops modelling relievers as the starter.
+        "home_sp_fip": getattr(gp, "home_sp_fip", None),
+        "away_sp_fip": getattr(gp, "away_sp_fip", None),
+        "home_bp_fip": getattr(gp, "home_bp_fip", None),
+        "away_bp_fip": getattr(gp, "away_bp_fip", None),
     }
 
 
@@ -708,6 +713,36 @@ def _sim_leaderboard_cached(date: str, n: int, _games, _all_bets, min_odds=-400)
     return game_sim.build_sim_boards(
         _games, _sim_for_game, _all_bets, top=20, min_odds=min_odds,
         hi_threshold=0.95)
+
+
+@st.cache_data(show_spinner=False)
+def _tb_leaderboard_cached(date: str, n: int, _games, _all_bets):
+    """P(TB>=1) and P(TB>=2) for every projected batter, plus book odds."""
+    from src import game_sim
+    def _sim_for_game(g):
+        return game_sim.simulate_game(_gp_sim_dict(g), n=n, seed=g.game_pk)
+    return game_sim.build_tb_leaderboard(_games, _sim_for_game, _all_bets)
+
+
+@st.cache_data(show_spinner=False)
+def _predicted_props_cached(date: str, n: int, _games):
+    """Every player prop the MODEL predicts, synthesized from the sim (no book
+    offer needed). Used when the odds feed is rate-limited so the board still
+    lists all predicted props ranked by sim confidence."""
+    from src import game_sim
+    def _sim_for_game(g):
+        return game_sim.simulate_game(_gp_sim_dict(g), n=n, seed=g.game_pk)
+    return game_sim.build_predicted_prop_boards(_games, _sim_for_game, top=20)
+
+
+@st.cache_data(show_spinner=False)
+def _correlated_parlays_cached(date: str, n: int, _games, _all_rows):
+    """+EV, positively-correlated 2-leg same-game parlays priced off the sim's
+    JOINT distribution (real in-game correlation, not multiplied marginals)."""
+    from src import game_sim
+    def _joint(gp, legs):
+        return game_sim.simulate_joint(_gp_sim_dict(gp), legs, n=n, seed=gp.game_pk)
+    return game_sim.find_correlated_parlays(_games, _joint, _all_rows)
 
 
 @st.cache_data(show_spinner="Simulating…")
@@ -744,7 +779,7 @@ with main_tab_sim:
         _SIM_LB_LABELS = {
             "prop_hits": "Hits", "prop_hr": "HR", "prop_tb": "TB",
             "prop_rbi": "RBI", "prop_runs": "Runs", "prop_k": "Batter K",
-            "prop_bb": "Walks",
+            "prop_bb": "Walks", "prop_hrr": "H+R+RBI",
             "prop_pitcher_k": "Pitcher K", "prop_pitcher_bb": "Pitcher BB",
             "prop_pitcher_h": "Pitcher H", "prop_pitcher_er": "Pitcher ER",
             "prop_pitcher_hr": "Pitcher HR", "prop_pitcher_outs": "Pitcher Outs",
@@ -754,25 +789,47 @@ with main_tab_sim:
             st.session_state["sim_lb_run"] = True
         if st.session_state.get("sim_lb_run"):
             # When the odds feed is degraded (rate-limited / no props loaded),
-            # drop the -400 juice filter so the board still populates from the
-            # thin pool instead of thinning it further.
+            # switch to the MODEL-PREDICTED prop board: every player prop the sim
+            # projects, no book offer needed, ranked by the model's own
+            # confidence. The -400 juice filter is moot (no odds).
             _degraded = (slate.n_props_loaded == 0
                          or slate.odds_source in ("error", "none", ""))
-            _min_odds = None if _degraded else -400
-            if _degraded:
-                st.caption(":warning: Odds feed looks degraded/rate-limited — "
-                           "the -400 juice filter is OFF so the board still "
-                           "populates. Retry in a few minutes for the full pool.")
+            from src import game_sim as _gs
             with st.spinner("Simulating 10,000 games per matchup…"):
-                _boards = _sim_leaderboard_cached(
-                    slate.target_date, 10000, _sim_games,
-                    getattr(slate, "sim_bets", None) or slate.all_bets,
-                    min_odds=_min_odds)
+                if _degraded:
+                    _boards = _predicted_props_cached(
+                        slate.target_date, 10000, _sim_games)
+                    _raw_rows = _boards.get("all_rows", [])
+                else:
+                    # Simulate ONCE unfiltered, then derive both views:
+                    #   - main tabs apply the -400 juice cut (chalk-free board)
+                    #   - the 75%+ Builder below uses the UNFILTERED pool,
+                    #     because -400 == 80% implied and therefore removes
+                    #     exactly the high-confidence legs a parlay needs.
+                    _boards_raw = _sim_leaderboard_cached(
+                        slate.target_date, 10000, _sim_games,
+                        getattr(slate, "sim_bets", None) or slate.all_bets,
+                        min_odds=None)
+                    _raw_rows = _boards_raw.get("all_rows", [])
+                    _keep = [r for r in _raw_rows
+                             if r.get("odds") in (None, "")
+                             or float(r["odds"]) > 0
+                             or float(r["odds"]) >= -400]
+                    _boards = _gs._group_rows_into_boards(
+                        _keep, top=20, hi_threshold=0.95)
+            if _degraded:
+                st.warning(
+                    ":satellite: **Live odds unavailable — showing MODEL-PREDICTED "
+                    "props.** Every player prop the sim projects is listed, ranked "
+                    "by the model's confidence at its projected line. There are no "
+                    "book odds/EV here (and the -400 filter doesn't apply). Refresh "
+                    "once the odds feed recovers to price against real lines.")
             _lb_by_mkt = _boards["by_market"]
             _hi = _boards["high_conf"]
+            _all_rows = _boards.get("all_rows", [])
             if not _lb_by_mkt:
-                st.info("No offered props/lines could be matched to the simulation "
-                        "yet (need live odds + projected lineups).")
+                st.info("No props/lines could be matched to the simulation "
+                        "yet (need projected lineups).")
             else:
                 # Record the picks (live date only) so we can grade the sim's
                 # most-confident calls against actuals later. Idempotent.
@@ -809,11 +866,13 @@ with main_tab_sim:
                     st.dataframe(_pd.DataFrame(_cols), use_container_width=True,
                                  hide_index=True)
 
-                # Tab order: 95%+ locks FIRST, then labelled markets, then extras.
+                # Tab order: 95%+ locks, then ALL picks, then per-stat tabs.
                 _ordered = [m for m in _SIM_LB_LABELS if m in _lb_by_mkt]
                 _ordered += [m for m in _lb_by_mkt if m not in _SIM_LB_LABELS]
-                _tab_labels = [f":fire: 95-100% ({len(_hi)})"] + [
-                    f"{_SIM_LB_LABELS.get(m, m)} ({len(_lb_by_mkt[m])})" for m in _ordered]
+                _tab_labels = ([f":fire: 95-100% ({len(_hi)})",
+                                f"All picks ({len(_all_rows)})"]
+                               + [f"{_SIM_LB_LABELS.get(m, m)} ({len(_lb_by_mkt[m])})"
+                                  for m in _ordered])
                 _tabs = st.tabs(_tab_labels)
 
                 # --- Locks tab (cross-stat 95%+) ---
@@ -840,8 +899,18 @@ with main_tab_sim:
                             "table for how these bands actually cash."
                         )
 
+                # --- All picks tab (every simmed offer, ranked by sim hit%) ---
+                with _tabs[1]:
+                    if not _all_rows:
+                        st.info("No offers were scored by the simulation.")
+                    else:
+                        st.caption(f"Every one of the day's **{len(_all_rows):,}** "
+                                   "simmed offers across all stats, ranked by "
+                                   "sim hit % (scroll for the full board).")
+                        _lb_table(_all_rows, with_stat=True)
+
                 # --- Per-stat tabs ---
-                for _tab, _mkt in zip(_tabs[1:], _ordered):
+                for _tab, _mkt in zip(_tabs[2:], _ordered):
                     with _tab:
                         _lb_table(_lb_by_mkt[_mkt])
                 st.caption(
@@ -851,6 +920,191 @@ with main_tab_sim:
                     "means the sim is more confident than the market (a model-vs-"
                     "market edge signal, not a guarantee). One row per "
                     "game/player/side/line."
+                )
+
+                # ---- Correlated same-game parlays (sim-priced) ----
+                st.markdown("##### :link: Correlated same-game parlays (sim-priced)")
+                st.caption(
+                    "Two-leg **same-game** parlays where the sim's JOINT hit rate "
+                    "(legs correlated inside one simulated game) beats the "
+                    "independent product the book prices from — the only parlay "
+                    "type with a real structural edge. Sorted by EV."
+                )
+                if st.button("Find correlated parlays", key="sgp_btn"):
+                    st.session_state["sgp_run"] = True
+                if st.session_state.get("sgp_run"):
+                    with st.spinner("Simulating joint outcomes…"):
+                        _sgp = _correlated_parlays_cached(
+                            slate.target_date, 4000, _sim_games, _all_rows)
+                    if not _sgp:
+                        st.info("No +EV correlated same-game parlay found today "
+                                "(sim joint didn't beat the multiplied price by "
+                                "the margin, or the odds feed is thin).")
+                    else:
+                        _sgpdf = _pd.DataFrame([{
+                            "Matchup": r["matchup"],
+                            "Leg 1": r["leg1"], "Leg 2": r["leg2"],
+                            "Sim joint": f"{r['p_joint']:.1%}",
+                            "If independent": f"{r['indep']:.1%}",
+                            "Corr lift": f"{r['lift']:.2f}×",
+                            "Parlay odds": (f"+{int((r['parlay_dec']-1)*100)}"
+                                            if r.get("parlay_dec") else "—"),
+                            "EV": f"{r['ev']*100:+.1f}%",
+                        } for r in _sgp])
+                        st.dataframe(_sgpdf, use_container_width=True, hide_index=True)
+                        st.caption(
+                            "**Corr lift** = sim joint ÷ independent product (>1 "
+                            "means the legs help each other). **EV uses the two "
+                            "legs' odds MULTIPLIED** — real same-game-parlay "
+                            "payouts are usually lower (books apply their own "
+                            "correlation haircut), so treat EV as an optimistic "
+                            "screen, and always confirm the actual SGP price."
+                        )
+
+                # ---- Daily Parlay Builder (two-lane strategy) ----
+                st.markdown("##### :ticket: Daily Parlay Builder")
+                st.caption(
+                    "Auto-builds today's ≥85% sim legs into ~+500 tickets using "
+                    "the backtested two-lane plan. **Core** = cross-game, ≥88%, "
+                    "the steady bookable-anywhere lane (use the **20% boost** "
+                    "here). **Correlation** = same-game ≥85% stacks that harvest "
+                    "in-game correlation (use the **10% boost** — but confirm the "
+                    "real SGP price first; books haircut these)."
+                )
+                from src import game_sim as _gsm
+                _plan = _gsm.build_daily_parlays(_all_rows)
+
+                def _show_ticket(t, idx):
+                    _tag = (" · :sparkles: **20% BOOST**" if t["boost"] == 0.20
+                            else " · :sparkles: **10% BOOST**" if t["boost"] == 0.10
+                            else "")
+                    _am = f"+{t['american']}" if t["american"] > 0 else f"{t['american']}"
+                    _sg = " · ⚠️ same-game (verify SGP price)" if t["same_game"] else ""
+                    st.markdown(f"**Ticket {idx} — {t['n_legs']} legs · {_am}**"
+                                f" · sim {t['combined_sim']:.0%}{_tag}{_sg}")
+                    st.dataframe(_pd.DataFrame([{
+                        "Matchup": l["matchup"], "Leg": l["description"],
+                        "Sim hit": f"{l['sim_hit']:.0%}",
+                        "Odds": (f"+{int(l['odds'])}" if l['odds'] > 0 else f"{int(l['odds'])}"),
+                    } for l in t["legs"]]), use_container_width=True, hide_index=True)
+
+                _cL, _cR = st.columns(2)
+                with _cL:
+                    st.markdown("**Core lane** (cross-game, ≥88%)")
+                    if not _plan["core"]:
+                        st.caption("No core ticket today (need ≥2 games with an "
+                                   "≥88% leg).")
+                    for i, t in enumerate(_plan["core"], 1):
+                        _show_ticket(t, i)
+                with _cR:
+                    st.markdown("**Correlation lane** (same-game, ≥85%)")
+                    if not _plan["correlation"]:
+                        st.caption("No same-game stack today (need a game with ≥2 "
+                                   "correlated ≥85% legs).")
+                    for i, t in enumerate(_plan["correlation"], 1):
+                        _show_ticket(t, i)
+                st.caption(
+                    "Flat 1u per ticket. Combined sim = product of the legs' sim "
+                    "hit rates (independent estimate; same-game legs actually hit "
+                    "together MORE, which is the point of the correlation lane). "
+                    "Boosts applied to the biggest ticket in each lane. Backtest: "
+                    "your ≥85%/+500/boosts rule returned +30% ROI on the sim-pick "
+                    "record — small sample, real variance, not a guarantee."
+                )
+
+                # ---- 75%+ Builder (ignores the -400 cut on purpose) ----
+                st.divider()
+                st.markdown("##### :dart: 75%+ Builder")
+                st.caption(
+                    "High-confidence legs for parlay building, drawn from the "
+                    "**unfiltered** offer pool. The main tabs above apply the "
+                    "-400 juice cut — but -400 is exactly **80% implied**, so it "
+                    "removes every leg you'd actually want here (an 85% prop "
+                    "prices near -567). This view deliberately keeps them."
+                )
+                _hc_min = st.slider("Minimum sim confidence", 0.60, 0.99, 0.75,
+                                    0.01, key="hc_min",
+                                    format="%.0f%%")
+                _hc = sorted((r for r in _raw_rows
+                              if (r.get("sim_hit") or 0) >= _hc_min),
+                             key=lambda r: -r["sim_hit"])
+                if not _hc:
+                    st.info(f"No offers reached {_hc_min:.0%} sim confidence today.")
+                else:
+                    _n85 = sum(1 for r in _hc if r["sim_hit"] >= 0.85)
+                    st.markdown(f"**{len(_hc)} legs ≥ {_hc_min:.0%}** "
+                                f"· {_n85} of them ≥ 85%")
+                    _lb_table(_hc[:60], with_stat=True)
+                    # Tickets built from this pool only.
+                    _hc_plan = _gs.build_daily_parlays(
+                        _hc, conf_core=max(_hc_min, 0.88), conf_corr=_hc_min)
+                    _c1, _c2 = st.columns(2)
+                    with _c1:
+                        st.markdown("**Core (cross-game)**")
+                        if not _hc_plan["core"]:
+                            st.caption("No cross-game ticket at this threshold.")
+                        for i, t in enumerate(_hc_plan["core"], 1):
+                            _show_ticket(t, i)
+                    with _c2:
+                        st.markdown("**Correlation (same-game)**")
+                        if not _hc_plan["correlation"]:
+                            st.caption("No same-game stack at this threshold.")
+                        for i, t in enumerate(_hc_plan["correlation"], 1):
+                            _show_ticket(t, i)
+                    st.caption(
+                        "These legs are heavy favourites by construction, so "
+                        "prices are steep — that is the trade for high hit rates. "
+                        "Check the Sim pick record's bracket table for how each "
+                        "confidence band ACTUALLY cashes before sizing."
+                    )
+
+        # ---- Total Bases 1+ / 2+ leaderboard ----
+        st.divider()
+        st.markdown("##### :baseball: Total Bases — 1+ and 2+")
+        st.caption(
+            "Every projected batter's simulated chance of recording **at least "
+            "1 total base** (over 0.5) and **at least 2** (over 1.5) — the two "
+            "lines books actually hang. Covers all batters, not just those with "
+            "an offer; book odds shown where one exists. TB is the model's "
+            "best-performing market (the analytical-only policy is +116% ROI)."
+        )
+        if st.button("Build TB 1+/2+ board", key="tb_lb_btn"):
+            st.session_state["tb_lb_run"] = True
+        if st.session_state.get("tb_lb_run"):
+            with st.spinner("Simulating…"):
+                _tb = _tb_leaderboard_cached(
+                    slate.target_date, 10000, _sim_games,
+                    getattr(slate, "sim_bets", None) or slate.all_bets)
+            if not _tb:
+                st.info("No batters could be simulated yet (need projected lineups).")
+            else:
+                _amf = lambda o: ("—" if o in (None, "") else
+                                  (f"+{int(o)}" if float(o) > 0 else f"{int(o)}"))
+
+                def _tb_table(rows, key):
+                    df = pd.DataFrame([{
+                        "#": i + 1,
+                        "Batter": r["player"],
+                        "Team": r["team"],
+                        "Matchup": r["matchup"],
+                        "1+ TB": f"{r['p_1tb']:.1%}",
+                        "2+ TB": f"{r['p_2tb']:.1%}",
+                        "Odds 1+": _amf(r["odds_1tb"]),
+                        "Odds 2+": _amf(r["odds_2tb"]),
+                    } for i, r in enumerate(rows)])
+                    st.dataframe(df, use_container_width=True, hide_index=True)
+
+                _t1, _t2 = st.tabs([f"1+ TB ({len(_tb)})", f"2+ TB ({len(_tb)})"])
+                with _t1:
+                    _tb_table(sorted(_tb, key=lambda r: -r["p_1tb"])[:60], "1")
+                with _t2:
+                    _tb_table(sorted(_tb, key=lambda r: -r["p_2tb"])[:60], "2")
+                st.caption(
+                    "Sorted by the tab's own line. **1+ TB** is essentially "
+                    "\"gets a hit or better\" and runs high (steep prices); "
+                    "**2+ TB** needs an extra-base hit or a multi-hit game, so "
+                    "it pays far more. Odds are the offered OVER at that exact "
+                    "line — blank means the book didn't hang it."
                 )
 
         # ---- Sim pick record (graded against actuals) ----

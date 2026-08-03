@@ -35,7 +35,7 @@ SKILL_MARKETS = ("prop_runs", "prop_rbi")
 # eligibility — not an endorsement of every market.
 ALL_PROP_MARKETS = (
     "prop_hits", "prop_hr", "prop_tb", "prop_rbi", "prop_runs",
-    "prop_k", "prop_bb",
+    "prop_k", "prop_bb", "prop_hrr",
     "prop_pitcher_k", "prop_pitcher_bb", "prop_pitcher_h",
     "prop_pitcher_er", "prop_pitcher_hr", "prop_pitcher_outs",
 )
