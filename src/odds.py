@@ -112,43 +112,87 @@ def consensus_lines(odds_api_data: list[dict]) -> list[dict]:
     return out
 
 
+# ---------- consensus helpers ----------
+# American odds are NOT linear and must never be averaged arithmetically:
+# mean(-110, +105) = -2.5, an odds value that cannot exist (American odds jump
+# from -100 straight to +100). That bug produced prices like -14 / -61 / +11 in
+# the fallback feed, and a -14 converts to decimal 8.14 — a fake 7:1 payout that
+# manufactured impossible ROI in the archives. Average in PROBABILITY space.
+
+def _am_to_prob(a) -> Optional[float]:
+    try:
+        a = float(a)
+    except (TypeError, ValueError):
+        return None
+    if not a or -100 < a < 100:      # impossible / missing price
+        return None
+    return 100.0 / (a + 100.0) if a > 0 else (-a) / ((-a) + 100.0)
+
+
+def _prob_to_am(p: float) -> Optional[int]:
+    if not (0.0 < p < 1.0):
+        return None
+    am = -100.0 * p / (1.0 - p) if p >= 0.5 else 100.0 * (1.0 - p) / p
+    am = int(round(am))
+    if -100 < am < 100:              # guard the boundary after rounding
+        am = -100 if am < 0 else 100
+    return am
+
+
+def _avg_prices(prices: list) -> Optional[int]:
+    """Consensus American price = mean IMPLIED PROBABILITY, converted back."""
+    ps = [q for q in (_am_to_prob(x) for x in prices) if q is not None]
+    if not ps:
+        return None
+    return _prob_to_am(sum(ps) / len(ps))
+
+
+def _snap_half(x: float) -> float:
+    """Books post .5 increments. Averaging across books yields values like 9.4
+    or -0.8 that no book ever offered; snap to the real grid."""
+    return round(float(x) * 2.0) / 2.0
+
+
 def _avg_h2h(books: list[list[dict]], home: str, away: str) -> Optional[dict]:
     if not books:
         return None
-    h, a, n = 0.0, 0.0, 0
+    hs, as_ = [], []
     for outcomes in books:
         h_p = next((o["price"] for o in outcomes if o["name"] == home), None)
         a_p = next((o["price"] for o in outcomes if o["name"] == away), None)
         if h_p is None or a_p is None:
             continue
-        h += h_p; a += a_p; n += 1
-    if not n:
+        hs.append(h_p); as_.append(a_p)
+    h, a = _avg_prices(hs), _avg_prices(as_)
+    if h is None or a is None:
         return None
-    return {"home": int(round(h / n)), "away": int(round(a / n))}
+    return {"home": h, "away": a}
 
 
 def _avg_total(books: list[list[dict]]) -> Optional[dict]:
     if not books:
         return None
-    line = 0.0; over = 0.0; under = 0.0; n = 0
+    line = 0.0; overs = []; unders = []; n = 0
     for outcomes in books:
         ov = next((o for o in outcomes if o["name"] == "Over"), None)
         un = next((o for o in outcomes if o["name"] == "Under"), None)
         if not ov or not un:
             continue
-        line += ov.get("point", 0); over += ov.get("price", -110)
-        under += un.get("price", -110); n += 1
+        line += ov.get("point", 0)
+        overs.append(ov.get("price", -110)); unders.append(un.get("price", -110))
+        n += 1
     if not n:
         return None
-    return {"line": round(line / n, 1),
-            "over": int(round(over / n)),
-            "under": int(round(under / n))}
+    o, u = _avg_prices(overs), _avg_prices(unders)
+    if o is None or u is None:
+        return None
+    return {"line": _snap_half(line / n), "over": o, "under": u}
 
 
 def _avg_spread(books: list[list[dict]], home: str, away: str) -> Optional[dict]:
     if not books:
         return None
-    line = 0.0; h_p = 0.0; a_p = 0.0; n = 0
+    line = 0.0; hs = []; as_ = []; n = 0
     for outcomes in books:
         h = next((o for o in outcomes if o["name"] == home), None)
         a = next((o for o in outcomes if o["name"] == away), None)
@@ -156,12 +200,18 @@ def _avg_spread(books: list[list[dict]], home: str, away: str) -> Optional[dict]
             continue
         # MLB run line is virtually always +/- 1.5
         line += -h.get("point", -1.5)            # home line stated as e.g. -1.5; we store positive 1.5
-        h_p += h.get("price", -110); a_p += a.get("price", -110); n += 1
+        hs.append(h.get("price", -110)); as_.append(a.get("price", -110)); n += 1
     if not n:
         return None
-    return {"line": round(line / n, 1),
-            "home": int(round(h_p / n)),
-            "away": int(round(a_p / n))}
+    hp, ap = _avg_prices(hs), _avg_prices(as_)
+    if hp is None or ap is None:
+        return None
+    snapped = _snap_half(line / n)
+    # A run line averaged across books can land on 0.0/-0.2 etc.; MLB only ever
+    # hangs +/-1.5 (occasionally +/-2.5). Anything else is an averaging artifact.
+    if abs(snapped) < 1.0:
+        snapped = 1.5 if snapped >= 0 else -1.5
+    return {"line": snapped, "home": hp, "away": ap}
 
 
 def load_manual() -> dict:

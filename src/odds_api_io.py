@@ -43,7 +43,13 @@ _PROP_MARKET_MAP = {
     "Runs Batted In":   "rbi",
     "Runs Scored":      "runs",
     "Home Runs":        "hr",
+    # The feed has shipped this under BOTH labels. Aug 11 2026 it was sending
+    # "Pitcher Strikeouts" while the map only knew "Total Strikeouts", so all
+    # 215 daily strikeout props were dropped — the single market the sim
+    # leaderboard leans on hardest. Keep both, and see the fallback below.
     "Total Strikeouts": "pitcher_k",
+    "Pitcher Strikeouts": "pitcher_k",
+    "Strikeouts Thrown": "pitcher_k",
     "Pitching Hits":    "pitcher_h",
     "Hits Allowed":     "pitcher_h",
     "Hits":             "hits",
@@ -74,7 +80,34 @@ def _map_prop_market(raw_mkt: str) -> Optional[str]:
             and "allow" not in low and "pitch" not in low
             and "run" not in low and "rbi" not in low):
         return "hits"
+    # Strikeouts are a PITCHER market here. Batter-strikeout props would also
+    # say "strikeout", so require a pitcher-ish qualifier rather than matching
+    # the bare word; batter K is not a market we price.
+    if "strikeout" in low and ("pitcher" in low or "total" in low
+                               or "thrown" in low):
+        return "pitcher_k"
+    _note_unmapped(raw_mkt)
     return None
+
+
+# Labels the feed sent that we do not understand. Silent drops are how this
+# module has lost whole markets twice (batter hits, then pitcher strikeouts):
+# the prop count stays plausibly large because other markets fill it in, so
+# nothing looks wrong. Surfacing them makes the next rename obvious.
+_UNMAPPED_SEEN: set = set()
+
+
+def _note_unmapped(raw_mkt: str) -> None:
+    if raw_mkt in _UNMAPPED_SEEN:
+        return
+    _UNMAPPED_SEEN.add(raw_mkt)
+    print(f"[odds-api.io] WARNING unmapped prop market {raw_mkt!r} — dropping "
+          f"these props. Add it to _PROP_MARKET_MAP if we price it.")
+
+
+def unmapped_markets() -> list[str]:
+    """Prop labels seen this run that no rule matched (for UI surfacing)."""
+    return sorted(_UNMAPPED_SEEN)
 
 
 # ---------- key + http ----------

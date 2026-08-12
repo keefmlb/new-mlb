@@ -29,11 +29,24 @@ Simplifications (documented, not hidden):
     crediting the starter so his IP/K props stay realistic).
 """
 from __future__ import annotations
+import json
+import math
 import random
 from dataclasses import dataclass, field
+from pathlib import Path
 
-# Per-PA event order used everywhere in this module.
-EVENTS = ("K", "BB", "1B", "2B", "3B", "HR", "OUT")
+# Per-PA event order used everywhere in this module. Anything that unpacks a
+# probability vector positionally MUST match this order: batter_pa_probs,
+# _scale_offense, _scale_bb, _advance and _record_offense are a coupled set.
+#
+# HBP earns a slot because it is ~1.2% of plate appearances and was previously
+# simulated as an OUT, silently deleting ~3.7% of all baserunners. Runs scale
+# super-linearly in baserunners, so that shortfall fed the run deficit the
+# anchor was absorbing as a ~6% tax on every batter's rates.
+EVENTS = ("K", "BB", "HBP", "1B", "2B", "3B", "HR", "OUT")
+
+# League HBP per plate appearance (mirrors projections.LG["hbp_per_pa"]).
+LG_HBP_PER_PA = 0.012
 
 
 def batter_pa_probs(b: dict) -> list[float]:
@@ -48,13 +61,19 @@ def batter_pa_probs(b: dict) -> list[float]:
     p1B = max(0.0, pH - pHR - p2B - p3B)
     pBB = max(0.0, float(b.get("proj_bb") or 0.0) / ePA)
     pK = max(0.0, float(b.get("proj_k") or 0.0) / ePA)
-    on_base = pHR + p3B + p2B + p1B + pBB
+    # HBP: per-player rate when the projection carries one, else league. It is a
+    # real baserunner and was previously folded into OUT.
+    _hbp = b.get("proj_hbp")
+    pHBP = (max(0.0, float(_hbp) / ePA) if _hbp not in (None, "")
+            else LG_HBP_PER_PA)
+    on_base = pHR + p3B + p2B + p1B + pBB + pHBP
     # Cap pathological inputs so OUT stays non-negative.
     if on_base + pK > 0.98:
         scale = 0.98 / (on_base + pK)
-        pHR, p3B, p2B, p1B, pBB, pK = (x * scale for x in (pHR, p3B, p2B, p1B, pBB, pK))
-    pOUT = max(0.0, 1.0 - (pHR + p3B + p2B + p1B + pBB + pK))
-    probs = [pK, pBB, p1B, p2B, p3B, pHR, pOUT]
+        pHR, p3B, p2B, p1B, pBB, pHBP, pK = (
+            x * scale for x in (pHR, p3B, p2B, p1B, pBB, pHBP, pK))
+    pOUT = max(0.0, 1.0 - (pHR + p3B + p2B + p1B + pBB + pHBP + pK))
+    probs = [pK, pBB, pHBP, p1B, p2B, p3B, pHR, pOUT]
     s = sum(probs)
     return [x / s for x in probs]
 
@@ -71,6 +90,154 @@ LG_BP_OFFENSE_MULT = 0.94
 # Blow-up hook: a starter who has been shelled gets pulled regardless of his
 # out target (see _sp_target for the mean-preserving correction).
 BLOWUP_ER = 5
+
+# ---------- position-player substitutions ----------
+# The sim models nine LINEUP SLOTS that bat all game. A prop settles on the
+# NAMED PLAYER, and he does not bat all game: measured over 3,554 team-games,
+# the nine starters take 95.9% of their team's plate appearances (10.2 batters
+# used per team-game), and they go wire-to-wire in only 32.5% of games.
+# Crediting the slot's whole line to the starter over-projected EVERY batter
+# counting prop by ~4%, on top of the ~2% the slots already run long.
+#
+# Modelled rather than scaled so the discrete prop distributions stay intact:
+# each slot is independently subbed with probability SUB_P, and a subbed
+# starter is done after 2-4 PA (pinch hitters and defensive replacements arrive
+# late). That gives 0.87 + 0.13 x ~0.70 = 0.96 retention, matching the data.
+# The replacement keeps batting with the starter's rates — team offense is
+# anchored to the GLM regardless, so this only affects who gets CREDITED.
+SUB_P = 0.13
+SUB_MAX_PA = (2, 3, 4)
+
+# ---------- baserunning advancement ----------
+# These were hand-set and never calibrated, and they were collectively too
+# CONSERVATIVE: the bottom-up sim needed a mean anchor factor of ~1.06 to reach
+# the team-runs GLM, i.e. it was ~6% short on run production from the same
+# hits. The anchor then closes that gap the only way it can — by scaling every
+# batter's on-base rates up ~6% — which is why simulated hits ran +7.5% over
+# actual while simulated RUNS were accurate, and why improving the projection
+# layer never improved the sim (the anchor renormalises the gain straight back
+# out).
+#
+# MEASURED: moving these to the values below recovered only +0.97% of run
+# production. The bottom-up sim still makes 3.93 runs/team against a real 4.44,
+# so baserunning is a MINOR contributor and the ~10% deficit is still open —
+# see the HBP omission noted on EVENTS, plus errors/WP/PB, none of which the
+# engine models. Treat these as better-than-before, not as calibrated.
+ADV_1B_SCORE_FROM_2ND = 0.62   # runner on 2nd scores on a single
+ADV_1B_FIRST_TO_THIRD = 0.30   # runner on 1st takes third on a single
+ADV_2B_SCORE_FROM_1ST = 0.48   # runner on 1st scores on a double
+ADV_OUT_SCORE_FROM_3RD = 0.38  # sac fly / productive out with < 2 outs
+ADV_OUT_SECOND_TO_THIRD = 0.22
+
+
+def _bb_shift(bp_bb9, sp_bb9) -> float:
+    """Walk factor when the bullpen takes over: relief BB/9 vs the starter's.
+    Falls back to the league relief-vs-starter ratio (3.71/3.16 = 1.17)."""
+    try:
+        bp, sp = float(bp_bb9), float(sp_bb9)
+    except (TypeError, ValueError):
+        return 1.17
+    if not (bp > 0 and sp > 0):
+        return 1.17
+    return max(0.70, min(1.70, bp / sp))
+
+
+def _scale_hr(probs: list[float], f_hr: float) -> list[float]:
+    """Scale ONLY the home-run probability, absorbing the change in OUT.
+
+    The bullpen offense multiplier is a single number applied to every on-base
+    event, but relief and starter rates do not differ uniformly. Measured over
+    13,470 relief innings against 18,068 starter innings:
+
+        BB 1.176   K 1.028   H 0.953   HR 0.877
+
+    So a flat multiplier that is about right for hits (0.953 vs the 0.94
+    league fallback) leaves home runs roughly 8% under-suppressed — and a home
+    run is 4 total bases, the market this system is most exposed to. A ball
+    that would have cleared the wall against the starter becomes an out here,
+    which is why the change lands in OUT.
+    """
+    if abs(f_hr - 1.0) < 1e-6:
+        return probs
+    pK, pBB, pHBP, p1B, p2B, p3B, pHR, pOUT = probs
+    new_hr = min(max(pHR * f_hr, 0.0), pHR * 3.0)
+    tot = pK + pBB + pHBP + p1B + p2B + p3B + new_hr
+    if tot >= 0.99:
+        s = 0.99 / tot
+        pK, pBB, pHBP, p1B, p2B, p3B, new_hr = (
+            x * s for x in (pK, pBB, pHBP, p1B, p2B, p3B, new_hr))
+        tot = pK + pBB + pHBP + p1B + p2B + p3B + new_hr
+    return [pK, pBB, pHBP, p1B, p2B, p3B, new_hr, max(0.0, 1.0 - tot)]
+
+
+# Extra HR suppression at the hook, ON TOP of the flat offense multiplier:
+# the measured relief/starter HR ratio (0.877) divided by the hit ratio (0.953)
+# the flat multiplier already covers.
+BP_HR_EXTRA = 0.92
+
+# ---------- consequences of not modelling errors / WP / PB ----------
+# The engine has no error, wild-pitch or passed-ball event, so every simulated
+# run is both driven in and earned. Reality disagrees, measured league-wide on
+# 2026 boxscores:
+#     RBI / runs = 0.966      (a run scoring on an error earns no RBI)
+#     ER  / runs = 0.912      (and it is not charged to the pitcher either)
+# Rather than invent the underlying events, the credit is discounted at the
+# measured rate. This is a calibration, not a mechanism: it puts the RBI and
+# pitcher-ER markets on the right mean but does not reproduce the correlation
+# between them. Adding real error events would supersede both constants.
+RBI_CREDIT_P = 0.966
+ER_CHARGE_P = 0.912
+
+
+# Bullpen share of all innings pitched, from 2026 boxscores: 13,470 relief IP
+# against 18,068 starter IP.
+BP_INNING_SHARE = 0.427
+
+
+def _split_factors(ratio: float, share: float = BP_INNING_SHARE) -> tuple[float, float]:
+    """Turn a relief-vs-starter RATIO into MEAN-PRESERVING (starter, bullpen)
+    factors.
+
+    A batter's projected walk rate is his season rate, which already averages
+    over the starters AND relievers he faced. Applying the relief premium only
+    to bullpen innings therefore DOUBLE-COUNTS it: the season average silently
+    becomes the starter-inning rate, and the game total lands above the
+    player's real rate. Measured, that put simulated walks ~10% over actual.
+
+    Splitting keeps the blend equal to the input:
+        (1-share)*f_sp + share*f_bp == 1
+    so the relief premium redistributes walks across the game instead of
+    manufacturing them.
+    """
+    try:
+        r = float(ratio)
+    except (TypeError, ValueError):
+        return 1.0, 1.0
+    norm = (1.0 - share) + share * r
+    if norm <= 0:
+        return 1.0, 1.0
+    return 1.0 / norm, r / norm
+
+
+def _starter_probs(p: list[float], f_bb_sp: float,
+                   f_hr_sp: float) -> list[float]:
+    """Per-PA vector while the STARTER is on. Counterpart of _bullpen_probs —
+    both exist so the mean-preserving split is applied at every site or none."""
+    return _scale_hr(_scale_bb(p, f_bb_sp), f_hr_sp)
+
+
+def _bullpen_probs(p: list[float], mult: float, f_bb: float,
+                   f_hr: float = BP_HR_EXTRA) -> list[float]:
+    """Build the bullpen-facing per-PA vector for one batter.
+
+    THE single place the starter->bullpen transform is defined. It exists
+    because this module has already shipped the same bug twice: a transform
+    applied at the headline run but not inside the anchor convergence loop, so
+    the anchor solved for a different game than the one actually simulated
+    (that cost 0.115 -> 0.244 runs of anchor error). Every site that needs
+    bullpen rates calls this, so the sites cannot drift apart again.
+    """
+    return _scale_hr(_scale_bb(_scale_offense(p, mult), f_bb), f_hr)
 
 
 def _bp_offense_mult(bp_fip, sp_fip) -> float:
@@ -134,19 +301,46 @@ def _rate_multipliers(sigma: float, k: int = _RATE_VARIANTS,
     return [v / m for v in vals] if m > 0 else [1.0]
 
 
+def _scale_bb(probs: list[float], f_bb: float) -> list[float]:
+    """Scale ONLY the walk probability, absorbing the change in OUT.
+
+    The bullpen offense multiplier scales every on-base event together, which
+    cannot express the one thing that reliably differs between a bullpen and
+    the starter it replaces: control. Measured over 11,448 relief appearances,
+    bullpens walk 17% MORE than starters (3.71 vs 3.16 BB/9), with a further
+    0.84x-1.18x spread across teams. Walks therefore get their own factor.
+    """
+    if abs(f_bb - 1.0) < 1e-6:
+        return probs
+    pK, pBB, pHBP, p1B, p2B, p3B, pHR, pOUT = probs
+    # HBP rides the same control factor as the walk: a reliever who misses the
+    # zone more also hits more batters.
+    new_bb = min(max(pBB * f_bb, 0.0), pBB * 3.0)
+    new_hbp = min(max(pHBP * f_bb, 0.0), pHBP * 3.0)
+    tot = pK + new_bb + new_hbp + p1B + p2B + p3B + pHR
+    if tot >= 0.99:
+        s = 0.99 / tot
+        pK, new_bb, new_hbp, p1B, p2B, p3B, pHR = (
+            x * s for x in (pK, new_bb, new_hbp, p1B, p2B, p3B, pHR))
+        tot = pK + new_bb + new_hbp + p1B + p2B + p3B + pHR
+    return [pK, new_bb, new_hbp, p1B, p2B, p3B, pHR, max(0.0, 1.0 - tot)]
+
+
 def _scale_offense(probs: list[float], f: float) -> list[float]:
     """Scale the on-base events (BB,1B,2B,3B,HR) by f, absorb the change in
     OUT. f>1 => more offense. Keeps K roughly fixed (a zone/contact trait)."""
     if abs(f - 1.0) < 1e-6:
         return probs
-    pK, pBB, p1B, p2B, p3B, pHR, pOUT = probs
-    pBB, p1B, p2B, p3B, pHR = (min(x * f, x * 3) for x in (pBB, p1B, p2B, p3B, pHR))
-    tot = pK + pBB + p1B + p2B + p3B + pHR
+    pK, pBB, pHBP, p1B, p2B, p3B, pHR, pOUT = probs
+    pBB, pHBP, p1B, p2B, p3B, pHR = (
+        min(x * f, x * 3) for x in (pBB, pHBP, p1B, p2B, p3B, pHR))
+    tot = pK + pBB + pHBP + p1B + p2B + p3B + pHR
     if tot >= 0.99:
         s = 0.99 / tot
-        pK, pBB, p1B, p2B, p3B, pHR = (x * s for x in (pK, pBB, p1B, p2B, p3B, pHR))
-        tot = pK + pBB + p1B + p2B + p3B + pHR
-    return [pK, pBB, p1B, p2B, p3B, pHR, max(0.0, 1.0 - tot)]
+        pK, pBB, pHBP, p1B, p2B, p3B, pHR = (
+            x * s for x in (pK, pBB, pHBP, p1B, p2B, p3B, pHR))
+        tot = pK + pBB + pHBP + p1B + p2B + p3B + pHR
+    return [pK, pBB, pHBP, p1B, p2B, p3B, pHR, max(0.0, 1.0 - tot)]
 
 
 def _cum(probs: list[float]) -> list[float]:
@@ -184,6 +378,7 @@ class _PitLine:
     h: int = 0
     hr: int = 0
     er: int = 0
+    ra: int = 0     # RUNS allowed (earned or not) — drives the blow-up hook
 
 
 def _advance(bases, bi, ev, outs, rng, gidp_p: float = LG_GIDP_PER_OPP):
@@ -206,7 +401,7 @@ def _advance(bases, bi, ev, outs, rng, gidp_p: float = LG_GIDP_PER_OPP):
             scored.append(s)
         new_t = None
         if f is not None:
-            if rng.random() < 0.45:
+            if rng.random() < ADV_2B_SCORE_FROM_1ST:
                 scored.append(f)
             else:
                 new_t = f
@@ -217,18 +412,18 @@ def _advance(bases, bi, ev, outs, rng, gidp_p: float = LG_GIDP_PER_OPP):
             scored.append(t)
         new_t = new_s = None
         if s is not None:
-            if rng.random() < 0.55:
+            if rng.random() < ADV_1B_SCORE_FROM_2ND:
                 scored.append(s)
             else:
                 new_t = s
         if f is not None:
-            if rng.random() < 0.30 and new_t is None:
+            if rng.random() < ADV_1B_FIRST_TO_THIRD and new_t is None:
                 new_t = f
             else:
                 new_s = f
         rbi = len(scored)
         bases = [bi, new_s, new_t]
-    elif ev == "BB":
+    elif ev in ("BB", "HBP"):
         if f is None:
             bases = [bi, s, t]
         elif s is None:
@@ -251,11 +446,11 @@ def _advance(bases, bi, ev, outs, rng, gidp_p: float = LG_GIDP_PER_OPP):
             bases = [None, s, t]    # lead runner(s) hold, batter+R1 erased
             return scored, bases, rbi, oa
         if outs + 1 < 3:            # productive out only when it's not the 3rd
-            if t is not None and rng.random() < 0.30:
+            if t is not None and rng.random() < ADV_OUT_SCORE_FROM_3RD:
                 scored.append(t)
                 rbi += 1
                 t = None
-            if s is not None and t is None and rng.random() < 0.20:
+            if s is not None and t is None and rng.random() < ADV_OUT_SECOND_TO_THIRD:
                 t, s = s, None
             bases = [f, s, t]
     return scored, bases, rbi, oa
@@ -282,6 +477,8 @@ def _record_offense(box: list[_BoxLine], idx: int, ev: str):
         bl.k += 1
     elif ev == "BB":
         bl.bb += 1
+    elif ev == "HBP":
+        pass            # a PA, but not an at-bat, a hit, a walk or a strikeout
     elif ev in ("1B", "2B", "3B", "HR"):
         bl.h += 1
         bl.tb += {"1B": 1, "2B": 2, "3B": 3, "HR": 4}[ev]
@@ -294,7 +491,8 @@ def _half_inning(cums, box, pit_box, start_idx, mound, rng,
                  sb_attempt: float = LG_SB_ATTEMPT,
                  sb_success: float = LG_SB_SUCCESS,
                  walkoff_need: int | None = None,
-                 ghost_runner: bool = False):
+                 ghost_runner: bool = False,
+                 maxpa: list | None = None):
     """Play one half-inning. Returns (runs, next_batter_index).
 
     `cums_bp` are the SAME lineup's rates scaled for the opposing bullpen; they
@@ -320,13 +518,26 @@ def _half_inning(cums, box, pit_box, start_idx, mound, rng,
                 break
         active = cums_bp if (cums_bp is not None and mound[0] == "BP") else cums
         ev = EVENTS[_draw(active[slot], rng.random())]
-        _record_offense(box, slot, ev)
+        # Is the slot still manned by the man who STARTED there? box[].pa counts
+        # only credited PAs, so this comparison is self-limiting. The PA is
+        # always played out — only the credit stops.
+        _own = maxpa is None or box[slot].pa < maxpa[slot]
+        if _own:
+            _record_offense(box, slot, ev)
         scored, bases, rbi, oa = _advance(bases, slot, ev, outs, rng, gidp_p)
         outs += oa
         runs += len(scored)
         for sc in scored:
-            box[sc].r += 1
-        box[slot].rbi += rbi
+            # Same ownership test as the batting credit: once a slot is subbed
+            # its starter is off the field, so he is not the runner who scores.
+            if maxpa is None or box[sc].pa < maxpa[sc]:
+                box[sc].r += 1
+        if _own and rbi:
+            # See RBI_CREDIT_P: some real runs score on errors/WP/PB and drive
+            # in nobody. Discount each RBI independently so multi-RBI hits are
+            # not discounted as a block.
+            box[slot].rbi += sum(1 for _ in range(rbi)
+                                 if rng.random() < RBI_CREDIT_P)
         # credit the pitcher on the mound
         pl = pit_box[mound[0]]
         pl.outs += oa
@@ -335,10 +546,17 @@ def _half_inning(cums, box, pit_box, start_idx, mound, rng,
         elif ev == "BB":
             pl.bb += 1
         elif ev in ("1B", "2B", "3B", "HR"):
+            # HBP deliberately falls through: it is charged to the pitcher as a
+            # baserunner but counts as neither a walk nor a hit, which is what
+            # the pitcher BB and H prop markets settle on.
             pl.h += 1
             if ev == "HR":
                 pl.hr += 1
-        pl.er += len(scored)
+        # Earned runs only — see ER_CHARGE_P. Runs allowed is tracked
+        # separately: a manager pulls a starter on what he has given up, not on
+        # the official scorer's earned/unearned ruling.
+        pl.ra += len(scored)
+        pl.er += sum(1 for _ in scored if rng.random() < ER_CHARGE_P)
         # Hook: out target reached OR the start has blown up. The blow-up exit
         # adds the left tail real starts have (a shelled pitcher is pulled, he
         # doesn't finish his pitch count). It does NOT double-count the value
@@ -346,7 +564,7 @@ def _half_inning(cums, box, pit_box, start_idx, mound, rng,
         # PROJECTED expected_outs, while this shapes the WITHIN-GAME
         # distribution. _sp_target compensates the mean so projected outs are
         # still hit on average — only the spread changes.
-        if mound[0] == "SP" and (pl.outs >= mound[1] or pl.er >= BLOWUP_ER):
+        if mound[0] == "SP" and (pl.outs >= mound[1] or pl.ra >= BLOWUP_ER):
             mound[0] = "BP"
         bi += 1
         # Walk-off: play stops the moment the home team takes the lead.
@@ -371,13 +589,17 @@ def _simulate_one(cums_away, cums_home, sp_away_outs, sp_home_outs, rng,
     c = ctx or {}
     ga, gh = c.get("gidp_away", LG_GIDP_PER_OPP), c.get("gidp_home", LG_GIDP_PER_OPP)
     sa, sh = c.get("sb_away", LG_SB_ATTEMPT), c.get("sb_home", LG_SB_ATTEMPT)
+    # Tonight's substitutions (see SUB_P). A very large cap means "played the
+    # whole game", so the common case costs one comparison per PA.
+    mp_a = [rng.choice(SUB_MAX_PA) if rng.random() < SUB_P else 99 for _ in range(9)]
+    mp_h = [rng.choice(SUB_MAX_PA) if rng.random() < SUB_P else 99 for _ in range(9)]
     while True:
         inning += 1
         ghost = inning >= 10        # extras start a runner on 2nd (2020 rule)
         # top: away bats, faces home pitching
         r, idx_a = _half_inning(cums_away, box_a, pit_h, idx_a, mound_h, rng,
                                 cums_bp=bp_away, gidp_p=ga, sb_attempt=sa,
-                                ghost_runner=ghost)
+                                ghost_runner=ghost, maxpa=mp_a)
         runs_a += r
         # walk-off skip: home leading after the top of the 9th+ doesn't bat
         if inning >= 9 and runs_h > runs_a:
@@ -387,7 +609,7 @@ def _simulate_one(cums_away, cums_home, sp_away_outs, sp_home_outs, rng,
         need = (runs_a - runs_h + 1) if inning >= 9 else None
         r, idx_h = _half_inning(cums_home, box_h, pit_a, idx_h, mound_a, rng,
                                 cums_bp=bp_home, gidp_p=gh, sb_attempt=sh,
-                                walkoff_need=need, ghost_runner=ghost)
+                                walkoff_need=need, ghost_runner=ghost, maxpa=mp_h)
         runs_h += r
         if inning >= 9 and runs_h != runs_a:
             break
@@ -397,13 +619,24 @@ def _simulate_one(cums_away, cums_home, sp_away_outs, sp_home_outs, rng,
 
 
 def _mean_runs(cums_a, cums_h, spa, sph, n, rng,
-               bp_away=None, bp_home=None, ctx: dict | None = None):
+               bp_away=None, bp_home=None, ctx: dict | None = None,
+               gp: dict | None = None):
     """Bottom-up mean runs. MUST be run with the same mechanics (bullpen, GIDP,
     steals, walk-offs) as the headline sim — it sets the anchor factor, so any
     mechanic missing here would be double-counted as an anchor correction."""
     ta = th = 0
     for _ in range(n):
-        _, _, _, _, ra, rh = _simulate_one(cums_a, cums_h, spa, sph, rng,
+        # Redraw the starters' out targets each sim, exactly as the headline
+        # loop does. Holding them fixed here biased the anchor: the pilot then
+        # saw a FIXED share of bullpen innings while the real run varied it,
+        # and once the bullpen stopped being a clone of the starter that
+        # mismatch fed straight into the anchor factor.
+        if gp is not None:
+            sa = _sp_target(gp.get("away_starter"), rng)
+            sh = _sp_target(gp.get("home_starter"), rng)
+        else:
+            sa, sh = spa, sph
+        _, _, _, _, ra, rh = _simulate_one(cums_a, cums_h, sa, sh, rng,
                                            bp_away=bp_away, bp_home=bp_home,
                                            ctx=ctx)
         ta += ra
@@ -465,6 +698,117 @@ _LB_PROP_MAP = {
     "prop_pitcher_h": ("pit", "h"), "prop_pitcher_hr": ("pit", "hr"),
     "prop_pitcher_er": ("pit", "er"), "prop_pitcher_outs": ("pit", "outs"),
 }
+
+
+# ---------- simulator probability calibration ----------
+# The sim is systematically overconfident (claimed 59.6% / delivered 50.8% over
+# 3,349 graded picks). Fitted per market by scripts/fit_sim_calibration.py and
+# gated on an out-of-sample Brier gain, so only markets that genuinely improve
+# are corrected; the rest pass through untouched.
+#
+# DOUBLE-SHRINK GUARD: rows carry BOTH `sim_hit_raw` (what the sim produced)
+# and `sim_hit` (calibrated). Refits must always read the raw field.
+_SIM_CAL: dict | None = None
+_SIM_CAL_PATH = Path(__file__).resolve().parent.parent / "data" / "models" / "sim_calibration.json"
+
+
+def _load_sim_cal() -> dict:
+    global _SIM_CAL
+    if _SIM_CAL is None:
+        try:
+            _SIM_CAL = json.loads(_SIM_CAL_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            _SIM_CAL = {"pooled": None, "markets": {}}
+    return _SIM_CAL
+
+
+def reload_sim_cal() -> None:
+    """Drop the cached calibration (call after a refit)."""
+    global _SIM_CAL
+    _SIM_CAL = None
+
+
+# Pitcher-K edge above which the book is likely holding information we lack.
+# The hard cap (K_EDGE_CAP) removes the worst offenders outright; this lower
+# threshold is the WARNING band, because performance already degrades well
+# before the cap: measured by edge quartile, smallest-edge picks hit 89.3%
+# (+8.7% ROI) and every quartile above the median (~0.06) was negative.
+K_EDGE_WARN = 0.06
+
+# Batter props priced longer than this bleed badly. Measured across 2,395
+# graded batter-prop picks: implied < 60% returned -23.4% ROI (30.6% hit, CI
+# [-30%,-17%]) versus -10.2% for everything shorter.
+#
+# NOTE the asymmetry with pitcher K, which is the opposite failure: for K the
+# danger is a big model-vs-price EDGE (the book knows something). For batters
+# the edge quartiles are FLAT — in the top-5 slice the biggest-edge quartile
+# was actually the best (+19.8%) — so an edge-based flag here would flag the
+# wrong picks. The batter risk is simply the LONG PRICE itself.
+BATTER_PRICE_WARN = 0.60
+
+
+def pick_flags(row: dict) -> list[str]:
+    """Risk flags for a leaderboard row — surfaced rather than silently applied.
+
+    'book?'  the book's price implies far less than the sim claims on a pitcher
+             strikeout line. Empirically that gap means the BOOK is right
+             (pitch-count plan, injury, planned short start), not us.
+    'price'  a batter prop priced long enough to sit in the losing bucket.
+    'uncal'  this pick's line lies outside the range the calibration was fitted
+             on, so the displayed probability is an extrapolation.
+    """
+    flags: list[str] = []
+    mkt = row.get("market", "")
+    raw = row.get("sim_hit_raw", row.get("sim_hit"))
+    odds = row.get("odds")
+    _priced = isinstance(odds, (int, float)) and odds and not (-100 < odds < 100)
+    imp = None
+    if _priced:
+        imp = 100.0 / (odds + 100.0) if odds > 0 else (-odds) / ((-odds) + 100.0)
+    if mkt == "prop_pitcher_k" and raw is not None and imp is not None:
+        if (float(raw) - imp) > K_EDGE_WARN:
+            flags.append("book?")
+    if (imp is not None and mkt.startswith("prop_")
+            and not mkt.startswith("prop_pitcher") and imp < BATTER_PRICE_WARN):
+        flags.append("price")
+    fit = (_load_sim_cal().get("markets") or {}).get(mkt)
+    if fit:
+        seen = fit.get("train_lines")
+        if seen and row.get("line") is not None and "c_line" not in fit:
+            try:
+                if round(float(row["line"]), 1) not in set(seen):
+                    flags.append("uncal")
+            except (TypeError, ValueError):
+                pass
+    return flags
+
+
+def calibrate_sim_prob(p: float, market: str, rank: float | None = None) -> float:
+    """Map a RAW simulated hit rate to a calibrated probability.
+
+    `rank` is the pick's position within its market on the day. It carries real
+    signal beyond the probability itself — a TB pick at raw 85% hits 77% when
+    it's top-3 but only ~63% down at rank 6-20 — so a fit on probability alone
+    is dominated by mid-rank rows and under-states the top picks that actually
+    get bet. Markets whose rank term didn't earn its keep out-of-sample simply
+    have no c_rank and ignore this argument."""
+    try:
+        p = float(p)
+    except (TypeError, ValueError):
+        return p
+    if not (0.0 < p < 1.0):
+        return p
+    cal = _load_sim_cal()
+    fit = (cal.get("markets") or {}).get(market) or cal.get("pooled")
+    if not fit:
+        return p
+    eps = 1e-6
+    q = min(max(p, eps), 1 - eps)
+    z = fit["a"] + fit["b"] * math.log(q / (1 - q))
+    if "c_rank" in fit:
+        r = 10.0 if rank is None else float(rank)
+        z += fit["c_rank"] * math.log(max(1.0, min(r, 25.0)))
+    return 1.0 / (1.0 + math.exp(-z)) if z >= -700 else 0.0
 
 
 def _hist_over(hist_stat: dict, line: float) -> int:
@@ -555,6 +899,11 @@ def bet_sim_hitrate(res: SimResult, bet: dict) -> float | None:
 # board (especially fine-tuned pitcher props) with unbettable juice.
 MIN_ODDS = -400
 
+# Max sim-minus-price edge tolerated on a pitcher-strikeout pick. Mirrors the
+# value engine's long-standing 15% K edge cap; see the adverse-selection note
+# in _build_sim_rows for the measurement that justifies porting it here.
+K_EDGE_CAP = 0.15
+
 
 def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict],
                     min_odds: float | None = MIN_ODDS) -> list[dict]:
@@ -571,6 +920,13 @@ def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict],
     for b in offered_bets:
         gpk = b.get("game_pk")
         if gpk is None:
+            continue
+        # Reject impossible American prices. Odds jump from -100 straight to
+        # +100; anything strictly between is a corrupted quote (the consensus
+        # fallback used to average American odds arithmetically). A -14 becomes
+        # decimal 8.14 — a phantom 7:1 payout that fabricates ROI.
+        _o = b.get("odds")
+        if isinstance(_o, (int, float)) and _o and -100 < _o < 100:
             continue
         if min_odds is not None:
             try:
@@ -590,6 +946,18 @@ def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict],
         hr = bet_sim_hitrate(res, b)
         if hr is None:
             continue
+        # ADVERSE SELECTION on pitcher strikeouts. Measured on 223 confident
+        # graded picks: the bigger the sim's edge over the price, the WORSE the
+        # pick does — smallest-edge quartile hit 89.3% (+8.7% ROI), largest hit
+        # 58.9% (-7.4%), monotone across all four. A large model-vs-book gap on
+        # a K line almost always means the book knows something we don't (pitch
+        # count plan, injury, planned short start). The value engine already
+        # caps K edge at 15%; the sim board never inherited that guard. Applying
+        # it lifts pitcher-K ROI from -0.8% to +3.0% on the graded record.
+        if b.get("market") == "prop_pitcher_k" and isinstance(_o, (int, float)) and _o:
+            _imp = 100.0 / (_o + 100.0) if _o > 0 else (-_o) / ((-_o) + 100.0)
+            if (hr - _imp) > K_EDGE_CAP:
+                continue
         key = (gpk, b.get("player_id"), b.get("market"),
                _side_of(b.get("description", "")) or b.get("description", ""),
                round(float(b.get("line") or 0), 1))
@@ -605,11 +973,33 @@ def _build_sim_rows(games: list, sim_for_game, offered_bets: list[dict],
             "side": _side_of(b.get("description", "")),
             "game_pk": gpk,
             "player_id": b.get("player_id"),
+            # sim_hit is CALIBRATED later, once rank is known (_apply_calibration).
             "sim_hit": round(hr, 4),
+            "sim_hit_raw": round(hr, 4),        # raw sim output (refits use THIS)
             "sim_hits_n": int(round(hr * res.n)),
             "n": res.n,
             "novig_prob": b.get("novig_prob"),
         })
+    return rows
+
+
+def _apply_calibration(rows: list[dict]) -> list[dict]:
+    """Rank each market by the RAW sim probability, then calibrate using that
+    rank. Ranking on the raw value (not the calibrated one) keeps the ordering
+    the one we validated as best, and avoids the circularity of a rank-aware
+    calibration feeding back into the rank it depends on."""
+    by_mkt: dict[str, list[dict]] = {}
+    for r in rows:
+        by_mkt.setdefault(r.get("market", ""), []).append(r)
+    for mkt, rs in by_mkt.items():
+        rs.sort(key=lambda r: -(r.get("sim_hit_raw") or 0.0))
+        for i, r in enumerate(rs, start=1):
+            raw = r.get("sim_hit_raw")
+            if raw is None:
+                continue
+            r["sim_rank"] = i
+            r["sim_hit"] = round(calibrate_sim_prob(raw, mkt, i), 4)
+            r["flags"] = pick_flags(r)
     return rows
 
 
@@ -662,19 +1052,132 @@ def build_sim_boards(games: list, sim_for_game, offered_bets: list[dict],
     return _group_rows_into_boards(rows, top=top, hi_threshold=hi_threshold)
 
 
+# TB >= 1 happens exactly when H >= 1 (total bases can only come from hits) —
+# verified at 100.0000% agreement over 34,314 player-games. So "TB over 0.5"
+# and "Hits over 0.5" for the same batter are the SAME BET. Showing both wastes
+# a board slot and, worse, disguises a duplicate as a second parlay leg.
+_EQUIVALENT_AT_HALF = {"prop_tb", "prop_hits"}
+
+
+def _dedupe_equivalent(rows: list[dict]) -> list[dict]:
+    """Drop the duplicate of any identical event (same player/game, over 0.5,
+    TB vs Hits). Keeps whichever is priced better for the bettor."""
+    def _payout(r) -> float:
+        d = _american_to_decimal(r.get("odds"))
+        return d if d else 0.0
+
+    best: dict = {}
+    out: list[dict] = []
+    for r in rows:
+        if (r.get("market") in _EQUIVALENT_AT_HALF
+                and abs(float(r.get("line") or 0) - 0.5) < 1e-9
+                and (r.get("side") or "").upper() == "OVER"
+                and r.get("player_id") is not None):
+            key = (r.get("game_pk"), r.get("player_id"))
+            prev = best.get(key)
+            if prev is None or _payout(r) > _payout(prev):
+                best[key] = r
+        else:
+            out.append(r)
+    out.extend(best.values())
+    return out
+
+
+def _diversify_lines(rows: list[dict], top: int, per_line_cap: int) -> list[dict]:
+    """Take a market's top-N but stop any single line monopolising the board.
+
+    Ranking purely by probability mechanically prefers the LOWEST line, so
+    every batter-prop board came out ~100% "over 0.5" (runs 485/485, HR
+    467/467, TB 372/373). That left the higher lines — where the prices are
+    far better — completely unmeasured. Reserve slots per line so they appear.
+    """
+    by_line: dict = {}
+    for r in rows:
+        by_line.setdefault(round(float(r.get("line") or 0), 1), []).append(r)
+    if len(by_line) <= 1:
+        return rows[:top]
+    picked: list[dict] = []
+    for ln in sorted(by_line):
+        by_line[ln].sort(key=lambda r: -r["sim_hit"])
+        picked.extend(by_line[ln][:per_line_cap])
+    # Backfill any unused slots with the next-best regardless of line, so
+    # reserving room for higher lines never SHRINKS the board.
+    if len(picked) < top:
+        chosen = {id(r) for r in picked}
+        for r in sorted(rows, key=lambda r: -r["sim_hit"]):
+            if len(picked) >= top:
+                break
+            if id(r) not in chosen:
+                picked.append(r)
+                chosen.add(id(r))
+    picked.sort(key=lambda r: -r["sim_hit"])
+    return picked[:top]
+
+
 def _group_rows_into_boards(rows: list[dict], top: int = 20,
                             hi_threshold: float = 0.95) -> dict:
     """Group scored leaderboard rows into the app's three views (per-market
-    top-N, cross-stat high-confidence, and the full board)."""
+    top-N, cross-stat high-confidence, and the full board). Calibration is
+    applied here because it needs each pick's rank within its market."""
+    rows = _dedupe_equivalent(rows)
+    _apply_calibration(rows)
     by_mkt: dict[str, list[dict]] = {}
     for r in rows:
         by_mkt.setdefault(r["market"], []).append(r)
     for mkt in by_mkt:
         by_mkt[mkt].sort(key=lambda r: -r["sim_hit"])
-        by_mkt[mkt] = by_mkt[mkt][:top]
+        by_mkt[mkt] = _diversify_lines(by_mkt[mkt], top, max(4, top // 3))
     all_rows = sorted(rows, key=lambda r: -r["sim_hit"])
     high_conf = [r for r in all_rows if r["sim_hit"] >= hi_threshold]
-    return {"by_market": by_mkt, "high_conf": high_conf, "all_rows": all_rows}
+    return {"by_market": by_mkt, "high_conf": high_conf, "all_rows": all_rows,
+            "by_line": build_line_boards(all_rows, top=top)}
+
+
+# Lines worth their own fixed-line board. A batter's "over 0.5" is the single
+# most-bet prop in this system and diversification actively demotes it.
+_FIXED_LINE_VIEWS = (("prop_tb", 0.5), ("prop_hits", 0.5), ("prop_pitcher_k", 4.5))
+
+
+def build_line_boards(all_rows: list[dict], top: int = 20) -> dict:
+    """Per-market boards restricted to ONE line, ranked by hit rate.
+
+    Why this exists: `_diversify_lines` caps how many rows share a line, which
+    is right for a general board (ranking by probability otherwise fills every
+    slot with the lowest line) but is not what someone betting a SINGLE line
+    wants to sort by. Within a fixed line there is nothing to diversify, so
+    ranking by simulated probability is directly meaningful.
+
+    Measured on 531 graded TB over-0.5 picks across 30 dates, ranking within
+    the line separates cleanly:  ranks 1-3 hit 76.7%, 4-6 hit 70.0%, 7-10 hit
+    57.3%.
+
+    NOT justified by any claim that the diversified board is inverted — an
+    earlier version of this comment said so, based on a rank computed by
+    re-sorting the logged board on sim_hit. That was wrong: sim_picks.json
+    STORES the displayed rank, and diversification reorders before logging, so
+    re-sorting invents positions the user never saw. Against stored ranks the
+    diversified board is flat, not inverted (top-3 81.6% vs 80.0% below), and
+    for pitcher K it is clearly right (top-3 91.7% vs 66.7% at 4-6).
+
+    Returns {"market@line": [rows]}.
+    """
+    out: dict[str, list[dict]] = {}
+    for mkt, line in _FIXED_LINE_VIEWS:
+        sel = []
+        for r in all_rows:
+            if r.get("market") != mkt:
+                continue
+            if _side_of(r.get("description", "")) != "OVER":
+                continue
+            try:
+                if abs(float(r.get("line")) - line) > 1e-9:
+                    continue
+            except (TypeError, ValueError):
+                continue
+            sel.append(r)
+        if sel:
+            out[f"{mkt}@{line}"] = sorted(sel, key=lambda r: -r["sim_hit"])[:top]
+    return out
 
 
 # stat -> (internal market, display label) for model-predicted props.
@@ -753,7 +1256,8 @@ def build_predicted_prop_rows(games: list, sim_for_game) -> list[dict]:
                                 "description": f"{name} OVER {line:g} {label}",
                                 "market": market, "odds": None, "line": line,
                                 "side": "OVER", "game_pk": gpk, "player_id": int(pid),
-                                "sim_hit": round(p, 4),
+                                "sim_hit": round(calibrate_sim_prob(p, market), 4),
+                                "sim_hit_raw": round(p, 4),
                                 "sim_hits_n": int(round(p * res.n)),
                                 "n": res.n, "novig_prob": None,
                             })
@@ -1180,6 +1684,18 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
     # anchor silently "corrects" for them and team totals collapse.
     _bp_a = _bp_offense_mult(gp.get("home_bp_fip"), gp.get("home_sp_fip"))
     _bp_h = _bp_offense_mult(gp.get("away_bp_fip"), gp.get("away_sp_fip"))
+    # Walks move to the RELIEF corps' own control at the hook (see _scale_bb).
+    # Batter walk rates were built against the starter's bb9, so the factor is
+    # the ratio of the two; clamped because a thin bullpen sample shouldn't
+    # swing a game.
+    _bbf_a = _bb_shift(gp.get("home_bp_bb9"), gp.get("home_sp_bb9"))
+    _bbf_h = _bb_shift(gp.get("away_bp_bb9"), gp.get("away_sp_bb9"))
+    # Mean-preserving split (see _split_factors): the projected rate already
+    # averages over both staffs, so the relief premium must come OUT of the
+    # starter innings rather than be stacked on top of them.
+    _sp_bb_a, _bp_bb_a = _split_factors(_bbf_a)
+    _sp_bb_h, _bp_bb_h = _split_factors(_bbf_h)
+    _sp_hr_f, _bp_hr_f = _split_factors(BP_HR_EXTRA)
     _ctx = {
         "gidp_away": float(gp.get("away_gidp_p") or LG_GIDP_PER_OPP),
         "gidp_home": float(gp.get("home_gidp_p") or LG_GIDP_PER_OPP),
@@ -1190,15 +1706,15 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
     # Pilot (free rates) -> bottom-up mean for the "show both" comparison and
     # the anchor factors.
     pilot = max(150, n // 5)
-    cums_a0 = [_cum(p) for p in probs_a]
-    cums_h0 = [_cum(p) for p in probs_h]
-    bp_a0 = [_cum(_scale_offense(p, _bp_a)) for p in probs_a]
-    bp_h0 = [_cum(_scale_offense(p, _bp_h)) for p in probs_h]
+    cums_a0 = [_cum(_starter_probs(p, _sp_bb_a, _sp_hr_f)) for p in probs_a]
+    cums_h0 = [_cum(_starter_probs(p, _sp_bb_h, _sp_hr_f)) for p in probs_h]
+    bp_a0 = [_cum(_bullpen_probs(p, _bp_a, _bp_bb_a, _bp_hr_f)) for p in probs_a]
+    bp_h0 = [_cum(_bullpen_probs(p, _bp_h, _bp_bb_h, _bp_hr_f)) for p in probs_h]
     spa = _sp_target(gp.get("away_starter"), rng)
     sph = _sp_target(gp.get("home_starter"), rng)
     free_a, free_h = _mean_runs(cums_a0, cums_h0, spa, sph,
                                 pilot, random.Random(seed + 1),
-                                bp_away=bp_a0, bp_home=bp_h0, ctx=_ctx)
+                                bp_away=bp_a0, bp_home=bp_h0, ctx=_ctx, gp=gp)
 
     # Anchor factors. Runs are SUPER-LINEAR in on-base rate (baserunners
     # compound), so a single f = glm/free systematically undershoots whenever
@@ -1215,13 +1731,22 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
         # ~1/2 inverts the quadratic response and converges in 2-3 passes.
         _pilot_it = min(pilot, 600)
         for _it in range(4):
-            ca_t = [_cum(_scale_offense(p, fa)) for p in probs_a]
-            ch_t = [_cum(_scale_offense(p, fh)) for p in probs_h]
-            bpa_t = [_cum(_scale_offense(p, fa * _bp_a)) for p in probs_a]
-            bph_t = [_cum(_scale_offense(p, fh * _bp_h)) for p in probs_h]
+            ca_t = [_cum(_starter_probs(_scale_offense(p, fa),
+                                        _sp_bb_a, _sp_hr_f)) for p in probs_a]
+            ch_t = [_cum(_starter_probs(_scale_offense(p, fh),
+                                        _sp_bb_h, _sp_hr_f)) for p in probs_h]
+            # _scale_bb MUST be applied here too. It is what the headline run
+            # uses (see varbp_a/varbp_h below), and an anchor solved against a
+            # bullpen that still walks like the starter is solving for a
+            # different game than the one we then simulate — the extra walks
+            # land on top of the anchored mean instead of inside it.
+            bpa_t = [_cum(_bullpen_probs(p, fa * _bp_a, _bp_bb_a, _bp_hr_f))
+                     for p in probs_a]
+            bph_t = [_cum(_bullpen_probs(p, fh * _bp_h, _bp_bb_h, _bp_hr_f))
+                     for p in probs_h]
             ga, gh_ = _mean_runs(ca_t, ch_t, spa, sph, _pilot_it,
                                  random.Random(seed + 17 + _it),
-                                 bp_away=bpa_t, bp_home=bph_t, ctx=_ctx)
+                                 bp_away=bpa_t, bp_home=bph_t, ctx=_ctx, gp=gp)
             ok_a = ga <= 0.3 or glm_a <= 0 or abs(ga - glm_a) < 0.08
             ok_h = gh_ <= 0.3 or glm_h <= 0 or abs(gh_ - glm_h) < 0.08
             if ok_a and ok_h:
@@ -1237,13 +1762,15 @@ def simulate_game(gp: dict, n: int = 2000, seed: int = 0,
     # so the anchored team means are unchanged — only the SPREAD widens.
     _mults = _rate_multipliers(rate_sigma)
     _nv = len(_mults)
-    var_a = [[_cum(_scale_offense(p, fa * m)) for m in _mults] for p in probs_a]
-    var_h = [[_cum(_scale_offense(p, fh * m)) for m in _mults] for p in probs_h]
+    var_a = [[_cum(_starter_probs(_scale_offense(p, fa * m), _sp_bb_a, _sp_hr_f))
+              for m in _mults] for p in probs_a]
+    var_h = [[_cum(_starter_probs(_scale_offense(p, fh * m), _sp_bb_h, _sp_hr_f))
+              for m in _mults] for p in probs_h]
     # Bullpen-scaled twins of the same lineups (see _bp_a/_bp_h above).
-    varbp_a = [[_cum(_scale_offense(p, fa * m * _bp_a)) for m in _mults]
-               for p in probs_a]
-    varbp_h = [[_cum(_scale_offense(p, fh * m * _bp_h)) for m in _mults]
-               for p in probs_h]
+    varbp_a = [[_cum(_bullpen_probs(p, fa * m * _bp_a, _bp_bb_a, _bp_hr_f))
+                for m in _mults] for p in probs_a]
+    varbp_h = [[_cum(_bullpen_probs(p, fh * m * _bp_h, _bp_bb_h, _bp_hr_f))
+                for m in _mults] for p in probs_h]
 
     # Full anchored run
     agg_a = [_BoxLine() for _ in range(9)]

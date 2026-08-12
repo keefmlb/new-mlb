@@ -35,7 +35,46 @@ import pandas as pd
 # (Jun 24 2026 — policy 2026-06-24-tb-analytical.)
 BLEND_WEIGHT_OVERRIDE = {
     "tb": 0.0,   # pure analytical for total bases
+    # HR -> pure ML. Graded on the MEAN against 2,970 player-games (Aug 2026),
+    # which is what a counting prop settles on:
+    #     pure analytical  proj/actual 1.329
+    #     production (~.5) proj/actual 1.205
+    #     pure ML          proj/actual 1.083
+    # train_props picks this weight by holdout MAE, and MAE is bias-blind — a
+    # component running a third high can still win that contest. The bias
+    # matters twice over because game_sim weights HR at 4 bases, so it was the
+    # largest single contributor to TB over-projection.
+    # INTERIM: the real defect is the analytical path
+    # (ePA * hr_pa * hr_mult_pitch * pf_hr * hr_w) being +33%; the barrel-derived
+    # prior is sound (0.0269 vs league 0.030), so the bias is in the multiplier
+    # stack and is not yet isolated. Revisit once that is fixed.
+    # (Aug 10 2026 — policy 2026-08-10-hit-mix.)
+    "hr": 1.0,
 }
+
+# Residual HR mean-correction, applied AFTER the ML blend.
+#
+# Even on pure ML the HR projection runs high. Graded against 5,000 player-games
+# over 20 days (~565 actual HR, so ~4% standard error): proj/actual = 1.123.
+# That window's actual rate (0.113 HR per player-game) matches the full-season
+# rate exactly, so this is bias and not a cold streak — the 10-day window that
+# read 0.123 was the outlier, and an earlier 12-day A/B that put pure ML at
+# 1.083 was reading the same small-sample noise.
+#
+# This is a CALIBRATION, not a mechanism: the honest fix is to find why the
+# model is high (the analytical path is +33%, so the multiplier stack is the
+# prime suspect) and retrain. Until then this keeps HR — and TB, which counts a
+# homer as 4 bases — on the right mean. Re-measure with scripts/sim_bias_audit.py
+# after any prop retrain; if the model comes back unbiased, this must go to 1.0.
+# RETIRED Aug 11 2026 after one retrain — left at 1.0 deliberately.
+# The very next `train_props` moved batter HR from +12.3% OVER to ~14% UNDER,
+# a 30-point swing, and the stale 1/1.123 correction turned that into 24% under
+# (proj/act 0.762, bases per hit -3.5%). A constant fitted to one window cannot
+# track a model that moves that much per retrain, so applying one is worse than
+# applying none. If HR bias needs correcting it has to be FITTED as a pipeline
+# step from a holdout — the way prop_calibration.json already works — not
+# pinned here. Verify with scripts/sim_bias_audit.py after each retrain.
+HR_MEAN_CAL = 1.0
 
 # League rate priors (2024-2025 MLB averages)
 LG = {
@@ -48,6 +87,11 @@ LG = {
     "tb_per_ab": 0.395,
     "double_per_ab": 0.045,
     "triple_per_ab": 0.005,
+    # Extra-base shares OF HITS, measured over 36,239 player-games in 2026.
+    # Implied bases/hit = 1 + .1899 + 2(.0167) + 3(hr_share) — the quantity the
+    # old independent-rate decomposition got 13.7% too high.
+    "s_2b": 0.1899,
+    "s_3b": 0.0167,
     "rbi_per_pa": 0.115,
     "sb_per_g": 0.05,
     # Pitcher
@@ -165,6 +209,62 @@ class BatterProjection:
     proj_k: float
     proj_bb: float
     proj_sb: float
+    # Pre-ML (pure analytical) h / runs / rbi, isotonic-calibrated the same way
+    # as their blended twins. Only the Hits+Runs+RBIs market reads these: hrr
+    # is a SUM of three ML-blended components, and that stacked blend error is
+    # what makes it lose (13W-20L, -33% ROI). The standalone hits/runs/rbi
+    # markets keep using the blended values — see BLEND_WEIGHT_OVERRIDE.
+    anal_h: float = 0.0
+    anal_runs: float = 0.0
+    anal_rbi: float = 0.0
+
+
+def _decompose_tb(proj_h: float, proj_hr: float, s2b: float, s3b: float,
+                  xb_env: float = 1.0) -> tuple[float, float, float]:
+    """Split a hit total into 1B/2B/3B/HR and return (2B, 3B, TB).
+
+    THE SINGLE SOURCE OF TRUTH for total bases. Both the analytical build and
+    the post-ML recompute call this, because the bug it replaces was precisely
+    that TB was assembled in one place and its inputs corrected in another.
+
+    Measured against 2,502 graded player-games, the previous construction
+    projected 1.849 bases per hit against an actual 1.626 (+13.7%). Hits
+    themselves were unbiased (0.995 of actual) — the error was entirely in the
+    MIX, because 2B and 3B were independent per-PA rates carrying park/weather
+    multipliers that hits never saw, and TB weighted them 2x and 3x.
+
+    Deriving the mix from hits makes TB consistent by construction: any
+    correction to proj_h (notably the ML blend) now flows into TB instead of
+    leaving it frozen at a stale analytical value.
+
+    `xb_env` is the park/weather run environment, tilting the extra-base SHARE
+    at half strength (sqrt). Kept deliberately weak: proj_h carries NO park or
+    weather term, so any environment factor applied here and not there is the
+    same asymmetry this function exists to remove. Slate park factors average
+    exactly 1.000, so in practice this only moves on weather.
+    """
+    h = max(0.0, float(proj_h))
+    hr = max(0.0, min(float(proj_hr), h))      # a homer is a hit; never exceed
+    try:
+        tilt = max(0.80, min(1.25, float(xb_env) ** 0.5))
+    except (TypeError, ValueError):
+        tilt = 1.0
+    non_hr = max(0.0, h - hr)
+    # Shares are of ALL hits; renormalise against the non-HR pool so that
+    # 1B + 2B + 3B + HR == H exactly for any input.
+    s2 = max(0.0, s2b) * tilt
+    s3 = max(0.0, s3b) * tilt
+    denom = s2 + s3
+    if h > 0 and denom > 0:
+        cap = non_hr / h                        # 2B+3B can't exceed the non-HR hits
+        if denom > cap:
+            scale = cap / denom
+            s2, s3 = s2 * scale, s3 * scale
+    p2b = h * s2
+    p3b = h * s3
+    singles = max(0.0, h - hr - p2b - p3b)
+    tb = singles + 2 * p2b + 3 * p3b + 4 * hr
+    return p2b, p3b, tb
 
 
 def _expected_pa_by_order(order: int, runs_pred: float) -> float:
@@ -247,6 +347,21 @@ def _apply_ml_adjustment_batter(
             ml_pred = float(models[stat].predict(df)[0])
             anal = getattr(new, attr)
             setattr(new, attr, w * ml_pred + (1 - w) * anal)
+    # Rebuild the hit decomposition from the CORRECTED h and hr. Without this
+    # the blend left proj_tb/2b/3b at their pre-blend analytical values while
+    # proj_h moved underneath them: the ML model pulled hits to unbiased
+    # (0.995 of actual) but TB stayed +13% high, and prop_tb is pinned to pure
+    # analytical by BLEND_WEIGHT_OVERRIDE so nothing else corrected it either.
+    # game_sim.batter_pa_probs consumes h/2b/3b/hr together, so a mix that
+    # disagrees with its own hit total feeds straight into every TB board.
+    # Residual HR bias correction (see HR_MEAN_CAL) must land BEFORE the
+    # decomposition, or TB would be rebuilt from the uncorrected homer count.
+    new.proj_hr *= HR_MEAN_CAL
+    if proj.proj_h > 0:
+        s2b = proj.proj_2b / proj.proj_h
+        s3b = proj.proj_3b / proj.proj_h
+        new.proj_2b, new.proj_3b, new.proj_tb = _decompose_tb(
+            new.proj_h, new.proj_hr, s2b, s3b)
     return new
 
 
@@ -484,6 +599,11 @@ def project_batter(
     hr_pa = _shrink(raw_hr_pa, hr_prior, pa, PRIOR_PA)
     d_pa  = _shrink(raw_2b_pa, LG["double_per_ab"] * 0.93, pa, PRIOR_PA)
     t_pa  = _shrink(raw_3b_pa, LG["triple_per_ab"] * 0.93, pa, PRIOR_PA)
+    # Extra-base SHARES OF HITS. A double is a hit, so the stable, projectable
+    # quantity is "what fraction of this hitter's hits go for extra bases" —
+    # not a doubles-per-PA rate that floats free of his hit total.
+    s2b = _shrink(d / h if h else LG["s_2b"], LG["s_2b"], pa, PRIOR_PA)
+    s3b = _shrink(t / h if h else LG["s_3b"], LG["s_3b"], pa, PRIOR_PA)
     bb_pa = _shrink(raw_bb_pa, LG["bb_pct"], pa, PRIOR_PA)
     k_pa  = _shrink(raw_k_pa, LG["k_pct"], pa, PRIOR_PA_K)
     rbi_pa = _shrink(raw_rbi_pa, LG["rbi_per_pa"], pa, PRIOR_PA)
@@ -522,16 +642,26 @@ def project_batter(
 
     # Expected playing time
     ePA = _expected_pa_by_order(bat_order, team_pred_runs)
-    eAB = ePA * (1 - bb_pa)        # AB ~ PA * (1 - BB%) ignoring HBP/SF (~2-3% rounding)
+    # At-bats must be net of the MATCHUP-ADJUSTED walk rate, not the batter's
+    # raw one. Walks were being adjusted for the opposing starter's control
+    # (bb_mult) in proj_bb but NOT subtracted from eAB, so PA != AB + BB in the
+    # adjusted world and the same plate appearance got counted twice. Against a
+    # wild starter (p90 bb_mult 1.36) that over-projected hits/TB by ~3.5%; vs a
+    # control arm (p10 0.70) it under-projected by ~2.7% — a ~6% matchup-driven
+    # swing landing squarely on TB, the highest-volume market.
+    bb_pa_adj = min(0.50, max(0.0, bb_pa * bb_mult))
+    eAB = ePA * (1 - bb_pa_adj)    # ignores HBP/SF (~2-3% rounding)
 
     proj_h  = eAB * avg * avg_mult
     proj_hr = ePA * hr_pa * hr_mult_pitch * pf_hr * hr_w
-    proj_2b = ePA * d_pa * pf_runs * runs_w
-    proj_3b = ePA * t_pa * pf_runs * runs_w
-    proj_singles = max(0.0, proj_h - proj_hr - proj_2b - proj_3b)
-    proj_tb = proj_singles + 2 * proj_2b + 3 * proj_3b + 4 * proj_hr
+    # Hit-type mix is derived FROM hits, not projected independently. See
+    # _decompose_tb — the old form built 2B/3B on their own per-PA rates with
+    # their own multipliers, so nothing tied them to the hit total and TB (a
+    # weighted SUM of the parts) inherited every component's error at 2x/3x/4x.
+    proj_2b, proj_3b, proj_tb = _decompose_tb(
+        proj_h, proj_hr, s2b, s3b, pf_runs * runs_w)
     proj_k  = ePA * k_pa * k_mult
-    proj_bb = ePA * bb_pa * bb_mult
+    proj_bb = ePA * bb_pa_adj      # same rate eAB was netted against (PA = AB + BB)
     # RBI scales with team run environment relative to average
     proj_rbi = ePA * rbi_pa * (team_pred_runs / 4.5) * pf_runs * runs_w
     # Runs scored: lineup position drives scoring rate far more than PA count.
@@ -556,6 +686,9 @@ def project_batter(
         proj_tb=proj_tb, proj_rbi=proj_rbi, proj_runs=proj_runs,
         proj_k=proj_k, proj_bb=proj_bb, proj_sb=proj_sb,
     )
+    # Stash the ANALYTICAL h/runs/rbi before the ML blend touches them; the
+    # Hits+Runs+RBIs market is priced off these (see BatterProjection.anal_*).
+    _anal_h, _anal_runs, _anal_rbi = out.proj_h, out.proj_runs, out.proj_rbi
     # ml_blend=None -> use per-stat tuned weights; ml_blend=0 -> pure analytical
     if ml_blend is None or ml_blend > 0:
         out = _apply_ml_adjustment_batter(out, bat_stats, recent_stats,
@@ -572,6 +705,10 @@ def project_batter(
     out.proj_runs = _cal.apply("batter_runs", out.proj_runs)
     out.proj_k    = _cal.apply("batter_k",    out.proj_k)
     out.proj_bb   = _cal.apply("batter_bb",   out.proj_bb)
+    # Same isotonic treatment for the analytical twins so hrr is comparable.
+    out.anal_h    = _cal.apply("batter_h",    _anal_h)
+    out.anal_runs = _cal.apply("batter_runs", _anal_runs)
+    out.anal_rbi  = _cal.apply("batter_rbi",  _anal_rbi)
     return out
 
 

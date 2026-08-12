@@ -49,6 +49,15 @@ def _save(entries: list[dict]) -> None:
 
 
 def _key(e: dict) -> tuple:
+    """Identity of a logged pick.
+
+    `source` is part of the key. Without it the 75%+ Builder and the main
+    leaderboard collided on the same offer, and whichever logged LAST silently
+    overwrote the other's `rank` — so a single date ended up holding ranks from
+    two different boards, with duplicates and gaps. That made "what were the top
+    6 that day" unanswerable, and any reconstruction from this file wrong.
+    Each board view is now its own observation.
+    """
     return (
         e.get("date"),
         e.get("game_pk"),
@@ -56,10 +65,23 @@ def _key(e: dict) -> tuple:
         e.get("market"),
         e.get("side") or e.get("description"),
         round(float(e.get("line") or 0), 1),
+        e.get("source") or "leaderboard",
     )
 
 
-def log_sim_picks(date: str, by_market: dict[str, list[dict]]) -> int:
+def board_id(date: str, source: str, market: str, run: str) -> str:
+    """Groups rows back into the exact board that produced their rank.
+
+    A rank only means something relative to the board it came from: the same
+    date can be logged several times (a refresh mid-afternoon) and under
+    several views. Without this, ranks from different boards get mixed and the
+    resulting "top N" is a board that was never displayed.
+    """
+    return f"{date}|{source}|{market}|{run[:19]}"
+
+
+def log_sim_picks(date: str, by_market: dict[str, list[dict]],
+                  source: str = "leaderboard") -> int:
     """Persist the per-market leaderboard rows for `date`. Returns the number
     of NEW picks added. Existing picks (same key) have their sim_hit refreshed
     but keep any outcome already graded — re-running the leaderboard the same
@@ -76,7 +98,13 @@ def log_sim_picks(date: str, by_market: dict[str, list[dict]]) -> int:
                 "date": date,
                 "logged_at": logged_at,
                 "market": market,
+                "source": source,
                 "rank": rank,
+                # Which board this rank belongs to (see board_id).
+                "board_id": board_id(date, source, market, logged_at),
+                # Did the user actually take this pick? None = not marked.
+                # Set via mark_bet(); never overwritten by a re-log.
+                "bet": None,
                 "matchup": r.get("matchup", ""),
                 "description": r.get("description", ""),
                 "line": r.get("line"),
@@ -85,6 +113,9 @@ def log_sim_picks(date: str, by_market: dict[str, list[dict]]) -> int:
                 "game_pk": r.get("game_pk"),
                 "player_id": r.get("player_id"),
                 "sim_hit": r.get("sim_hit"),
+                # RAW simulator output. Calibration refits must read this, never
+                # the calibrated sim_hit, or the shrink compounds every cycle.
+                "sim_hit_raw": r.get("sim_hit_raw", r.get("sim_hit")),
                 "sim_hits_n": r.get("sim_hits_n"),
                 "sim_n": r.get("n"),
                 "novig_prob": r.get("novig_prob"),
@@ -97,6 +128,10 @@ def log_sim_picks(date: str, by_market: dict[str, list[dict]]) -> int:
                 prev["sim_hit"] = e["sim_hit"]
                 prev["sim_hits_n"] = e["sim_hits_n"]
                 prev["rank"] = e["rank"]
+                # Re-ranking means a NEW board, so the board_id moves with it.
+                # `bet` and `outcome` are the user's/reality's, never ours.
+                prev["board_id"] = e["board_id"]
+                prev.setdefault("bet", None)
             else:
                 entries.append(e)
                 index[k] = e
@@ -252,3 +287,50 @@ def _confidence_brackets(entries: list[dict]) -> list[dict]:
 if __name__ == "__main__":
     n = evaluate_sim_outcomes()
     print(f"Evaluated sim outcomes: {n} picks updated.")
+
+
+def mark_bet(date: str, picks: list[dict], source: str = "leaderboard",
+             value: bool = True) -> int:
+    """Flag logged picks as ones the user actually BET. Returns rows updated.
+
+    This is the field every historical question needed and none of them had:
+    without it, "how did your tickets do vs the board" can only be answered by
+    transcribing screenshots. `picks` are matched on the same identity as
+    logging, so pass the board rows straight through.
+    """
+    entries = _load()
+    index = {_key(e): e for e in entries}
+    hit = 0
+    for r in picks:
+        probe = {
+            "date": date, "game_pk": r.get("game_pk"),
+            "player_id": r.get("player_id"), "market": r.get("market"),
+            "side": r.get("side") or r.get("description"),
+            "line": r.get("line"), "source": source,
+        }
+        e = index.get(_key(probe))
+        if e is not None:
+            e["bet"] = value
+            hit += 1
+    if hit:
+        _save(entries)
+    return hit
+
+
+def get_boards(date: str, source: str = "leaderboard") -> dict:
+    """{board_id: [rows in rank order]} — boards as they were DISPLAYED.
+
+    Use this instead of sorting the raw log: it keeps each board intact rather
+    than mixing ranks from different runs and views.
+    """
+    out: dict = {}
+    for e in _load():
+        if e.get("date") != date or (e.get("source") or "leaderboard") != source:
+            continue
+        bid = e.get("board_id")
+        if not bid:
+            continue
+        out.setdefault(bid, []).append(e)
+    for bid in out:
+        out[bid].sort(key=lambda r: r.get("rank") or 999)
+    return out

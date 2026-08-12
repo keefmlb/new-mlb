@@ -62,3 +62,6 @@ _*.log
 # Secrets — never commit API keys
 data/secrets.json
 .secrets
+
+# Temporary model snapshots taken before cutoff-training experiments
+data/models_backup_prereplay/

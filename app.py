@@ -699,6 +699,11 @@ def _gp_sim_dict(gp) -> dict:
         "away_sp_fip": getattr(gp, "away_sp_fip", None),
         "home_bp_fip": getattr(gp, "home_bp_fip", None),
         "away_bp_fip": getattr(gp, "away_bp_fip", None),
+        # Starter vs relief control, so walks shift to the bullpen at the hook.
+        "home_sp_bb9": getattr(gp, "home_sp_bb9", None),
+        "away_sp_bb9": getattr(gp, "away_sp_bb9", None),
+        "home_bp_bb9": getattr(gp, "home_bp_bb9", None),
+        "away_bp_bb9": getattr(gp, "away_bp_bb9", None),
     }
 
 
@@ -842,6 +847,35 @@ with main_tab_sim:
                                        f"picks to the record.")
                     except Exception as _e:
                         st.caption(f"(sim-pick logging skipped: {_e})")
+
+                    # --- mark what you actually BET -------------------------
+                    # Without this the only record of which board rows became
+                    # real tickets is a screenshot. With it, every future
+                    # question ("how did my picks do vs the board", "would
+                    # 4K+2TB have been better") is answerable directly.
+                    with st.expander(":pencil: Mark today's picks as BET",
+                                     expanded=False):
+                        _mk_opts, _mk_map = [], {}
+                        for _m in ("prop_pitcher_k", "prop_tb"):
+                            for _r in (_lb_by_mkt.get(_m) or [])[:12]:
+                                _lbl = (f"{_SIM_LB_LABELS.get(_m, _m)} #"
+                                        f"{(_lb_by_mkt.get(_m) or []).index(_r)+1}"
+                                        f" — {_r.get('description','')}")
+                                _mk_opts.append(_lbl)
+                                _mk_map[_lbl] = _r
+                        _chosen = st.multiselect(
+                            "Legs you put money on today", _mk_opts,
+                            help="Marks them in the pick log so the record "
+                                 "separates what you bet from what was merely "
+                                 "on the board.")
+                        if st.button("Save bets", disabled=not _chosen):
+                            try:
+                                _n = sim_tracker.mark_bet(
+                                    slate.target_date,
+                                    [_mk_map[c] for c in _chosen])
+                                st.success(f"Marked {_n} leg(s) as bet.")
+                            except Exception as _e:
+                                st.error(f"Could not save: {_e}")
                 import pandas as _pd
                 _amerf = lambda o: (f"+{int(o)}" if o and o > 0 else f"{int(o)}" if o else "—")
 
@@ -851,9 +885,15 @@ with main_tab_sim:
                         _row = {"#": i + 1}
                         if with_stat:
                             _row["Stat"] = _SIM_LB_LABELS.get(r["market"], r["market"])
+                        _fl = r.get("flags") or []
                         _row.update({
                             "Matchup": r["matchup"],
                             "Bet": r["description"],
+                            # book? = price says the book knows something;
+                            # uncal = line outside the calibration's fitted range
+                            "⚠": " ".join("🚩" if f == "book?"
+                                          else "💸" if f == "price" else "❓"
+                                          for f in _fl),
                             "Sim hit": f"{r['sim_hit']:.1%}",
                             "Hits / 10k": f"{r['sim_hits_n']:,}",
                             "Odds": _amerf(r["odds"]),
@@ -869,11 +909,33 @@ with main_tab_sim:
                 # Tab order: 95%+ locks, then ALL picks, then per-stat tabs.
                 _ordered = [m for m in _SIM_LB_LABELS if m in _lb_by_mkt]
                 _ordered += [m for m in _lb_by_mkt if m not in _SIM_LB_LABELS]
+                # Fixed-line boards. The per-market tabs diversify lines, which
+                # DEMOTES "over 0.5" — measured against 12 days of real tickets
+                # the diversified TB ranking was inverted (top-3 legs hit 73.9%,
+                # rank 7+ hit 90.0%). Ranked within a single line it works again:
+                # 76.7% / 70.0% / 57.3% for ranks 1-3 / 4-6 / 7-10 over 531
+                # graded picks. Anyone betting one line should use these tabs.
+                _by_line = _boards.get("by_line") or {}
+                _LINE_LABELS = {"prop_tb@0.5": ":dart: TB 0.5",
+                                "prop_hits@0.5": ":dart: Hits 0.5",
+                                "prop_pitcher_k@4.5": ":dart: Pitcher K 4.5"}
+                _line_keys = [k for k in _LINE_LABELS if _by_line.get(k)]
                 _tab_labels = ([f":fire: 95-100% ({len(_hi)})",
                                 f"All picks ({len(_all_rows)})"]
+                               + [f"{_LINE_LABELS[k]} ({len(_by_line[k])})"
+                                  for k in _line_keys]
                                + [f"{_SIM_LB_LABELS.get(m, m)} ({len(_lb_by_mkt[m])})"
                                   for m in _ordered])
                 _tabs = st.tabs(_tab_labels)
+                for _i, _k in enumerate(_line_keys, start=2):
+                    with _tabs[_i]:
+                        st.caption(
+                            "Ranked **within this single line** — no line "
+                            "diversification. Use this if you bet one line "
+                            "consistently; the per-stat tabs spread across "
+                            "lines and push 0.5 rows down the board.")
+                        _lb_table(_by_line[_k])
+                _tabs = _tabs[:2] + _tabs[2 + len(_line_keys):]
 
                 # --- Locks tab (cross-stat 95%+) ---
                 with _tabs[0]:
@@ -913,6 +975,21 @@ with main_tab_sim:
                 for _tab, _mkt in zip(_tabs[2:], _ordered):
                     with _tab:
                         _lb_table(_lb_by_mkt[_mkt])
+                st.caption(
+                    "**⚠ flags** — 🚩 *book?*: on a pitcher-K line the book's "
+                    "price implies far less than the sim claims; measured, that "
+                    "gap means the BOOK is usually right (pitch-count plan, "
+                    "injury, short start), so treat it as a warning not an edge. "
+                    "💸 *price*: a batter prop priced under 60% implied — that "
+                    "bucket returned **−23.4% ROI** over 1,432 graded picks vs "
+                    "−10.2% for shorter prices. (Batters differ from pitcher K: "
+                    "their edge quartiles are flat, so the risk is the long "
+                    "price itself, not model-vs-book disagreement.) "
+                    "❓ *uncal*: this line sits outside the range the calibration "
+                    "was fitted on, so the shown probability is an extrapolation "
+                    "— currently true of TB 1.5+, which is running well below "
+                    "its displayed number."
+                )
                 st.caption(
                     "Each stat tab ranks that stat's offers purely by **Sim hit** "
                     "(simulated win frequency). **Sim − book** = simulation hit "
@@ -1034,6 +1111,25 @@ with main_tab_sim:
                     _n85 = sum(1 for r in _hc if r["sim_hit"] >= 0.85)
                     st.markdown(f"**{len(_hc)} legs ≥ {_hc_min:.0%}** "
                                 f"· {_n85} of them ≥ 85%")
+                    # Log these legs too. The main leaderboard only logs the
+                    # -400-FILTERED board, which by construction contains no
+                    # >=85% legs (-400 == 80% implied), so the >=85% parlay
+                    # backtest had no new data. Capped top-20/market to keep the
+                    # record balanced; dedupes against leaderboard picks by
+                    # (date, game, player, market, side, line).
+                    if slate.target_date == today.isoformat():
+                        try:
+                            from src import sim_tracker as _st_mod
+                            _hc_by_mkt = _gs._group_rows_into_boards(
+                                _hc, top=20, hi_threshold=0.95)["by_market"]
+                            _hc_added = _st_mod.log_sim_picks(
+                                slate.target_date, _hc_by_mkt, source="builder75")
+                            if _hc_added:
+                                st.caption(f":floppy_disk: Logged {_hc_added} new "
+                                           "high-confidence legs to the sim record "
+                                           "(feeds the ≥85% parlay backtest).")
+                        except Exception as _e:
+                            st.caption(f"(builder logging skipped: {_e})")
                     _lb_table(_hc[:60], with_stat=True)
                     # Tickets built from this pool only.
                     _hc_plan = _gs.build_daily_parlays(

@@ -17,6 +17,7 @@ import pandas as pd
 from . import mlb_api, parks, weather, features as feats, statcast as sc
 from . import model as mdl, projections as proj, odds, value, name_match, bet_tracker, umpire as ump, parlays
 from . import lineup_features as lf
+from . import bullpen as _bullpen
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -39,7 +40,7 @@ MARKET_BLEND_WEIGHT = 0.50
 # 2026-06-10: fitted per-market prop calibration replaced the blanket 0.70
 # logit shrink (prop_calibration.json) — changes every prop probability and
 # hence the leaderboard, so it's a new policy.
-POLICY_VERSION = "2026-06-24-tb-analytical"
+POLICY_VERSION = "2026-08-10-hit-mix"
 # Raw model-vs-market total disagreement (runs) beyond which game-line bets are
 # suppressed entirely — that magnitude of disagreement is model error, not edge.
 MARKET_MAX_TOTAL_DISAGREE = 3.0
@@ -219,6 +220,13 @@ class GamePrediction:
     # (batter rates bake in the starter, so post-hook innings were mis-modelled).
     home_bp_fip: float = 4.20
     away_bp_fip: float = 4.20
+    # Starter vs RELIEF walk rates. Batter walk rates are built against the
+    # starter's control, so the sim needs both to shift walks to the bullpen
+    # at the hook (bullpens walk ~17% more than starters league-wide).
+    home_sp_bb9: float = 3.16
+    away_sp_bb9: float = 3.16
+    home_bp_bb9: float = 3.71
+    away_bp_bb9: float = 3.71
     # Display label "AWAY @ HOME", suffixed " (Game 1/2)" for doubleheaders.
     # Set once per slate in predict_slate so every view labels DHs consistently.
     matchup_label: str = ""
@@ -335,6 +343,10 @@ def _vb_to_dict(vb: value.ValueBet) -> dict:
 # Floors are applied to the POST-market-blend edge (the model prob is pulled
 # halfway to the no-vig market prob before the edge is computed), so a 5% floor
 # here corresponds to roughly a 10% raw model-vs-market disagreement.
+# Markets barred from the VALUE leaderboard (still simulated + tracked, just
+# not offered as bets). See the note at the exclusion site for the evidence.
+_VALUE_BOARD_EXCLUDED = {"hrr"}
+
 _MARKET_MIN_EDGE_PCT: dict[str, float] = {
     "prop_runs":       7.0,
     "prop_rbi":        7.0,
@@ -613,6 +625,10 @@ def predict_slate(target_date: date | str | None = None,
             away_sp_id=f.away_sp_id, away_sp_name=f.away_sp_name,
             away_sp_fip=f.away_sp_fip, away_sp_xfip=f.away_sp_xfip,
             home_bp_fip=f.home_bp_fip, away_bp_fip=f.away_bp_fip,
+            home_sp_bb9=float(getattr(f, "home_sp_bb9", 3.16) or 3.16),
+            away_sp_bb9=float(getattr(f, "away_sp_bb9", 3.16) or 3.16),
+            home_bp_bb9=_bullpen.bp_bb9(f.home_team_id),
+            away_bp_bb9=_bullpen.bp_bb9(f.away_team_id),
             starters_confirmed=starters_confirmed,
 
             temp_f=f.temp_f, wind_to_cf_mph=f.wind_to_cf_mph,
@@ -887,6 +903,14 @@ def predict_slate(target_date: date | str | None = None,
                         # Hits+Runs+RBIs: mean is additive even though the parts
                         # are correlated (E[X+Y+Z] = EX+EY+EZ); the correlation
                         # is absorbed by the fitted "hrr" dispersion.
+                        #
+                        # REVERTED to the blended components (Aug 7 2026). The
+                        # pure-analytical experiment was run and FAILED: it
+                        # raised the projection ~10%, and because hrr overs were
+                        # already losing from OVER-projection that surfaced more
+                        # losing overs, exactly as predicted — 9W-23L, -35% ROI
+                        # under the `2026-08-03-hrr-analytical` tag. Reverting
+                        # restores the smaller (blended) projection.
                         "hrr": (bproj.proj_h or 0.0) + (bproj.proj_runs or 0.0)
                                + (bproj.proj_rbi or 0.0),
                     }
@@ -986,6 +1010,14 @@ def predict_slate(target_date: date | str | None = None,
                         vb.player_id = _pid
                         vb.starters_confirmed = starters_confirmed
                     gp.all_bets.extend(_vb_to_dict(vb) for vb in vbs_all)
+                    # Hits+Runs+RBIs is BARRED from the value leaderboard. Over
+                    # 388 graded sim picks it returned -8.9% ROI with a CI fully
+                    # below zero, and it never turned positive in ANY
+                    # configuration (blended or pure-analytical). It stays in
+                    # all_bets so the sim board keeps measuring it, but it is no
+                    # longer surfaced as something to bet.
+                    if pp["market"] in _VALUE_BOARD_EXCLUDED:
+                        vbs_all = []
                     # Apply per-market edge floor: noisy markets (hits/RBI/runs/
                     # TB/pitcher_er, all R^2 < 0.06) require a bigger edge to
                     # be flagged. Reliable markets fall through to the slider.

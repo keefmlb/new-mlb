@@ -22,6 +22,7 @@ import warnings
 from pathlib import Path
 
 import numpy as np
+import os
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -72,6 +73,17 @@ def main():
     box = pd.read_csv(BOX)
 
     final = games[games["is_final"] == True].copy().sort_values("date")
+    # Optional training cutoff, for honest out-of-sample evaluation. Set
+    # PROP_TRAIN_CUTOFF=YYYY-MM-DD to train ONLY on games strictly before that
+    # date, so a backtest over a later window is not grading a model that
+    # already saw its outcomes. Unset in normal production runs.
+    _cut = os.environ.get("PROP_TRAIN_CUTOFF")
+    if _cut:
+        _before = len(final)
+        final = final[final["date"].astype(str).str[:10] < _cut]
+        box = box[box["date"].astype(str).str[:10] < _cut]
+        print(f"  CUTOFF {_cut}: {_before} -> {len(final)} final games "
+              f"(training is now out-of-sample after {_cut})")
     print(f"  {len(final)} final games, {len(box)} player-game rows")
 
     print("Loading weekly snapshots...")
